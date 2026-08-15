@@ -31,13 +31,13 @@ const modalState = {
   routineId: null,
 };
 
-function openNameModal({ title, placeholder, confirmLabel, mode, routineId = null }) {
+function openNameModal({ title, placeholder, confirmLabel, mode, routineId = null, initialValue = "" }) {
   modalState.mode = mode;
   modalState.routineId = routineId;
 
   modalTitle.textContent = title;
   modalInput.placeholder = placeholder;
-  modalInput.value = "";
+  modalInput.value = initialValue;
   modalConfirm.textContent = confirmLabel;
   modalOverlay.classList.remove("hidden");
   modalOverlay.setAttribute("aria-hidden", "false");
@@ -145,6 +145,10 @@ function setView(view, routineId = null) {
   state.currentView = view;
   state.currentRoutineId = routineId;
 
+  // Remove click listener from title
+  pageTitleEl.onclick = null;
+  pageTitleEl.style.cursor = "default";
+
   if (view === "home") {
     pageTitleEl.textContent = "Habitizer";
     backButton.classList.add("hidden");
@@ -154,6 +158,9 @@ function setView(view, routineId = null) {
   } else if (view === "routine") {
     const routine = getRoutineById(routineId);
     pageTitleEl.textContent = routine ? routine.name : "Routine";
+    pageTitleEl.style.cursor = "pointer";
+    pageTitleEl.onclick = () => renameRoutine(routineId);
+    pageTitleEl.title = "Click to rename";
     backButton.classList.remove("hidden");
     addButton.classList.remove("hidden");
     addButton.textContent = "+";
@@ -204,12 +211,14 @@ function renameRoutine(routineId) {
   const routine = getRoutineById(routineId);
   if (!routine) return;
 
-  const newName = promptForText("Rename routine:", routine.name);
-  if (!newName || !newName.trim()) return;
-
-  routine.name = newName.trim();
-  saveRoutines();
-  render();
+  openNameModal({
+    title: "Rename routine",
+    placeholder: "Routine name",
+    confirmLabel: "Rename",
+    mode: "rename",
+    routineId,
+    initialValue: routine.name,
+  });
 }
 
 function editRoutineTime(routineId) {
@@ -707,6 +716,29 @@ addButton.addEventListener("click", () => {
 modalConfirm.addEventListener("click", () => {
   if (modalState.mode === "routine") {
     submitRoutineCreation();
+    return;
+  }
+
+  if (modalState.mode === "rename" && modalState.routineId) {
+    const routine = getRoutineById(modalState.routineId);
+    const name = modalInput.value.trim();
+    const routineId = modalState.routineId; // Save routineId before closing modal
+
+    if (!routine || !name) {
+      modalInput.focus();
+      return;
+    }
+
+    routine.name = name;
+    saveRoutines();
+    closeNameModal();
+    
+    // If renaming current routine, refresh the view to update title immediately
+    if (state.currentView === "routine" && state.currentRoutineId === routineId) {
+      setView("routine", routineId);
+    } else {
+      render();
+    }
     return;
   }
 
