@@ -20,6 +20,37 @@ const appEl = document.getElementById("app");
 const pageTitleEl = document.getElementById("pageTitle");
 const addButton = document.getElementById("addButton");
 const backButton = document.getElementById("backButton");
+const modalOverlay = document.getElementById("nameModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalInput = document.getElementById("modalInput");
+const modalConfirm = document.getElementById("modalConfirm");
+const modalCancel = document.getElementById("modalCancel");
+
+const modalState = {
+  mode: null,
+  routineId: null,
+};
+
+function openNameModal({ title, placeholder, confirmLabel, mode, routineId = null }) {
+  modalState.mode = mode;
+  modalState.routineId = routineId;
+
+  modalTitle.textContent = title;
+  modalInput.placeholder = placeholder;
+  modalInput.value = "";
+  modalConfirm.textContent = confirmLabel;
+  modalOverlay.classList.remove("hidden");
+  modalOverlay.setAttribute("aria-hidden", "false");
+  modalInput.focus();
+}
+
+function closeNameModal() {
+  modalOverlay.classList.add("hidden");
+  modalOverlay.setAttribute("aria-hidden", "true");
+  modalInput.value = "";
+  modalState.mode = null;
+  modalState.routineId = null;
+}
 
 function saveRoutines() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.routines));
@@ -141,18 +172,31 @@ function promptForText(message, defaultValue = "") {
 }
 
 function addRoutine() {
-  const name = promptForText("Name your new routine:");
-  if (!name || !name.trim()) return;
+  openNameModal({
+    title: "New routine",
+    placeholder: "Morning routine",
+    confirmLabel: "Create",
+    mode: "routine",
+  });
+}
+
+function submitRoutineCreation() {
+  const name = modalInput.value.trim();
+  if (!name) {
+    modalInput.focus();
+    return;
+  }
 
   const newRoutine = {
     id: crypto.randomUUID(),
-    name: name.trim(),
+    name,
     estimatedMinutes: 10,
     activities: [],
   };
 
   state.routines.unshift(newRoutine);
   saveRoutines();
+  closeNameModal();
   setView("routine", newRoutine.id);
 }
 
@@ -650,7 +694,57 @@ addButton.addEventListener("click", () => {
   if (state.currentView === "home") {
     addRoutine();
   } else if (state.currentView === "routine") {
-    addActivity(state.currentRoutineId);
+    openNameModal({
+      title: "New activity",
+      placeholder: "Stretch",
+      confirmLabel: "Add",
+      mode: "activity",
+      routineId: state.currentRoutineId,
+    });
+  }
+});
+
+modalConfirm.addEventListener("click", () => {
+  if (modalState.mode === "routine") {
+    submitRoutineCreation();
+    return;
+  }
+
+  if (modalState.mode === "activity" && modalState.routineId) {
+    const routine = getRoutineById(modalState.routineId);
+    const name = modalInput.value.trim();
+
+    if (!routine || !name) {
+      modalInput.focus();
+      return;
+    }
+
+    routine.activities.push({
+      id: crypto.randomUUID(),
+      name,
+      timeSpentMs: 0,
+    });
+
+    saveRoutines();
+    closeNameModal();
+    render();
+  }
+});
+
+modalCancel.addEventListener("click", closeNameModal);
+modalInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    modalConfirm.click();
+  }
+
+  if (event.key === "Escape") {
+    closeNameModal();
+  }
+});
+
+modalOverlay.addEventListener("click", (event) => {
+  if (event.target === modalOverlay) {
+    closeNameModal();
   }
 });
 
