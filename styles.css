@@ -105,11 +105,13 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  text-align: left;
 }
 
 .routine-name {
   font-size: 1.06rem;
   font-weight: 600;
+  text-align: left;
 }
 
 .routine-meta {
@@ -248,6 +250,65 @@ button {
 .hidden {
   visibility: hidden;
   pointer-events: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 24, 19, 0.45);
+  z-index: 50;
+  padding: 24px;
+}
+
+.modal-card {
+  width: min(100%, 340px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 22px 18px 18px;
+  box-shadow: 0 24px 48px rgba(15, 24, 19, 0.2);
+}
+
+.modal-card h2 {
+  margin: 0 0 14px;
+  font-size: 1.25rem;
+}
+
+.modal-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+#modalInput {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font: inherit;
+  outline: none;
+  background: #f8faf8;
+}
+
+#modalInput:focus {
+  border-color: rgba(47, 111, 82, 0.45);
+  box-shadow: 0 0 0 3px rgba(47, 111, 82, 0.12);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.modal-actions .primary-btn,
+.modal-actions .secondary-btn {
+  flex: 1;
 }
 
 .live-timer {
