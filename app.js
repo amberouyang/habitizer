@@ -1,0 +1,663 @@
+const STORAGE_KEY = "habitizer-routines-v1";
+
+const state = {
+  routines: [],
+  currentRoutineId: null,
+  currentView: "home",
+  timer: {
+    routineId: null,
+    isRunning: false,
+    elapsedMs: 0,
+    lastTimestamp: null,
+    completedActivityIds: new Set(),
+    activityStartTimes: {},
+  },
+};
+
+let liveTimerIntervalId = null;
+
+const appEl = document.getElementById("app");
+const pageTitleEl = document.getElementById("pageTitle");
+const addButton = document.getElementById("addButton");
+const backButton = document.getElementById("backButton");
+
+function saveRoutines() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.routines));
+}
+
+function loadRoutines() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  state.routines = stored ? JSON.parse(stored) : [];
+}
+
+function seedData() {
+  if (localStorage.getItem(STORAGE_KEY)) {
+    return;
+  }
+
+  state.routines = [
+    {
+      id: crypto.randomUUID(),
+      name: "Morning Routine",
+      estimatedMinutes: 15,
+      activities: [
+        { id: crypto.randomUUID(), name: "Drink water", timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Stretch", timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Check calendar", timeSpentMs: 0 },
+      ],
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Evening Routine",
+      estimatedMinutes: 20,
+      activities: [
+        { id: crypto.randomUUID(), name: "Brush teeth", timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Skincare", timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Read", timeSpentMs: 0 },
+      ],
+    },
+  ];
+
+  saveRoutines();
+}
+
+function getRoutineById(routineId) {
+  return state.routines.find((routine) => routine.id === routineId) || null;
+}
+
+function formatDuration(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatDurationLabel(ms) {
+  const minutes = Math.max(0, Math.round(ms / 60000));
+  return minutes === 0 ? "0 min" : `${minutes} min`;
+}
+
+function getRoutineTotalDurationMs(routine) {
+  if (!routine) return 0;
+  return Number(routine.estimatedMinutes || 0) * 60 * 1000;
+}
+
+function getTotalElapsedMs() {
+  if (!state.timer.routineId) return 0;
+
+  let total = state.timer.elapsedMs;
+  if (state.timer.isRunning && state.timer.lastTimestamp) {
+    total += Date.now() - state.timer.lastTimestamp;
+  }
+  return total;
+}
+
+function getActivityElapsedMs(activity) {
+  if (!activity) return 0;
+
+  let total = Number(activity.timeSpentMs || 0);
+  const start = state.timer.activityStartTimes[activity.id];
+  if (start && state.timer.isRunning) {
+    total += Date.now() - start;
+  }
+
+  return total;
+}
+
+function setView(view, routineId = null) {
+  state.currentView = view;
+  state.currentRoutineId = routineId;
+
+  if (view === "home") {
+    pageTitleEl.textContent = "Habitizer";
+    backButton.classList.add("hidden");
+    addButton.classList.remove("hidden");
+    addButton.textContent = "+";
+    addButton.setAttribute("aria-label", "Add routine");
+  } else if (view === "routine") {
+    const routine = getRoutineById(routineId);
+    pageTitleEl.textContent = routine ? routine.name : "Routine";
+    backButton.classList.remove("hidden");
+    addButton.classList.remove("hidden");
+    addButton.textContent = "+";
+    addButton.setAttribute("aria-label", "Add activity");
+  } else if (view === "timer") {
+    pageTitleEl.textContent = "Live Routine";
+    backButton.classList.add("hidden");
+    addButton.classList.add("hidden");
+  }
+
+  render();
+}
+
+function promptForText(message, defaultValue = "") {
+  return window.prompt(message, defaultValue);
+}
+
+function addRoutine() {
+  const name = promptForText("Name your new routine:");
+  if (!name || !name.trim()) return;
+
+  const newRoutine = {
+    id: crypto.randomUUID(),
+    name: name.trim(),
+    estimatedMinutes: 10,
+    activities: [],
+  };
+
+  state.routines.unshift(newRoutine);
+  saveRoutines();
+  setView("routine", newRoutine.id);
+}
+
+function renameRoutine(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const newName = promptForText("Rename routine:", routine.name);
+  if (!newName || !newName.trim()) return;
+
+  routine.name = newName.trim();
+  saveRoutines();
+  render();
+}
+
+function editRoutineTime(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const value = window.prompt("Estimated routine time (minutes):", routine.estimatedMinutes || 0);
+  if (value === null) return;
+
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes < 0) {
+    window.alert("Please enter a valid number of minutes.");
+    return;
+  }
+
+  routine.estimatedMinutes = minutes;
+  saveRoutines();
+  render();
+}
+
+function deleteRoutine(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const confirmed = window.confirm(`Delete "${routine.name}"?`);
+  if (!confirmed) return;
+
+  state.routines = state.routines.filter((item) => item.id !== routineId);
+  saveRoutines();
+  setView("home");
+}
+
+function addActivity(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const name = promptForText("Name your new activity:");
+  if (!name || !name.trim()) return;
+
+  routine.activities.push({
+    id: crypto.randomUUID(),
+    name: name.trim(),
+    timeSpentMs: 0,
+  });
+
+  saveRoutines();
+  render();
+}
+
+function renameActivity(routineId, activityId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const activity = routine.activities.find((item) => item.id === activityId);
+  if (!activity) return;
+
+  const newName = promptForText("Rename activity:", activity.name);
+  if (!newName || !newName.trim()) return;
+
+  activity.name = newName.trim();
+  saveRoutines();
+  render();
+}
+
+function deleteActivity(routineId, activityId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  routine.activities = routine.activities.filter((item) => item.id !== activityId);
+  saveRoutines();
+  render();
+}
+
+function moveActivity(routineId, activityId, direction) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const index = routine.activities.findIndex((item) => item.id === activityId);
+  if (index === -1) return;
+
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= routine.activities.length) return;
+
+  const [moved] = routine.activities.splice(index, 1);
+  routine.activities.splice(targetIndex, 0, moved);
+  saveRoutines();
+  render();
+}
+
+function renderHomeView() {
+  const list = document.createElement("section");
+  list.className = "routine-list";
+
+  if (state.routines.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No routines yet. Tap + to make your first one.";
+    list.appendChild(empty);
+    return list;
+  }
+
+  state.routines.forEach((routine) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "routine-item";
+    item.addEventListener("click", () => setView("routine", routine.id));
+
+    const info = document.createElement("div");
+    info.className = "routine-info";
+
+    const name = document.createElement("div");
+    name.className = "routine-name";
+    name.textContent = routine.name;
+
+    const meta = document.createElement("div");
+    meta.className = "routine-meta";
+    meta.textContent = `${routine.activities.length} activities • ${formatDurationLabel(getRoutineTotalDurationMs(routine))}`;
+
+    const actions = document.createElement("div");
+    actions.className = "item-actions";
+
+    const renameBtn = document.createElement("button");
+    renameBtn.type = "button";
+    renameBtn.className = "small-btn";
+    renameBtn.textContent = "✎";
+    renameBtn.title = "Rename routine";
+    renameBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      renameRoutine(routine.id);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "small-btn delete-btn";
+    deleteBtn.textContent = "🗑";
+    deleteBtn.title = "Delete routine";
+    deleteBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      deleteRoutine(routine.id);
+    });
+
+    info.append(name, meta);
+    actions.append(renameBtn, deleteBtn);
+    item.append(info, actions);
+    list.appendChild(item);
+  });
+
+  return list;
+}
+
+function renderRoutineView() {
+  const routine = getRoutineById(state.currentRoutineId);
+  if (!routine) {
+    setView("home");
+    return document.createElement("div");
+  }
+
+  const wrapper = document.createElement("div");
+
+  const header = document.createElement("div");
+  header.className = "section-header";
+
+  const title = document.createElement("h2");
+  title.textContent = "Activities";
+
+  const metaButton = document.createElement("button");
+  metaButton.type = "button";
+  metaButton.className = "small-btn";
+  metaButton.textContent = "⏱";
+  metaButton.title = "Edit time estimate";
+  metaButton.addEventListener("click", () => editRoutineTime(routine.id));
+
+  header.append(title, metaButton);
+
+  const infoRow = document.createElement("div");
+  infoRow.className = "summary-row";
+  infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
+
+  const activityList = document.createElement("div");
+  activityList.className = "activity-list";
+
+  if (routine.activities.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No activities yet. Add one to start building this routine.";
+    activityList.appendChild(empty);
+  } else {
+    routine.activities.forEach((activity, index) => {
+      const item = document.createElement("div");
+      item.className = "activity-item";
+
+      const main = document.createElement("div");
+      main.className = "activity-main";
+
+      const label = document.createElement("button");
+      label.type = "button";
+      label.className = "activity-name";
+      label.textContent = activity.name;
+      label.addEventListener("click", () => renameActivity(routine.id, activity.id));
+
+      main.appendChild(label);
+
+      const controls = document.createElement("div");
+      controls.className = "drag-controls";
+
+      const upBtn = document.createElement("button");
+      upBtn.type = "button";
+      upBtn.className = "small-btn";
+      upBtn.textContent = "↑";
+      upBtn.disabled = index === 0;
+      upBtn.title = "Move up";
+      upBtn.addEventListener("click", () => moveActivity(routine.id, activity.id, -1));
+
+      const downBtn = document.createElement("button");
+      downBtn.type = "button";
+      downBtn.className = "small-btn";
+      downBtn.textContent = "↓";
+      downBtn.disabled = index === routine.activities.length - 1;
+      downBtn.title = "Move down";
+      downBtn.addEventListener("click", () => moveActivity(routine.id, activity.id, 1));
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "small-btn delete-btn";
+      deleteBtn.textContent = "✕";
+      deleteBtn.title = "Delete activity";
+      deleteBtn.addEventListener("click", () => deleteActivity(routine.id, activity.id));
+
+      controls.append(upBtn, downBtn, deleteBtn);
+      item.append(main, controls);
+      activityList.appendChild(item);
+    });
+  }
+
+  const actionRow = document.createElement("div");
+  actionRow.className = "timer-controls";
+
+  const startBtn = document.createElement("button");
+  startBtn.type = "button";
+  startBtn.className = "primary-btn";
+  startBtn.textContent = "Start Routine";
+  startBtn.disabled = routine.activities.length === 0;
+  startBtn.addEventListener("click", () => startRoutine(routine.id));
+
+  actionRow.appendChild(startBtn);
+  wrapper.append(header, infoRow, activityList, actionRow);
+  return wrapper;
+}
+
+function startLiveTimerLoop() {
+  if (liveTimerIntervalId) {
+    clearInterval(liveTimerIntervalId);
+  }
+
+  liveTimerIntervalId = setInterval(() => {
+    if (state.currentView === "timer" && state.timer.isRunning) {
+      render();
+    }
+  }, 250);
+}
+
+function startRoutine(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine || routine.activities.length === 0) return;
+
+  state.timer = {
+    routineId,
+    isRunning: true,
+    elapsedMs: 0,
+    lastTimestamp: Date.now(),
+    completedActivityIds: new Set(),
+    activityStartTimes: {},
+  };
+
+  setView("timer", routineId);
+  startLiveTimerLoop();
+}
+
+function pauseTimer() {
+  if (!state.timer.routineId || !state.timer.isRunning) return;
+
+  const now = Date.now();
+  state.timer.elapsedMs += now - state.timer.lastTimestamp;
+  state.timer.lastTimestamp = null;
+  state.timer.isRunning = false;
+
+  const routine = getRoutineById(state.timer.routineId);
+  if (!routine) return;
+
+  Object.keys(state.timer.activityStartTimes).forEach((activityId) => {
+    const activity = routine.activities.find((item) => item.id === activityId);
+    if (!activity) return;
+
+    activity.timeSpentMs += now - state.timer.activityStartTimes[activityId];
+    delete state.timer.activityStartTimes[activityId];
+  });
+
+  saveRoutines();
+  render();
+}
+
+function resumeTimer() {
+  if (!state.timer.routineId || state.timer.isRunning) return;
+
+  state.timer.isRunning = true;
+  state.timer.lastTimestamp = Date.now();
+
+  state.timer.completedActivityIds.forEach((activityId) => {
+    if (!state.timer.activityStartTimes[activityId]) {
+      state.timer.activityStartTimes[activityId] = Date.now();
+    }
+  });
+
+  render();
+}
+
+function toggleActivityCompletion(activityId, checked) {
+  if (!state.timer.routineId) return;
+
+  const routine = getRoutineById(state.timer.routineId);
+  if (!routine) return;
+
+  const activity = routine.activities.find((item) => item.id === activityId);
+  if (!activity) return;
+
+  if (checked) {
+    state.timer.completedActivityIds.add(activityId);
+    state.timer.activityStartTimes[activityId] = Date.now();
+  } else {
+    const start = state.timer.activityStartTimes[activityId];
+    if (start) {
+      activity.timeSpentMs += Date.now() - start;
+    }
+    delete state.timer.activityStartTimes[activityId];
+    state.timer.completedActivityIds.delete(activityId);
+  }
+
+  saveRoutines();
+  render();
+}
+
+function endRoutine() {
+  const routine = getRoutineById(state.timer.routineId);
+  if (!routine) return;
+
+  const now = Date.now();
+  if (state.timer.isRunning && state.timer.lastTimestamp) {
+    state.timer.elapsedMs += now - state.timer.lastTimestamp;
+  }
+
+  Object.keys(state.timer.activityStartTimes).forEach((activityId) => {
+    const activity = routine.activities.find((item) => item.id === activityId);
+    if (!activity) return;
+
+    activity.timeSpentMs += now - state.timer.activityStartTimes[activityId];
+    delete state.timer.activityStartTimes[activityId];
+  });
+
+  const totalMs = getTotalElapsedMs();
+  const summary = routine.activities
+    .map((activity) => `${activity.name}: ${formatDuration(Number(activity.timeSpentMs || 0))}`)
+    .join("\n");
+
+  state.timer = {
+    routineId: null,
+    isRunning: false,
+    elapsedMs: 0,
+    lastTimestamp: null,
+    completedActivityIds: new Set(),
+    activityStartTimes: {},
+  };
+
+  if (liveTimerIntervalId) {
+    clearInterval(liveTimerIntervalId);
+    liveTimerIntervalId = null;
+  }
+
+  saveRoutines();
+  setView("home");
+
+  window.alert(`Routine complete!\nTotal time: ${formatDuration(totalMs)}\n${summary}`);
+}
+
+function renderTimerView() {
+  const routine = getRoutineById(state.currentRoutineId);
+  if (!routine) {
+    setView("home");
+    return document.createElement("div");
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "live-timer";
+
+  const timerCard = document.createElement("div");
+  timerCard.className = "timer-card";
+
+  const totalTimeEl = document.createElement("div");
+  totalTimeEl.className = "total-time";
+  totalTimeEl.textContent = formatDuration(getTotalElapsedMs());
+
+  const progressList = document.createElement("div");
+  progressList.className = "activity-progress";
+
+  routine.activities.forEach((activity) => {
+    const item = document.createElement("label");
+    item.className = "progress-item";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = state.timer.completedActivityIds.has(activity.id);
+    checkbox.addEventListener("change", () => {
+      toggleActivityCompletion(activity.id, checkbox.checked);
+    });
+
+    const labelText = document.createElement("span");
+    labelText.className = "progress-label";
+    labelText.textContent = activity.name;
+
+    const timeText = document.createElement("span");
+    timeText.className = "progress-time";
+    timeText.textContent = formatDuration(getActivityElapsedMs(activity));
+
+    item.append(checkbox, labelText, timeText);
+    progressList.appendChild(item);
+  });
+
+  timerCard.append(totalTimeEl, progressList);
+
+  const controls = document.createElement("div");
+  controls.className = "timer-controls";
+
+  const pauseResumeBtn = document.createElement("button");
+  pauseResumeBtn.type = "button";
+  pauseResumeBtn.className = "secondary-btn";
+  pauseResumeBtn.textContent = state.timer.isRunning ? "Pause" : "Resume";
+  pauseResumeBtn.addEventListener("click", () => {
+    if (state.timer.isRunning) {
+      pauseTimer();
+    } else {
+      resumeTimer();
+    }
+  });
+
+  const endBtn = document.createElement("button");
+  endBtn.type = "button";
+  endBtn.className = "danger-btn";
+  endBtn.textContent = "End Routine";
+  endBtn.addEventListener("click", endRoutine);
+
+  controls.append(pauseResumeBtn, endBtn);
+  wrapper.append(timerCard, controls);
+  return wrapper;
+}
+
+function render() {
+  if (state.currentView === "home") {
+    appEl.innerHTML = "";
+    appEl.appendChild(renderHomeView());
+    return;
+  }
+
+  if (state.currentView === "routine") {
+    appEl.innerHTML = "";
+    appEl.appendChild(renderRoutineView());
+    return;
+  }
+
+  if (state.currentView === "timer") {
+    appEl.innerHTML = "";
+    appEl.appendChild(renderTimerView());
+    return;
+  }
+}
+
+backButton.addEventListener("click", () => {
+  if (state.currentView === "routine") {
+    setView("home");
+  }
+});
+
+addButton.addEventListener("click", () => {
+  if (state.currentView === "home") {
+    addRoutine();
+  } else if (state.currentView === "routine") {
+    addActivity(state.currentRoutineId);
+  }
+});
+
+function init() {
+  loadRoutines();
+  seedData();
+  setView("home");
+}
+
+init();
