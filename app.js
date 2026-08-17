@@ -29,11 +29,13 @@ const modalCancel = document.getElementById("modalCancel");
 const modalState = {
   mode: null,
   routineId: null,
+  activityId: null,
 };
 
-function openNameModal({ title, placeholder, confirmLabel, mode, routineId = null, initialValue = "" }) {
+function openNameModal({ title, placeholder, confirmLabel, mode, routineId = null, activityId = null, initialValue = "" }) {
   modalState.mode = mode;
   modalState.routineId = routineId;
+  modalState.activityId = activityId;
 
   modalTitle.textContent = title;
   modalInput.placeholder = placeholder;
@@ -50,6 +52,7 @@ function closeNameModal() {
   modalInput.value = "";
   modalState.mode = null;
   modalState.routineId = null;
+  modalState.activityId = null;
 }
 
 function saveRoutines() {
@@ -275,12 +278,15 @@ function renameActivity(routineId, activityId) {
   const activity = routine.activities.find((item) => item.id === activityId);
   if (!activity) return;
 
-  const newName = promptForText("Rename activity:", activity.name);
-  if (!newName || !newName.trim()) return;
-
-  activity.name = newName.trim();
-  saveRoutines();
-  render();
+  openNameModal({
+    title: "Rename activity",
+    placeholder: "Activity name",
+    confirmLabel: "Rename",
+    mode: "renameActivity",
+    routineId,
+    activityId,
+    initialValue: activity.name,
+  });
 }
 
 function deleteActivity(routineId, activityId) {
@@ -417,6 +423,7 @@ function renderRoutineView() {
       label.type = "button";
       label.className = "activity-name";
       label.textContent = activity.name;
+      label.title = "Click to rename";
       label.addEventListener("click", () => renameActivity(routine.id, activity.id));
 
       main.appendChild(label);
@@ -760,6 +767,24 @@ modalConfirm.addEventListener("click", () => {
     saveRoutines();
     closeNameModal();
     render();
+    return;
+  }
+
+  if (modalState.mode === "renameActivity" && modalState.routineId && modalState.activityId) {
+    const routine = getRoutineById(modalState.routineId);
+    const activity = routine?.activities.find((item) => item.id === modalState.activityId);
+    const name = modalInput.value.trim();
+
+    if (!routine || !activity || !name) {
+      modalInput.focus();
+      return;
+    }
+
+    activity.name = name;
+    saveRoutines();
+    closeNameModal();
+    render();
+    return;
   }
 });
 
