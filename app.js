@@ -1,4 +1,5 @@
 const STORAGE_KEY = "habitizer-routines-v1";
+const SETTINGS_KEY = "habitizer-settings-v1";
 
 const state = {
   routines: [],
@@ -14,17 +15,26 @@ const state = {
   },
 };
 
+const settings = {
+  cumulativeMode: true,
+};
+
 let liveTimerIntervalId = null;
 
 const appEl = document.getElementById("app");
 const pageTitleEl = document.getElementById("pageTitle");
 const addButton = document.getElementById("addButton");
 const backButton = document.getElementById("backButton");
+const menuButton = document.getElementById("menuButton");
 const modalOverlay = document.getElementById("nameModal");
 const modalTitle = document.getElementById("modalTitle");
 const modalInput = document.getElementById("modalInput");
 const modalConfirm = document.getElementById("modalConfirm");
 const modalCancel = document.getElementById("modalCancel");
+const settingsModal = document.getElementById("settingsModal");
+const settingsClose = document.getElementById("settingsClose");
+const cumulativeToggle = document.getElementById("cumulativeToggle");
+let settingsButton = null;
 
 const modalState = {
   mode: null,
@@ -62,6 +72,18 @@ function saveRoutines() {
 function loadRoutines() {
   const stored = localStorage.getItem(STORAGE_KEY);
   state.routines = stored ? JSON.parse(stored) : [];
+}
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function loadSettings() {
+  const stored = localStorage.getItem(SETTINGS_KEY);
+  if (stored) {
+    Object.assign(settings, JSON.parse(stored));
+  }
+  cumulativeToggle.checked = settings.cumulativeMode;
 }
 
 function seedData() {
@@ -144,6 +166,19 @@ function getActivityElapsedMs(activity) {
   return total;
 }
 
+function openSettings() {
+  cumulativeToggle.checked = settings.cumulativeMode;
+  settingsModal.classList.remove("hidden");
+  settingsModal.setAttribute("aria-hidden", "false");
+}
+
+function closeSettings() {
+  settingsModal.classList.add("hidden");
+  settingsModal.setAttribute("aria-hidden", "true");
+  settings.cumulativeMode = cumulativeToggle.checked;
+  saveSettings();
+}
+
 function setView(view, routineId = null) {
   state.currentView = view;
   state.currentRoutineId = routineId;
@@ -155,6 +190,7 @@ function setView(view, routineId = null) {
   if (view === "home") {
     pageTitleEl.textContent = "Habitizer";
     backButton.classList.add("hidden");
+    menuButton.classList.remove("hidden");
     addButton.classList.remove("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add routine");
@@ -165,12 +201,14 @@ function setView(view, routineId = null) {
     pageTitleEl.onclick = () => renameRoutine(routineId);
     pageTitleEl.title = "Click to rename";
     backButton.classList.remove("hidden");
+    menuButton.classList.add("hidden");
     addButton.classList.remove("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add activity");
   } else if (view === "timer") {
     pageTitleEl.textContent = "Live Routine";
     backButton.classList.add("hidden");
+    menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
   }
 
@@ -689,6 +727,13 @@ function endRoutine() {
     .map((activity) => `${activity.name}: ${formatDuration(Number(activity.timeSpentMs || 0))}`)
     .join("\n");
 
+  // In per-session mode, reset times after showing the summary
+  if (!settings.cumulativeMode) {
+    routine.activities.forEach((activity) => {
+      activity.timeSpentMs = 0;
+    });
+  }
+
   state.timer = {
     routineId: null,
     isRunning: false,
@@ -822,6 +867,10 @@ addButton.addEventListener("click", () => {
   }
 });
 
+menuButton.addEventListener("click", openSettings);
+
+menuButton.addEventListener("click", openSettings);
+
 modalConfirm.addEventListener("click", () => {
   if (modalState.mode === "routine") {
     submitRoutineCreation();
@@ -907,8 +956,22 @@ modalOverlay.addEventListener("click", (event) => {
   }
 });
 
+settingsClose.addEventListener("click", closeSettings);
+
+settingsModal.addEventListener("click", (event) => {
+  if (event.target === settingsModal) {
+    closeSettings();
+  }
+});
+
+cumulativeToggle.addEventListener("change", () => {
+  settings.cumulativeMode = cumulativeToggle.checked;
+  saveSettings();
+});
+
 function init() {
   loadRoutines();
+  loadSettings();
   seedData();
   setView("home");
 }

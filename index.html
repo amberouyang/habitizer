@@ -10,6 +10,7 @@
     <div class="app-shell">
       <header class="topbar">
         <button id="backButton" class="icon-btn hidden" aria-label="Go back">←</button>
+        <button id="menuButton" class="icon-btn hidden" aria-label="Menu">⋯</button>
         <h1 id="pageTitle">Habitizer</h1>
         <button id="addButton" class="icon-btn primary" aria-label="Add">+</button>
       </header>
@@ -25,6 +26,22 @@
         <div class="modal-actions">
           <button id="modalCancel" type="button" class="secondary-btn">Cancel</button>
           <button id="modalConfirm" type="button" class="primary-btn">Create</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <h2 id="settingsTitle">Settings</h2>
+        <div class="settings-content">
+          <label class="settings-label">
+            <input id="cumulativeToggle" type="checkbox" />
+            <span>Cumulative Habit Tracker</span>
+            <p class="settings-desc">Times accumulate across multiple runs. Uncheck for per-session mode.</p>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button id="settingsClose" type="button" class="primary-btn">Done</button>
         </div>
       </div>
     </div>
