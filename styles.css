@@ -216,6 +216,17 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background: none;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.12s ease;
+}
+
+.activity-name:hover {
+  color: var(--primary);
 }
 
 .drag-controls {
@@ -368,6 +379,12 @@ button {
 .timer-controls {
   display: flex;
   gap: 10px;
+  margin-top: 18px;
+  justify-content: center;
+}
+
+.timer-controls .primary-btn {
+  min-width: 180px;
 }
 
 .secondary-btn,
