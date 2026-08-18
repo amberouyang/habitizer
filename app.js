@@ -298,9 +298,11 @@ function deleteActivity(routineId, activityId) {
   render();
 }
 
+let isAnimatingActivitySwap = false;
+
 function moveActivity(routineId, activityId, direction) {
   const routine = getRoutineById(routineId);
-  if (!routine) return;
+  if (!routine || isAnimatingActivitySwap) return;
 
   const index = routine.activities.findIndex((item) => item.id === activityId);
   if (index === -1) return;
@@ -308,10 +310,67 @@ function moveActivity(routineId, activityId, direction) {
   const targetIndex = index + direction;
   if (targetIndex < 0 || targetIndex >= routine.activities.length) return;
 
+  const sourceId = routine.activities[index].id;
+  const targetId = routine.activities[targetIndex].id;
+
+  const listEl = document.querySelector(".activity-list");
+  const sourceNode = listEl?.querySelector(`.activity-item[data-activity-id="${sourceId}"]`);
+  const targetNode = listEl?.querySelector(`.activity-item[data-activity-id="${targetId}"]`);
+
+  if (!listEl || !sourceNode || !targetNode) {
+    render();
+    return;
+  }
+
+  isAnimatingActivitySwap = true;
+
+  const sourceBefore = sourceNode.getBoundingClientRect();
+  const targetBefore = targetNode.getBoundingClientRect();
+
   const [moved] = routine.activities.splice(index, 1);
   routine.activities.splice(targetIndex, 0, moved);
   saveRoutines();
-  render();
+
+  if (direction === -1) {
+    listEl.insertBefore(sourceNode, targetNode);
+  } else {
+    listEl.insertBefore(sourceNode, targetNode.nextSibling);
+  }
+
+  requestAnimationFrame(() => {
+    const travelPx = 4;
+    const sourceShift = direction === -1 ? -travelPx : travelPx;
+    const targetShift = direction === -1 ? travelPx : -travelPx;
+
+    const finalizeSwap = () => {
+      sourceNode.style.transition = "";
+      targetNode.style.transition = "";
+      sourceNode.style.transform = "";
+      targetNode.style.transform = "";
+      sourceNode.style.boxShadow = "";
+      targetNode.style.boxShadow = "";
+      isAnimatingActivitySwap = false;
+    };
+
+    sourceNode.style.transition = "none";
+    targetNode.style.transition = "none";
+    sourceNode.style.transform = `translateY(${sourceShift}px)`;
+    targetNode.style.transform = `translateY(${targetShift}px)`;
+    sourceNode.style.boxShadow = "0 4px 8px rgba(34, 77, 59, 0.02)";
+    targetNode.style.boxShadow = "0 4px 8px rgba(34, 77, 59, 0.02)";
+
+    requestAnimationFrame(() => {
+      sourceNode.style.transition = "transform 180ms ease-out, box-shadow 180ms ease";
+      targetNode.style.transition = "transform 180ms ease-out, box-shadow 180ms ease";
+      sourceNode.style.transform = "translateY(0)";
+      targetNode.style.transform = "translateY(0)";
+      sourceNode.style.boxShadow = "0 2px 6px rgba(34, 77, 59, 0.01)";
+      targetNode.style.boxShadow = "0 2px 6px rgba(34, 77, 59, 0.01)";
+    });
+
+    sourceNode.addEventListener("transitionend", finalizeSwap, { once: true });
+    targetNode.addEventListener("transitionend", finalizeSwap, { once: true });
+  });
 }
 
 function renderHomeView() {
@@ -412,9 +471,10 @@ function renderRoutineView() {
     empty.textContent = "No activities yet. Add one to start building this routine.";
     activityList.appendChild(empty);
   } else {
-    routine.activities.forEach((activity, index) => {
+    routine.activities.forEach((activity) => {
       const item = document.createElement("div");
       item.className = "activity-item";
+      item.dataset.activityId = activity.id;
 
       const main = document.createElement("div");
       main.className = "activity-main";
@@ -435,7 +495,6 @@ function renderRoutineView() {
       upBtn.type = "button";
       upBtn.className = "small-btn";
       upBtn.textContent = "↑";
-      upBtn.disabled = index === 0;
       upBtn.title = "Move up";
       upBtn.addEventListener("click", () => moveActivity(routine.id, activity.id, -1));
 
@@ -443,7 +502,6 @@ function renderRoutineView() {
       downBtn.type = "button";
       downBtn.className = "small-btn";
       downBtn.textContent = "↓";
-      downBtn.disabled = index === routine.activities.length - 1;
       downBtn.title = "Move down";
       downBtn.addEventListener("click", () => moveActivity(routine.id, activity.id, 1));
 
