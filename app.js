@@ -202,7 +202,7 @@ function setView(view, routineId = null) {
     pageTitleEl.onclick = () => renameRoutine(routineId);
     pageTitleEl.title = "Click to rename";
     backButton.classList.remove("hidden");
-    menuButton.classList.add("hidden");
+    menuButton.classList.remove("hidden");
     addButton.classList.add("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add activity");
