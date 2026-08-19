@@ -1,4 +1,5 @@
 const STORAGE_KEY = "habitizer-routines-v1";
+const SETTINGS_KEY = "habitizer-settings-v1";
 
 const state = {
   routines: [],
@@ -14,17 +15,26 @@ const state = {
   },
 };
 
+const settings = {
+  cumulativeMode: true,
+};
+
 let liveTimerIntervalId = null;
 
 const appEl = document.getElementById("app");
 const pageTitleEl = document.getElementById("pageTitle");
 const addButton = document.getElementById("addButton");
 const backButton = document.getElementById("backButton");
+const menuButton = document.getElementById("menuButton");
 const modalOverlay = document.getElementById("nameModal");
 const modalTitle = document.getElementById("modalTitle");
 const modalInput = document.getElementById("modalInput");
 const modalConfirm = document.getElementById("modalConfirm");
 const modalCancel = document.getElementById("modalCancel");
+const settingsModal = document.getElementById("settingsModal");
+const settingsClose = document.getElementById("settingsClose");
+const cumulativeToggle = document.getElementById("cumulativeToggle");
+let settingsButton = null;
 
 const modalState = {
   mode: null,
@@ -62,6 +72,18 @@ function saveRoutines() {
 function loadRoutines() {
   const stored = localStorage.getItem(STORAGE_KEY);
   state.routines = stored ? JSON.parse(stored) : [];
+}
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function loadSettings() {
+  const stored = localStorage.getItem(SETTINGS_KEY);
+  if (stored) {
+    Object.assign(settings, JSON.parse(stored));
+  }
+  cumulativeToggle.checked = settings.cumulativeMode;
 }
 
 function seedData() {
@@ -144,6 +166,19 @@ function getActivityElapsedMs(activity) {
   return total;
 }
 
+function openSettings() {
+  cumulativeToggle.checked = settings.cumulativeMode;
+  settingsModal.classList.remove("hidden");
+  settingsModal.setAttribute("aria-hidden", "false");
+}
+
+function closeSettings() {
+  settingsModal.classList.add("hidden");
+  settingsModal.setAttribute("aria-hidden", "true");
+  settings.cumulativeMode = cumulativeToggle.checked;
+  saveSettings();
+}
+
 function setView(view, routineId = null) {
   state.currentView = view;
   state.currentRoutineId = routineId;
@@ -155,7 +190,9 @@ function setView(view, routineId = null) {
   if (view === "home") {
     pageTitleEl.textContent = "Habitizer";
     backButton.classList.add("hidden");
-    addButton.classList.remove("hidden");
+    menuButton.classList.remove("hidden");
+    // The routine creation control lives below the list on the home screen.
+    addButton.classList.add("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add routine");
   } else if (view === "routine") {
@@ -165,12 +202,14 @@ function setView(view, routineId = null) {
     pageTitleEl.onclick = () => renameRoutine(routineId);
     pageTitleEl.title = "Click to rename";
     backButton.classList.remove("hidden");
-    addButton.classList.remove("hidden");
+    menuButton.classList.add("hidden");
+    addButton.classList.add("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add activity");
   } else if (view === "timer") {
     pageTitleEl.textContent = "Live Routine";
     backButton.classList.add("hidden");
+    menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
   }
 
@@ -269,6 +308,16 @@ function addActivity(routineId) {
 
   saveRoutines();
   render();
+}
+
+function openAddActivityModal(routineId) {
+  openNameModal({
+    title: "New activity",
+    placeholder: "Stretch",
+    confirmLabel: "Add",
+    mode: "activity",
+    routineId,
+  });
 }
 
 function renameActivity(routineId, activityId) {
@@ -380,9 +429,8 @@ function renderHomeView() {
   if (state.routines.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "No routines yet. Tap + to make your first one.";
+    empty.textContent = "No routines yet. Create your first one below.";
     list.appendChild(empty);
-    return list;
   }
 
   state.routines.forEach((routine) => {
@@ -430,6 +478,14 @@ function renderHomeView() {
     item.append(info, actions);
     list.appendChild(item);
   });
+
+  const addRoutineButton = document.createElement("button");
+  addRoutineButton.type = "button";
+  addRoutineButton.className = "primary-btn home-add-button";
+  addRoutineButton.textContent = "Add routine";
+  addRoutineButton.setAttribute("aria-label", "Add routine");
+  addRoutineButton.addEventListener("click", addRoutine);
+  list.appendChild(addRoutineButton);
 
   return list;
 }
@@ -521,6 +577,12 @@ function renderRoutineView() {
   const actionRow = document.createElement("div");
   actionRow.className = "timer-controls";
 
+  const addActivityButton = document.createElement("button");
+  addActivityButton.type = "button";
+  addActivityButton.className = "primary-btn bottom-add-button";
+  addActivityButton.textContent = "Add activity";
+  addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
+
   const startBtn = document.createElement("button");
   startBtn.type = "button";
   startBtn.className = "primary-btn";
@@ -529,7 +591,7 @@ function renderRoutineView() {
   startBtn.addEventListener("click", () => startRoutine(routine.id));
 
   actionRow.appendChild(startBtn);
-  wrapper.append(header, infoRow, activityList, actionRow);
+  wrapper.append(header, infoRow, activityList, addActivityButton, actionRow);
   return wrapper;
 }
 
@@ -689,6 +751,13 @@ function endRoutine() {
     .map((activity) => `${activity.name}: ${formatDuration(Number(activity.timeSpentMs || 0))}`)
     .join("\n");
 
+  // In per-session mode, reset times after showing the summary
+  if (!settings.cumulativeMode) {
+    routine.activities.forEach((activity) => {
+      activity.timeSpentMs = 0;
+    });
+  }
+
   state.timer = {
     routineId: null,
     isRunning: false,
@@ -812,15 +881,13 @@ addButton.addEventListener("click", () => {
   if (state.currentView === "home") {
     addRoutine();
   } else if (state.currentView === "routine") {
-    openNameModal({
-      title: "New activity",
-      placeholder: "Stretch",
-      confirmLabel: "Add",
-      mode: "activity",
-      routineId: state.currentRoutineId,
-    });
+    openAddActivityModal(state.currentRoutineId);
   }
 });
+
+menuButton.addEventListener("click", openSettings);
+
+menuButton.addEventListener("click", openSettings);
 
 modalConfirm.addEventListener("click", () => {
   if (modalState.mode === "routine") {
@@ -907,8 +974,22 @@ modalOverlay.addEventListener("click", (event) => {
   }
 });
 
+settingsClose.addEventListener("click", closeSettings);
+
+settingsModal.addEventListener("click", (event) => {
+  if (event.target === settingsModal) {
+    closeSettings();
+  }
+});
+
+cumulativeToggle.addEventListener("change", () => {
+  settings.cumulativeMode = cumulativeToggle.checked;
+  saveSettings();
+});
+
 function init() {
   loadRoutines();
+  loadSettings();
   seedData();
   setView("home");
 }

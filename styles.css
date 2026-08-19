@@ -36,6 +36,7 @@ button {
 
 .app-shell {
   width: min(100%, 430px);
+  margin-inline: auto;
   min-height: 820px;
   background: rgba(255,255,255,0.72);
   border: 1px solid rgba(255,255,255,0.7);
@@ -57,6 +58,25 @@ button {
   background: rgba(245,247,244,0.9);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(6px);
+}
+
+/* Keep the optional back/menu control in the left slot.  Both controls can
+   exist in the header, but only one is visible at a time. */
+.topbar > #backButton,
+.topbar > #menuButton {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.topbar > h1 {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.topbar > #addButton {
+  grid-column: 3;
+  grid-row: 1;
 }
 
 .topbar h1 {
@@ -84,6 +104,18 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.home-add-button,
+.bottom-add-button {
+  align-self: center;
+  margin-top: 12px;
+  min-width: 148px;
+}
+
+.bottom-add-button {
+  display: block;
+  margin-inline: auto;
 }
 
 .routine-item {
@@ -325,6 +357,38 @@ button {
 .modal-actions .primary-btn,
 .modal-actions .secondary-btn {
   flex: 1;
+}
+
+.settings-content {
+  margin: 14px 0 18px;
+}
+
+.settings-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.settings-label span {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-desc {
+  margin: 4px 0 0 32px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .live-timer {
