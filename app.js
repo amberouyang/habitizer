@@ -191,7 +191,8 @@ function setView(view, routineId = null) {
     pageTitleEl.textContent = "Habitizer";
     backButton.classList.add("hidden");
     menuButton.classList.remove("hidden");
-    addButton.classList.remove("hidden");
+    // The routine creation control lives below the list on the home screen.
+    addButton.classList.add("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add routine");
   } else if (view === "routine") {
@@ -202,7 +203,7 @@ function setView(view, routineId = null) {
     pageTitleEl.title = "Click to rename";
     backButton.classList.remove("hidden");
     menuButton.classList.add("hidden");
-    addButton.classList.remove("hidden");
+    addButton.classList.add("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add activity");
   } else if (view === "timer") {
@@ -307,6 +308,16 @@ function addActivity(routineId) {
 
   saveRoutines();
   render();
+}
+
+function openAddActivityModal(routineId) {
+  openNameModal({
+    title: "New activity",
+    placeholder: "Stretch",
+    confirmLabel: "Add",
+    mode: "activity",
+    routineId,
+  });
 }
 
 function renameActivity(routineId, activityId) {
@@ -418,9 +429,8 @@ function renderHomeView() {
   if (state.routines.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "No routines yet. Tap + to make your first one.";
+    empty.textContent = "No routines yet. Create your first one below.";
     list.appendChild(empty);
-    return list;
   }
 
   state.routines.forEach((routine) => {
@@ -468,6 +478,14 @@ function renderHomeView() {
     item.append(info, actions);
     list.appendChild(item);
   });
+
+  const addRoutineButton = document.createElement("button");
+  addRoutineButton.type = "button";
+  addRoutineButton.className = "primary-btn home-add-button";
+  addRoutineButton.textContent = "Add routine";
+  addRoutineButton.setAttribute("aria-label", "Add routine");
+  addRoutineButton.addEventListener("click", addRoutine);
+  list.appendChild(addRoutineButton);
 
   return list;
 }
@@ -559,6 +577,12 @@ function renderRoutineView() {
   const actionRow = document.createElement("div");
   actionRow.className = "timer-controls";
 
+  const addActivityButton = document.createElement("button");
+  addActivityButton.type = "button";
+  addActivityButton.className = "primary-btn bottom-add-button";
+  addActivityButton.textContent = "Add activity";
+  addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
+
   const startBtn = document.createElement("button");
   startBtn.type = "button";
   startBtn.className = "primary-btn";
@@ -567,7 +591,7 @@ function renderRoutineView() {
   startBtn.addEventListener("click", () => startRoutine(routine.id));
 
   actionRow.appendChild(startBtn);
-  wrapper.append(header, infoRow, activityList, actionRow);
+  wrapper.append(header, infoRow, activityList, addActivityButton, actionRow);
   return wrapper;
 }
 
@@ -857,13 +881,7 @@ addButton.addEventListener("click", () => {
   if (state.currentView === "home") {
     addRoutine();
   } else if (state.currentView === "routine") {
-    openNameModal({
-      title: "New activity",
-      placeholder: "Stretch",
-      confirmLabel: "Add",
-      mode: "activity",
-      routineId: state.currentRoutineId,
-    });
+    openAddActivityModal(state.currentRoutineId);
   }
 });
 

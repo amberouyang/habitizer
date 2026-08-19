@@ -106,6 +106,18 @@ button {
   gap: 12px;
 }
 
+.home-add-button,
+.bottom-add-button {
+  align-self: center;
+  margin-top: 12px;
+  min-width: 148px;
+}
+
+.bottom-add-button {
+  display: block;
+  margin-inline: auto;
+}
+
 .routine-item {
   display: flex;
   align-items: center;
