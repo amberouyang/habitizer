@@ -68,6 +68,11 @@ button {
   grid-row: 1;
 }
 
+/* On the routines screen, settings replaces the former add-button slot. */
+.topbar > #menuButton {
+  grid-column: 3;
+}
+
 .topbar > h1 {
   grid-column: 2;
   grid-row: 1;
