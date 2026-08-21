@@ -366,12 +366,19 @@ button {
 
 .settings-content {
   margin: 14px 0 18px;
+  font-size: 0.82rem;
+}
+
+/* Give the settings copy more room without changing the other dialogs. */
+#settingsModal .modal-card {
+  width: min(100%, 400px);
 }
 
 .settings-label {
-  display: flex;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: flex-start;
-  gap: 12px;
+  column-gap: 12px;
   cursor: pointer;
   user-select: none;
 }
@@ -385,13 +392,16 @@ button {
 }
 
 .settings-label span {
+  grid-column: 2;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text);
 }
 
 .settings-desc {
-  margin: 4px 0 0 32px;
-  font-size: 0.85rem;
+  grid-column: 2;
+  margin: 4px 0 0;
+  font-size: 0.72rem;
   color: var(--muted);
   line-height: 1.4;
 }
