@@ -28,6 +28,7 @@ const backButton = document.getElementById("backButton");
 const menuButton = document.getElementById("menuButton");
 const modalOverlay = document.getElementById("nameModal");
 const modalTitle = document.getElementById("modalTitle");
+const modalLabel = document.getElementById("modalLabel");
 const modalInput = document.getElementById("modalInput");
 const modalConfirm = document.getElementById("modalConfirm");
 const modalCancel = document.getElementById("modalCancel");
@@ -42,24 +43,51 @@ const modalState = {
   activityId: null,
 };
 
-function openNameModal({ title, placeholder, confirmLabel, mode, routineId = null, activityId = null, initialValue = "" }) {
+function openNameModal({
+  title,
+  placeholder,
+  confirmLabel,
+  mode,
+  routineId = null,
+  activityId = null,
+  initialValue = "",
+  label = "Name",
+  inputType = "text",
+}) {
   modalState.mode = mode;
   modalState.routineId = routineId;
   modalState.activityId = activityId;
 
   modalTitle.textContent = title;
+  modalLabel.textContent = label;
   modalInput.placeholder = placeholder;
   modalInput.value = initialValue;
+  modalInput.type = inputType;
+  modalInput.maxLength = inputType === "text" ? 40 : 524288;
+
+  if (inputType === "number") {
+    modalInput.min = "0";
+    modalInput.step = "1";
+  } else {
+    modalInput.removeAttribute("min");
+    modalInput.removeAttribute("step");
+  }
+
   modalConfirm.textContent = confirmLabel;
   modalOverlay.classList.remove("hidden");
   modalOverlay.setAttribute("aria-hidden", "false");
   modalInput.focus();
+  modalInput.select();
 }
 
 function closeNameModal() {
   modalOverlay.classList.add("hidden");
   modalOverlay.setAttribute("aria-hidden", "true");
   modalInput.value = "";
+  modalInput.type = "text";
+  modalInput.maxLength = 40;
+  modalInput.removeAttribute("min");
+  modalInput.removeAttribute("step");
   modalState.mode = null;
   modalState.routineId = null;
   modalState.activityId = null;
@@ -282,17 +310,32 @@ function editRoutineTime(routineId) {
   const routine = getRoutineById(routineId);
   if (!routine) return;
 
-  const value = window.prompt("Estimated routine time (minutes):", routine.estimatedMinutes || 0);
-  if (value === null) return;
+  openNameModal({
+    title: "Estimated time",
+    label: "Minutes",
+    placeholder: "15",
+    confirmLabel: "Save",
+    mode: "time",
+    routineId,
+    initialValue: String(routine.estimatedMinutes ?? 0),
+    inputType: "number",
+  });
+}
 
-  const minutes = Number(value);
+function submitRoutineTime() {
+  const routine = getRoutineById(modalState.routineId);
+  if (!routine) return;
+
+  const minutes = Number(modalInput.value);
   if (!Number.isFinite(minutes) || minutes < 0) {
-    window.alert("Please enter a valid number of minutes.");
+    modalInput.focus();
+    modalInput.select();
     return;
   }
 
   routine.estimatedMinutes = minutes;
   saveRoutines();
+  closeNameModal();
   render();
 }
 
@@ -529,9 +572,12 @@ function renderRoutineView() {
 
   header.append(title, metaButton);
 
-  const infoRow = document.createElement("div");
-  infoRow.className = "summary-row";
+  const infoRow = document.createElement("button");
+  infoRow.type = "button";
+  infoRow.className = "summary-row summary-row-button";
+  infoRow.title = "Edit estimated time";
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
+  infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
   const activityList = document.createElement("div");
   activityList.className = "activity-list";
@@ -950,6 +996,11 @@ menuButton.addEventListener("click", openSettings);
 modalConfirm.addEventListener("click", () => {
   if (modalState.mode === "routine") {
     submitRoutineCreation();
+    return;
+  }
+
+  if (modalState.mode === "time") {
+    submitRoutineTime();
     return;
   }
 

@@ -535,6 +535,30 @@ button {
   border-bottom: 1px solid var(--border);
 }
 
+.summary-row-button {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.summary-row-button:hover {
+  border-color: rgba(47, 111, 82, 0.28);
+  background: var(--accent);
+}
+
+.summary-row-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .summary-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
