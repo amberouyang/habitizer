@@ -144,6 +144,21 @@ function getRoutineTotalDurationMs(routine) {
   return Number(routine.estimatedMinutes || 0) * 60 * 1000;
 }
 
+function getRoutineProgress(routine) {
+  const estimateMs = getRoutineTotalDurationMs(routine);
+  const elapsedMs = getTotalElapsedMs();
+
+  if (estimateMs <= 0) {
+    return { hasEstimate: false, percent: 0, isOver: false };
+  }
+
+  return {
+    hasEstimate: true,
+    percent: Math.min(100, (elapsedMs / estimateMs) * 100),
+    isOver: elapsedMs > estimateMs,
+  };
+}
+
 function getTotalElapsedMs() {
   if (!state.timer.routineId) return 0;
 
@@ -604,6 +619,20 @@ function updateTimerDisplay() {
     totalTimeEl.textContent = formatDuration(getTotalElapsedMs());
   }
 
+  const progressFill = document.querySelector(".routine-progress-fill");
+  const progressLabel = document.querySelector(".routine-progress-label");
+  if (progressFill && progressLabel) {
+    const { percent, isOver } = getRoutineProgress(routine);
+    progressFill.style.width = `${percent}%`;
+    progressFill.classList.toggle("over", isOver);
+    progressLabel.textContent = `${formatDuration(getTotalElapsedMs())} / ${formatDurationLabel(getRoutineTotalDurationMs(routine))}`;
+
+    const progressTrack = document.querySelector(".routine-progress-track");
+    if (progressTrack) {
+      progressTrack.setAttribute("aria-valuenow", String(Math.round(percent)));
+    }
+  }
+
   routine.activities.forEach((activity) => {
     const checkbox = document.querySelector(`input[type="checkbox"][data-activity-id="${activity.id}"]`);
     const timeEl = document.querySelector(`.progress-time[data-activity-id="${activity.id}"]`);
@@ -795,6 +824,35 @@ function renderTimerView() {
   totalTimeEl.className = "total-time";
   totalTimeEl.textContent = formatDuration(getTotalElapsedMs());
 
+  const timerCardChildren = [totalTimeEl];
+
+  const { hasEstimate } = getRoutineProgress(routine);
+  if (hasEstimate) {
+    const progressSection = document.createElement("div");
+    progressSection.className = "routine-progress";
+
+    const progressLabel = document.createElement("div");
+    progressLabel.className = "routine-progress-label";
+    progressLabel.textContent = `${formatDuration(getTotalElapsedMs())} / ${formatDurationLabel(getRoutineTotalDurationMs(routine))}`;
+
+    const progressTrack = document.createElement("div");
+    progressTrack.className = "routine-progress-track";
+    progressTrack.setAttribute("role", "progressbar");
+    progressTrack.setAttribute("aria-valuemin", "0");
+    progressTrack.setAttribute("aria-valuemax", "100");
+
+    const progressFill = document.createElement("div");
+    progressFill.className = "routine-progress-fill";
+    const { percent, isOver } = getRoutineProgress(routine);
+    progressFill.style.width = `${percent}%`;
+    progressFill.classList.toggle("over", isOver);
+    progressTrack.setAttribute("aria-valuenow", String(Math.round(percent)));
+
+    progressTrack.appendChild(progressFill);
+    progressSection.append(progressLabel, progressTrack);
+    timerCardChildren.push(progressSection);
+  }
+
   const progressList = document.createElement("div");
   progressList.className = "activity-progress";
 
@@ -823,7 +881,7 @@ function renderTimerView() {
     progressList.appendChild(item);
   });
 
-  timerCard.append(totalTimeEl, progressList);
+  timerCard.append(...timerCardChildren, progressList);
 
   const controls = document.createElement("div");
   controls.className = "timer-controls";

@@ -428,6 +428,36 @@ button {
   margin-bottom: 12px;
 }
 
+.routine-progress {
+  margin-bottom: 16px;
+}
+
+.routine-progress-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.routine-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--panel-alt);
+  overflow: hidden;
+}
+
+.routine-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  width: 0%;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.routine-progress-fill.over {
+  background: #c9893f;
+}
+
 .activity-progress {
   display: flex;
   flex-direction: column;
