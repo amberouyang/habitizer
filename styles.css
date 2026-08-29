@@ -28,6 +28,8 @@
   --empty-state-border: rgba(47, 111, 82, 0.25);
   --hover-border: rgba(47, 111, 82, 0.2);
   --hover-border-strong: rgba(47, 111, 82, 0.28);
+  --toggle-off: #d5e0da;
+  --toggle-knob: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -60,6 +62,8 @@
   --empty-state-border: rgba(93, 170, 130, 0.25);
   --hover-border: rgba(93, 170, 130, 0.3);
   --hover-border-strong: rgba(93, 170, 130, 0.4);
+  --toggle-off: #3a4a42;
+  --toggle-knob: #e8f0ec;
 }
 
 * {
@@ -425,40 +429,80 @@ button {
   width: min(100%, 400px);
 }
 
-.settings-label {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  align-items: flex-start;
-  column-gap: 12px;
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   cursor: pointer;
   user-select: none;
 }
 
-.settings-label + .settings-label {
-  margin-top: 16px;
+.settings-row + .settings-row {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
 }
 
-.settings-label input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
-  cursor: pointer;
-  accent-color: var(--primary);
+.settings-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
-.settings-label span {
-  grid-column: 2;
-  font-size: 0.82rem;
+.settings-title {
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
 }
 
 .settings-desc {
-  grid-column: 2;
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 0.72rem;
   color: var(--muted);
   line-height: 1.4;
+}
+
+.toggle-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 50px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--toggle-off);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.toggle-input::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease;
+}
+
+.toggle-input:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.toggle-input:checked::before {
+  transform: translateX(20px);
+}
+
+.toggle-input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .live-timer {

@@ -42,15 +42,19 @@
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
         <h2 id="settingsTitle">Settings</h2>
         <div class="settings-content">
-          <label class="settings-label">
-            <input id="darkModeToggle" type="checkbox" />
-            <span>Dark mode</span>
-            <p class="settings-desc">Use a darker theme that's easier on the eyes at night.</p>
+          <label class="settings-row" for="darkModeToggle">
+            <span class="settings-copy">
+              <span class="settings-title">Dark mode</span>
+              <p class="settings-desc">Use a darker theme that's easier on the eyes at night.</p>
+            </span>
+            <input id="darkModeToggle" class="toggle-input" type="checkbox" role="switch" aria-label="Dark mode" />
           </label>
-          <label class="settings-label">
-            <input id="cumulativeToggle" type="checkbox" />
-            <span>Cumulative Habit Tracker</span>
-            <p class="settings-desc">Times accumulate across multiple runs. Uncheck for per-session mode.</p>
+          <label class="settings-row" for="cumulativeToggle">
+            <span class="settings-copy">
+              <span class="settings-title">Cumulative Habit Tracker</span>
+              <p class="settings-desc">Times accumulate across multiple runs. Turn off for per-session mode.</p>
+            </span>
+            <input id="cumulativeToggle" class="toggle-input" type="checkbox" role="switch" aria-label="Cumulative habit tracker" />
           </label>
         </div>
         <div class="modal-actions">
