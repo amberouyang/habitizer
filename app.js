@@ -420,6 +420,40 @@ function deleteRoutine(routineId) {
   setView("home");
 }
 
+function getDuplicateRoutineName(name) {
+  const baseName = name.replace(/ \(copy(?: \d+)?\)$/, "");
+  let candidate = `${baseName} (copy)`;
+  let counter = 2;
+
+  while (state.routines.some((routine) => routine.name === candidate)) {
+    candidate = `${baseName} (copy ${counter})`;
+    counter += 1;
+  }
+
+  return candidate;
+}
+
+function duplicateRoutine(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const duplicate = {
+    id: crypto.randomUUID(),
+    name: getDuplicateRoutineName(routine.name),
+    estimatedMinutes: Number(routine.estimatedMinutes || 0),
+    activities: routine.activities.map((activity) => ({
+      id: crypto.randomUUID(),
+      name: activity.name,
+      timeSpentMs: 0,
+    })),
+  };
+
+  const sourceIndex = state.routines.findIndex((item) => item.id === routineId);
+  state.routines.splice(sourceIndex + 1, 0, duplicate);
+  saveRoutines();
+  setView("routine", duplicate.id);
+}
+
 function addActivity(routineId) {
   const routine = getRoutineById(routineId);
   if (!routine) return;
@@ -650,6 +684,16 @@ function renderHomeView() {
     const actions = document.createElement("div");
     actions.className = "item-actions";
 
+    const duplicateBtn = document.createElement("button");
+    duplicateBtn.type = "button";
+    duplicateBtn.className = "small-btn";
+    duplicateBtn.textContent = "⎘";
+    duplicateBtn.title = "Duplicate routine";
+    duplicateBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      duplicateRoutine(routine.id);
+    });
+
     const renameBtn = document.createElement("button");
     renameBtn.type = "button";
     renameBtn.className = "small-btn";
@@ -671,7 +715,7 @@ function renderHomeView() {
     });
 
     info.append(name, meta);
-    actions.append(renameBtn, deleteBtn);
+    actions.append(duplicateBtn, renameBtn, deleteBtn);
     item.append(info, actions);
     list.appendChild(item);
   });
@@ -702,6 +746,16 @@ function renderRoutineView() {
   const title = document.createElement("h2");
   title.textContent = "Activities";
 
+  const headerActions = document.createElement("div");
+  headerActions.className = "section-header-actions";
+
+  const duplicateButton = document.createElement("button");
+  duplicateButton.type = "button";
+  duplicateButton.className = "small-btn";
+  duplicateButton.textContent = "⎘";
+  duplicateButton.title = "Duplicate routine";
+  duplicateButton.addEventListener("click", () => duplicateRoutine(routine.id));
+
   const metaButton = document.createElement("button");
   metaButton.type = "button";
   metaButton.className = "small-btn";
@@ -709,7 +763,8 @@ function renderRoutineView() {
   metaButton.title = "Edit time estimate";
   metaButton.addEventListener("click", () => editRoutineTime(routine.id));
 
-  header.append(title, metaButton);
+  headerActions.append(duplicateButton, metaButton);
+  header.append(title, headerActions);
 
   const infoRow = document.createElement("button");
   infoRow.type = "button";

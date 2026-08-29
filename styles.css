@@ -278,6 +278,12 @@ button {
   letter-spacing: 0.08em;
 }
 
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .activity-list {
   display: flex;
   flex-direction: column;
