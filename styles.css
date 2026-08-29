@@ -165,16 +165,10 @@ button {
   gap: 12px;
 }
 
-.home-add-button,
-.bottom-add-button {
+.home-add-button {
   align-self: center;
   margin-top: 12px;
   min-width: 148px;
-}
-
-.bottom-add-button {
-  display: block;
-  margin-inline: auto;
 }
 
 .routine-item {
@@ -671,6 +665,24 @@ button {
   font-variant-numeric: tabular-nums;
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.routine-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+  align-items: center;
+}
+
+.routine-actions .primary-btn {
+  width: min(100%, 220px);
+}
+
+.add-activity-btn {
+  width: min(100%, 180px);
+  padding: 10px 16px;
+  font-weight: 600;
 }
 
 .timer-controls {

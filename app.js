@@ -824,13 +824,7 @@ function renderRoutineView() {
   }
 
   const actionRow = document.createElement("div");
-  actionRow.className = "timer-controls";
-
-  const addActivityButton = document.createElement("button");
-  addActivityButton.type = "button";
-  addActivityButton.className = "primary-btn bottom-add-button";
-  addActivityButton.textContent = "Add activity";
-  addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
+  actionRow.className = "routine-actions";
 
   const startBtn = document.createElement("button");
   startBtn.type = "button";
@@ -839,8 +833,14 @@ function renderRoutineView() {
   startBtn.disabled = routine.activities.length === 0;
   startBtn.addEventListener("click", () => startRoutine(routine.id));
 
-  actionRow.appendChild(startBtn);
-  wrapper.append(header, infoRow, activityList, addActivityButton, actionRow);
+  const addActivityButton = document.createElement("button");
+  addActivityButton.type = "button";
+  addActivityButton.className = "secondary-btn add-activity-btn";
+  addActivityButton.textContent = "Add activity";
+  addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
+
+  actionRow.append(startBtn, addActivityButton);
+  wrapper.append(header, infoRow, activityList, actionRow);
   return wrapper;
 }
 
