@@ -434,78 +434,148 @@ function deleteActivity(routineId, activityId) {
   render();
 }
 
-let isAnimatingActivitySwap = false;
 
-function moveActivity(routineId, activityId, direction) {
-  const routine = getRoutineById(routineId);
-  if (!routine || isAnimatingActivitySwap) return;
+const activityDragState = {
+  routineId: null,
+  activityId: null,
+  pointerId: null,
+  item: null,
+  list: null,
+  startY: 0,
+};
 
-  const index = routine.activities.findIndex((item) => item.id === activityId);
-  if (index === -1) return;
+function getActivityItemAtPointer(listEl, pointerY, dragActivityId) {
+  const items = [...listEl.querySelectorAll(".activity-item")];
+  return items.find((item) => {
+    if (item.dataset.activityId === dragActivityId) return false;
+    const rect = item.getBoundingClientRect();
+    return pointerY >= rect.top && pointerY <= rect.bottom;
+  }) || null;
+}
 
-  const targetIndex = index + direction;
-  if (targetIndex < 0 || targetIndex >= routine.activities.length) return;
+function reorderActivities(routine, fromIndex, toIndex) {
+  if (!routine || fromIndex === toIndex) return false;
+  if (fromIndex < 0 || toIndex < 0) return false;
+  if (fromIndex >= routine.activities.length || toIndex >= routine.activities.length) return false;
 
-  const sourceId = routine.activities[index].id;
-  const targetId = routine.activities[targetIndex].id;
-
-  const listEl = document.querySelector(".activity-list");
-  const sourceNode = listEl?.querySelector(`.activity-item[data-activity-id="${sourceId}"]`);
-  const targetNode = listEl?.querySelector(`.activity-item[data-activity-id="${targetId}"]`);
-
-  if (!listEl || !sourceNode || !targetNode) {
-    render();
-    return;
-  }
-
-  isAnimatingActivitySwap = true;
-
-  const sourceBefore = sourceNode.getBoundingClientRect();
-  const targetBefore = targetNode.getBoundingClientRect();
-
-  const [moved] = routine.activities.splice(index, 1);
-  routine.activities.splice(targetIndex, 0, moved);
+  const [moved] = routine.activities.splice(fromIndex, 1);
+  routine.activities.splice(toIndex, 0, moved);
   saveRoutines();
+  return true;
+}
 
-  if (direction === -1) {
-    listEl.insertBefore(sourceNode, targetNode);
-  } else {
-    listEl.insertBefore(sourceNode, targetNode.nextSibling);
+function getActivityDropIndex(listEl, pointerY, dragActivityId) {
+  const items = [...listEl.querySelectorAll(".activity-item")];
+  const fromIndex = items.findIndex((item) => item.dataset.activityId === dragActivityId);
+  if (fromIndex === -1) return fromIndex;
+
+  let insertBeforeIndex = items.length;
+  for (let i = 0; i < items.length; i += 1) {
+    const rect = items[i].getBoundingClientRect();
+    if (pointerY < rect.top + rect.height / 2) {
+      insertBeforeIndex = i;
+      break;
+    }
   }
 
-  requestAnimationFrame(() => {
-    const travelPx = 4;
-    const sourceShift = direction === -1 ? -travelPx : travelPx;
-    const targetShift = direction === -1 ? travelPx : -travelPx;
+  let toIndex = insertBeforeIndex;
+  if (toIndex > fromIndex) {
+    toIndex -= 1;
+  }
 
-    const finalizeSwap = () => {
-      sourceNode.style.transition = "";
-      targetNode.style.transition = "";
-      sourceNode.style.transform = "";
-      targetNode.style.transform = "";
-      sourceNode.style.boxShadow = "";
-      targetNode.style.boxShadow = "";
-      isAnimatingActivitySwap = false;
-    };
+  return toIndex;
+}
 
-    sourceNode.style.transition = "none";
-    targetNode.style.transition = "none";
-    sourceNode.style.transform = `translateY(${sourceShift}px)`;
-    targetNode.style.transform = `translateY(${targetShift}px)`;
-    sourceNode.style.boxShadow = "0 4px 8px rgba(34, 77, 59, 0.02)";
-    targetNode.style.boxShadow = "0 4px 8px rgba(34, 77, 59, 0.02)";
+function clearActivityDragState() {
+  if (activityDragState.item) {
+    activityDragState.item.classList.remove("is-dragging");
+    activityDragState.item.style.transform = "";
+    activityDragState.item.style.zIndex = "";
+    activityDragState.item.style.boxShadow = "";
+  }
 
-    requestAnimationFrame(() => {
-      sourceNode.style.transition = "transform 180ms ease-out, box-shadow 180ms ease";
-      targetNode.style.transition = "transform 180ms ease-out, box-shadow 180ms ease";
-      sourceNode.style.transform = "translateY(0)";
-      targetNode.style.transform = "translateY(0)";
-      sourceNode.style.boxShadow = "0 2px 6px rgba(34, 77, 59, 0.01)";
-      targetNode.style.boxShadow = "0 2px 6px rgba(34, 77, 59, 0.01)";
+  activityDragState.list?.querySelectorAll(".activity-item").forEach((item) => {
+    item.classList.remove("drop-target");
+  });
+
+  activityDragState.routineId = null;
+  activityDragState.activityId = null;
+  activityDragState.pointerId = null;
+  activityDragState.item = null;
+  activityDragState.list = null;
+  activityDragState.startY = 0;
+
+  window.removeEventListener("pointermove", handleActivityPointerMove);
+  window.removeEventListener("pointerup", handleActivityPointerUp);
+  window.removeEventListener("pointercancel", handleActivityPointerUp);
+}
+
+function handleActivityPointerMove(event) {
+  if (event.pointerId !== activityDragState.pointerId || !activityDragState.item) return;
+
+  const deltaY = event.clientY - activityDragState.startY;
+  activityDragState.item.style.transform = `translateY(${deltaY}px)`;
+  activityDragState.item.style.zIndex = "5";
+  activityDragState.item.style.boxShadow = "0 10px 24px var(--card-shadow)";
+
+  const { list, activityId } = activityDragState;
+  list.querySelectorAll(".activity-item").forEach((item) => {
+    item.classList.remove("drop-target");
+  });
+
+  const target = getActivityItemAtPointer(list, event.clientY, activityId);
+  if (target) {
+    target.classList.add("drop-target");
+  }
+}
+
+function handleActivityPointerUp(event) {
+  if (event.pointerId !== activityDragState.pointerId) return;
+
+  const { routineId, activityId, list, item } = activityDragState;
+  const routine = getRoutineById(routineId);
+
+  if (routine && list && item) {
+    const fromIndex = routine.activities.findIndex((activity) => activity.id === activityId);
+    const toIndex = getActivityDropIndex(list, event.clientY, activityId);
+
+    if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+      reorderActivities(routine, fromIndex, toIndex);
+      routine.activities.forEach((activity) => {
+        const node = list.querySelector(`[data-activity-id="${activity.id}"]`);
+        if (node) {
+          list.appendChild(node);
+        }
+      });
+    }
+  }
+
+  clearActivityDragState();
+}
+
+function setupActivityDragAndDrop(listEl, routine) {
+  listEl.querySelectorAll(".drag-handle").forEach((handle) => {
+    handle.addEventListener("pointerdown", (event) => {
+      const item = handle.closest(".activity-item");
+      if (!item) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      activityDragState.routineId = routine.id;
+      activityDragState.activityId = item.dataset.activityId;
+      activityDragState.pointerId = event.pointerId;
+      activityDragState.item = item;
+      activityDragState.list = listEl;
+      activityDragState.startY = event.clientY;
+
+      item.classList.add("is-dragging");
+      handle.setPointerCapture(event.pointerId);
+
+      window.addEventListener("pointermove", handleActivityPointerMove);
+      window.addEventListener("pointerup", handleActivityPointerUp);
+      window.addEventListener("pointercancel", handleActivityPointerUp);
     });
-
-    sourceNode.addEventListener("transitionend", finalizeSwap, { once: true });
-    targetNode.addEventListener("transitionend", finalizeSwap, { once: true });
   });
 }
 
@@ -625,6 +695,12 @@ function renderRoutineView() {
       const main = document.createElement("div");
       main.className = "activity-main";
 
+      const dragHandle = document.createElement("button");
+      dragHandle.type = "button";
+      dragHandle.className = "drag-handle";
+      dragHandle.setAttribute("aria-label", `Drag to reorder ${activity.name}`);
+      dragHandle.title = "Drag to reorder";
+
       const label = document.createElement("button");
       label.type = "button";
       label.className = "activity-name";
@@ -632,24 +708,10 @@ function renderRoutineView() {
       label.title = "Click to rename";
       label.addEventListener("click", () => renameActivity(routine.id, activity.id));
 
-      main.appendChild(label);
+      main.append(dragHandle, label);
 
       const controls = document.createElement("div");
       controls.className = "drag-controls";
-
-      const upBtn = document.createElement("button");
-      upBtn.type = "button";
-      upBtn.className = "small-btn";
-      upBtn.textContent = "↑";
-      upBtn.title = "Move up";
-      upBtn.addEventListener("click", () => moveActivity(routine.id, activity.id, -1));
-
-      const downBtn = document.createElement("button");
-      downBtn.type = "button";
-      downBtn.className = "small-btn";
-      downBtn.textContent = "↓";
-      downBtn.title = "Move down";
-      downBtn.addEventListener("click", () => moveActivity(routine.id, activity.id, 1));
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
@@ -658,10 +720,12 @@ function renderRoutineView() {
       deleteBtn.title = "Delete activity";
       deleteBtn.addEventListener("click", () => deleteActivity(routine.id, activity.id));
 
-      controls.append(upBtn, downBtn, deleteBtn);
+      controls.appendChild(deleteBtn);
       item.append(main, controls);
       activityList.appendChild(item);
     });
+
+    setupActivityDragAndDrop(activityList, routine);
   }
 
   const actionRow = document.createElement("div");
