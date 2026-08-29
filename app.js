@@ -5,6 +5,7 @@ const state = {
   routines: [],
   currentRoutineId: null,
   currentView: "home",
+  lastCompletion: null,
   timer: {
     routineId: null,
     isRunning: false,
@@ -314,6 +315,11 @@ function setView(view, routineId = null) {
     addButton.setAttribute("aria-label", "Add activity");
   } else if (view === "timer") {
     pageTitleEl.textContent = "Live Routine";
+    backButton.classList.add("hidden");
+    menuButton.classList.add("hidden");
+    addButton.classList.add("hidden");
+  } else if (view === "complete") {
+    pageTitleEl.textContent = "Routine complete";
     backButton.classList.add("hidden");
     menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
@@ -969,11 +975,20 @@ function endRoutine() {
   });
 
   const totalMs = getTotalElapsedMs();
-  const summary = routine.activities
-    .map((activity) => `${activity.name}: ${formatDuration(Number(activity.timeSpentMs || 0))}`)
-    .join("\n");
+  const estimatedMs = getRoutineTotalDurationMs(routine);
 
-  // In per-session mode, reset times after showing the summary
+  state.lastCompletion = {
+    routineId: routine.id,
+    routineName: routine.name,
+    totalMs,
+    estimatedMs,
+    activities: routine.activities.map((activity) => ({
+      name: activity.name,
+      timeSpentMs: Number(activity.timeSpentMs || 0),
+    })),
+  };
+
+  // In per-session mode, reset times after capturing the summary
   if (!settings.cumulativeMode) {
     routine.activities.forEach((activity) => {
       activity.timeSpentMs = 0;
@@ -995,9 +1010,89 @@ function endRoutine() {
   }
 
   saveRoutines();
-  setView("home");
+  setView("complete");
+}
 
-  window.alert(`Routine complete!\nTotal time: ${formatDuration(totalMs)}\n${summary}`);
+function getCompletionEstimateMessage(totalMs, estimatedMs) {
+  if (estimatedMs <= 0) return null;
+
+  const diffMs = Math.abs(totalMs - estimatedMs);
+  const diffLabel = formatDurationLabel(diffMs);
+
+  if (totalMs <= estimatedMs) {
+    return totalMs === estimatedMs
+      ? "Right on estimate"
+      : `${diffLabel} under estimate`;
+  }
+
+  return `${diffLabel} over estimate`;
+}
+
+function renderCompletionView() {
+  const data = state.lastCompletion;
+  if (!data) {
+    setView("home");
+    return document.createElement("div");
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "completion-view";
+
+  const card = document.createElement("div");
+  card.className = "summary-card completion-card";
+
+  const headline = document.createElement("p");
+  headline.className = "completion-headline";
+  headline.textContent = data.routineName;
+
+  const totalEl = document.createElement("div");
+  totalEl.className = "completion-total";
+  totalEl.textContent = formatDuration(data.totalMs);
+
+  card.append(headline, totalEl);
+
+  if (data.estimatedMs > 0) {
+    const estimateEl = document.createElement("div");
+    const isUnderOrOn = data.totalMs <= data.estimatedMs;
+    estimateEl.className = `completion-estimate ${isUnderOrOn ? "under" : "over"}`;
+    estimateEl.textContent = `${formatDurationLabel(data.estimatedMs)} estimate · ${getCompletionEstimateMessage(data.totalMs, data.estimatedMs)}`;
+    card.appendChild(estimateEl);
+  }
+
+  const breakdownTitle = document.createElement("div");
+  breakdownTitle.className = "completion-section-title";
+  breakdownTitle.textContent = "Activity breakdown";
+
+  const activityList = document.createElement("div");
+  activityList.className = "summary-list";
+
+  data.activities.forEach((activity) => {
+    const item = document.createElement("div");
+    item.className = "summary-item";
+
+    const name = document.createElement("span");
+    name.textContent = activity.name;
+
+    const time = document.createElement("strong");
+    time.textContent = formatDuration(activity.timeSpentMs);
+
+    item.append(name, time);
+    activityList.appendChild(item);
+  });
+
+  card.append(breakdownTitle, activityList);
+
+  const doneBtn = document.createElement("button");
+  doneBtn.type = "button";
+  doneBtn.className = "primary-btn completion-done-btn";
+  doneBtn.textContent = "Done";
+  doneBtn.addEventListener("click", () => {
+    state.lastCompletion = null;
+    setView("home");
+  });
+
+  wrapper.append(card, doneBtn);
+  return wrapper;
 }
 
 function renderTimerView() {
@@ -1128,6 +1223,11 @@ function render() {
     appEl.innerHTML = "";
     appEl.appendChild(renderTimerView());
     return;
+  }
+
+  if (state.currentView === "complete") {
+    appEl.innerHTML = "";
+    appEl.appendChild(renderCompletionView());
   }
 }
 

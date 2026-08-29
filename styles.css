@@ -760,6 +760,72 @@ button {
   color: var(--muted);
 }
 
+.summary-item strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.completion-view {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.completion-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 0 10px 22px var(--card-shadow);
+}
+
+.completion-headline {
+  margin: 0;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.completion-total {
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+  margin: 4px 0 8px;
+}
+
+.completion-estimate {
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.completion-estimate.under {
+  color: var(--primary);
+}
+
+.completion-estimate.over {
+  color: var(--warning);
+}
+
+.completion-section-title {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.completion-done-btn {
+  width: 100%;
+  padding: 14px 16px;
+}
+
 @media (max-width: 480px) {
   body {
     padding: 0;
