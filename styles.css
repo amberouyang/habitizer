@@ -524,7 +524,19 @@ button {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-align: center;
+  margin-bottom: 6px;
+}
+
+.activity-completion-count {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
   margin-bottom: 12px;
+}
+
+.activity-completion-count.complete {
+  color: var(--primary);
 }
 
 .routine-progress {
@@ -570,6 +582,16 @@ button {
   padding: 12px 10px;
   border-radius: 12px;
   background: var(--panel-alt);
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.progress-item.completed {
+  background: var(--accent);
+}
+
+.progress-item.completed .progress-label {
+  color: var(--muted);
+  text-decoration: line-through;
 }
 
 .progress-item input[type="checkbox"] {

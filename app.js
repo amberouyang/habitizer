@@ -196,6 +196,23 @@ function getRoutineProgress(routine) {
   };
 }
 
+function getActivityCompletionCount(routine) {
+  if (!routine) {
+    return { completed: 0, total: 0 };
+  }
+
+  return {
+    completed: state.timer.completedActivityIds.size,
+    total: routine.activities.length,
+  };
+}
+
+function formatActivityCompletionLabel(routine) {
+  const { completed, total } = getActivityCompletionCount(routine);
+  if (total === 0) return "0 done";
+  return `${completed} of ${total} done`;
+}
+
 function getTotalElapsedMs() {
   if (!state.timer.routineId) return 0;
 
@@ -677,6 +694,13 @@ function updateTimerDisplay() {
     totalTimeEl.textContent = formatDuration(getTotalElapsedMs());
   }
 
+  const completionCountEl = document.querySelector(".activity-completion-count");
+  if (completionCountEl) {
+    const { completed, total } = getActivityCompletionCount(routine);
+    completionCountEl.textContent = formatActivityCompletionLabel(routine);
+    completionCountEl.classList.toggle("complete", total > 0 && completed === total);
+  }
+
   const progressFill = document.querySelector(".routine-progress-fill");
   const progressLabel = document.querySelector(".routine-progress-label");
   if (progressFill && progressLabel) {
@@ -807,11 +831,22 @@ function toggleActivityCompletion(activityId, checked) {
   if (state.currentView === "timer") {
     const checkbox = document.querySelector(`input[type="checkbox"][data-activity-id="${activityId}"]`);
     const timeEl = document.querySelector(`.progress-time[data-activity-id="${activityId}"]`);
+    const progressItem = checkbox?.closest(".progress-item");
     if (checkbox) {
       checkbox.checked = nextChecked;
     }
     if (timeEl) {
       timeEl.textContent = formatDuration(getActivityElapsedMs(activity));
+    }
+    if (progressItem) {
+      progressItem.classList.toggle("completed", nextChecked);
+    }
+
+    const completionCountEl = document.querySelector(".activity-completion-count");
+    if (completionCountEl) {
+      const { completed, total } = getActivityCompletionCount(routine);
+      completionCountEl.textContent = formatActivityCompletionLabel(routine);
+      completionCountEl.classList.toggle("complete", total > 0 && completed === total);
     }
   }
 }
@@ -882,7 +917,13 @@ function renderTimerView() {
   totalTimeEl.className = "total-time";
   totalTimeEl.textContent = formatDuration(getTotalElapsedMs());
 
-  const timerCardChildren = [totalTimeEl];
+  const completionCountEl = document.createElement("div");
+  completionCountEl.className = "activity-completion-count";
+  const { completed, total } = getActivityCompletionCount(routine);
+  completionCountEl.textContent = formatActivityCompletionLabel(routine);
+  completionCountEl.classList.toggle("complete", total > 0 && completed === total);
+
+  const timerCardChildren = [totalTimeEl, completionCountEl];
 
   const { hasEstimate } = getRoutineProgress(routine);
   if (hasEstimate) {
@@ -917,6 +958,9 @@ function renderTimerView() {
   routine.activities.forEach((activity) => {
     const item = document.createElement("label");
     item.className = "progress-item";
+    if (state.timer.completedActivityIds.has(activity.id)) {
+      item.classList.add("completed");
+    }
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
