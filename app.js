@@ -17,6 +17,7 @@ const state = {
 
 const settings = {
   cumulativeMode: true,
+  darkMode: false,
 };
 
 let liveTimerIntervalId = null;
@@ -34,6 +35,7 @@ const modalConfirm = document.getElementById("modalConfirm");
 const modalCancel = document.getElementById("modalCancel");
 const settingsModal = document.getElementById("settingsModal");
 const settingsClose = document.getElementById("settingsClose");
+const darkModeToggle = document.getElementById("darkModeToggle");
 const cumulativeToggle = document.getElementById("cumulativeToggle");
 let settingsButton = null;
 
@@ -106,11 +108,18 @@ function saveSettings() {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
+function applyTheme() {
+  document.documentElement.dataset.theme = settings.darkMode ? "dark" : "light";
+}
+
 function loadSettings() {
   const stored = localStorage.getItem(SETTINGS_KEY);
   if (stored) {
     Object.assign(settings, JSON.parse(stored));
   }
+  settings.darkMode = Boolean(settings.darkMode);
+  applyTheme();
+  darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
 }
 
@@ -210,6 +219,7 @@ function getActivityElapsedMs(activity) {
 }
 
 function openSettings() {
+  darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
   settingsModal.classList.remove("hidden");
   settingsModal.setAttribute("aria-hidden", "false");
@@ -218,7 +228,9 @@ function openSettings() {
 function closeSettings() {
   settingsModal.classList.add("hidden");
   settingsModal.setAttribute("aria-hidden", "true");
+  settings.darkMode = darkModeToggle.checked;
   settings.cumulativeMode = cumulativeToggle.checked;
+  applyTheme();
   saveSettings();
 }
 
@@ -1089,6 +1101,12 @@ settingsModal.addEventListener("click", (event) => {
   if (event.target === settingsModal) {
     closeSettings();
   }
+});
+
+darkModeToggle.addEventListener("change", () => {
+  settings.darkMode = darkModeToggle.checked;
+  applyTheme();
+  saveSettings();
 });
 
 cumulativeToggle.addEventListener("change", () => {

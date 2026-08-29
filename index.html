@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Habitizer</title>
+    <script>
+      try {
+        const stored = localStorage.getItem("habitizer-settings-v1");
+        if (stored && JSON.parse(stored).darkMode) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -34,6 +42,11 @@
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
         <h2 id="settingsTitle">Settings</h2>
         <div class="settings-content">
+          <label class="settings-label">
+            <input id="darkModeToggle" type="checkbox" />
+            <span>Dark mode</span>
+            <p class="settings-desc">Use a darker theme that's easier on the eyes at night.</p>
+          </label>
           <label class="settings-label">
             <input id="cumulativeToggle" type="checkbox" />
             <span>Cumulative Habit Tracker</span>
