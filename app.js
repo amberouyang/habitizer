@@ -37,6 +37,12 @@ const settingsModal = document.getElementById("settingsModal");
 const settingsClose = document.getElementById("settingsClose");
 const darkModeToggle = document.getElementById("darkModeToggle");
 const cumulativeToggle = document.getElementById("cumulativeToggle");
+const confirmModal = document.getElementById("confirmModal");
+const confirmTitle = document.getElementById("confirmTitle");
+const confirmMessage = document.getElementById("confirmMessage");
+const confirmCancel = document.getElementById("confirmCancel");
+const confirmAction = document.getElementById("confirmAction");
+let confirmCallback = null;
 let settingsButton = null;
 
 const modalState = {
@@ -249,6 +255,34 @@ function closeSettings() {
   settings.cumulativeMode = cumulativeToggle.checked;
   applyTheme();
   saveSettings();
+}
+
+function openConfirmModal({ title, message, confirmLabel, onConfirm }) {
+  confirmTitle.textContent = title;
+  confirmMessage.textContent = message;
+  confirmAction.textContent = confirmLabel;
+  confirmCallback = onConfirm;
+  confirmModal.classList.remove("hidden");
+  confirmModal.setAttribute("aria-hidden", "false");
+  confirmCancel.focus();
+}
+
+function closeConfirmModal() {
+  confirmModal.classList.add("hidden");
+  confirmModal.setAttribute("aria-hidden", "true");
+  confirmCallback = null;
+}
+
+function requestEndRoutine() {
+  const routine = getRoutineById(state.timer.routineId);
+  if (!routine) return;
+
+  openConfirmModal({
+    title: "End routine?",
+    message: `Stop "${routine.name}"? Your progress will be saved, but the timer will end.`,
+    confirmLabel: "End routine",
+    onConfirm: endRoutine,
+  });
 }
 
 function setView(view, routineId = null) {
@@ -916,6 +950,8 @@ function toggleActivityCompletion(activityId, checked) {
 }
 
 function endRoutine() {
+  closeConfirmModal();
+
   const routine = getRoutineById(state.timer.routineId);
   if (!routine) return;
 
@@ -1068,7 +1104,7 @@ function renderTimerView() {
   endBtn.type = "button";
   endBtn.className = "danger-btn";
   endBtn.textContent = "End Routine";
-  endBtn.addEventListener("click", endRoutine);
+  endBtn.addEventListener("click", requestEndRoutine);
 
   controls.append(pauseResumeBtn, endBtn);
   wrapper.append(timerCard, controls);
@@ -1208,6 +1244,26 @@ settingsClose.addEventListener("click", closeSettings);
 settingsModal.addEventListener("click", (event) => {
   if (event.target === settingsModal) {
     closeSettings();
+  }
+});
+
+confirmCancel.addEventListener("click", closeConfirmModal);
+
+confirmAction.addEventListener("click", () => {
+  if (confirmCallback) {
+    confirmCallback();
+  }
+});
+
+confirmModal.addEventListener("click", (event) => {
+  if (event.target === confirmModal) {
+    closeConfirmModal();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !confirmModal.classList.contains("hidden")) {
+    closeConfirmModal();
   }
 });
 

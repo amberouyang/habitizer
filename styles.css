@@ -463,8 +463,16 @@ button {
 }
 
 .modal-actions .primary-btn,
-.modal-actions .secondary-btn {
+.modal-actions .secondary-btn,
+.modal-actions .danger-btn {
   flex: 1;
+}
+
+.confirm-message {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .settings-content {
