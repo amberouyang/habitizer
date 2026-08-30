@@ -32,6 +32,8 @@ const modalOverlay = document.getElementById("nameModal");
 const modalTitle = document.getElementById("modalTitle");
 const modalLabel = document.getElementById("modalLabel");
 const modalInput = document.getElementById("modalInput");
+const modalMinutesGroup = document.getElementById("modalMinutesGroup");
+const modalMinutesInput = document.getElementById("modalMinutesInput");
 const modalConfirm = document.getElementById("modalConfirm");
 const modalCancel = document.getElementById("modalCancel");
 const settingsModal = document.getElementById("settingsModal");
@@ -62,6 +64,8 @@ function openNameModal({
   initialValue = "",
   label = "Name",
   inputType = "text",
+  showEstimatedMinutes = false,
+  estimatedMinutesDefault = "10",
 }) {
   modalState.mode = mode;
   modalState.routineId = routineId;
@@ -82,6 +86,14 @@ function openNameModal({
     modalInput.removeAttribute("step");
   }
 
+  if (showEstimatedMinutes) {
+    modalMinutesGroup.classList.remove("hidden");
+    modalMinutesInput.value = estimatedMinutesDefault;
+  } else {
+    modalMinutesGroup.classList.add("hidden");
+    modalMinutesInput.value = "";
+  }
+
   modalConfirm.textContent = confirmLabel;
   modalOverlay.classList.remove("hidden");
   modalOverlay.setAttribute("aria-hidden", "false");
@@ -97,6 +109,8 @@ function closeNameModal() {
   modalInput.maxLength = 40;
   modalInput.removeAttribute("min");
   modalInput.removeAttribute("step");
+  modalMinutesGroup.classList.add("hidden");
+  modalMinutesInput.value = "";
   modalState.mode = null;
   modalState.routineId = null;
   modalState.activityId = null;
@@ -338,7 +352,17 @@ function addRoutine() {
     placeholder: "Morning routine",
     confirmLabel: "Create",
     mode: "routine",
+    showEstimatedMinutes: true,
+    estimatedMinutesDefault: "10",
   });
+}
+
+function parseEstimatedMinutes(value) {
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes < 0) {
+    return null;
+  }
+  return minutes;
 }
 
 function submitRoutineCreation() {
@@ -348,10 +372,17 @@ function submitRoutineCreation() {
     return;
   }
 
+  const estimatedMinutes = parseEstimatedMinutes(modalMinutesInput.value);
+  if (estimatedMinutes === null) {
+    modalMinutesInput.focus();
+    modalMinutesInput.select();
+    return;
+  }
+
   const newRoutine = {
     id: crypto.randomUUID(),
     name,
-    estimatedMinutes: 10,
+    estimatedMinutes,
     activities: [],
   };
 
@@ -395,14 +426,14 @@ function submitRoutineTime() {
   const routine = getRoutineById(modalState.routineId);
   if (!routine) return;
 
-  const minutes = Number(modalInput.value);
-  if (!Number.isFinite(minutes) || minutes < 0) {
+  const estimatedMinutes = parseEstimatedMinutes(modalInput.value);
+  if (estimatedMinutes === null) {
     modalInput.focus();
     modalInput.select();
     return;
   }
 
-  routine.estimatedMinutes = minutes;
+  routine.estimatedMinutes = estimatedMinutes;
   saveRoutines();
   closeNameModal();
   render();
@@ -1378,7 +1409,8 @@ modalConfirm.addEventListener("click", () => {
 });
 
 modalCancel.addEventListener("click", closeNameModal);
-modalInput.addEventListener("keydown", (event) => {
+
+function handleNameModalKeydown(event) {
   if (event.key === "Enter") {
     modalConfirm.click();
   }
@@ -1386,7 +1418,10 @@ modalInput.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeNameModal();
   }
-});
+}
+
+modalInput.addEventListener("keydown", handleNameModalKeydown);
+modalMinutesInput.addEventListener("keydown", handleNameModalKeydown);
 
 modalOverlay.addEventListener("click", (event) => {
   if (event.target === modalOverlay) {

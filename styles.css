@@ -440,7 +440,8 @@ button {
   font-weight: 600;
 }
 
-#modalInput {
+#modalInput,
+.modal-input {
   width: 100%;
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -451,9 +452,18 @@ button {
   color: var(--text);
 }
 
-#modalInput:focus {
+#modalInput:focus,
+.modal-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.modal-field-group {
+  margin-top: 14px;
+}
+
+.modal-field-group.hidden {
+  display: none;
 }
 
 .modal-actions {

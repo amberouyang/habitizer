@@ -30,7 +30,11 @@
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <h2 id="modalTitle">New routine</h2>
         <label id="modalLabel" class="modal-label" for="modalInput">Name</label>
-        <input id="modalInput" type="text" maxlength="40" autocomplete="off" />
+        <input id="modalInput" class="modal-input" type="text" maxlength="40" autocomplete="off" />
+        <div id="modalMinutesGroup" class="modal-field-group hidden">
+          <label id="modalMinutesLabel" class="modal-label" for="modalMinutesInput">Estimated time (minutes)</label>
+          <input id="modalMinutesInput" class="modal-input" type="number" min="0" step="1" placeholder="15" autocomplete="off" />
+        </div>
         <div class="modal-actions">
           <button id="modalCancel" type="button" class="secondary-btn">Cancel</button>
           <button id="modalConfirm" type="button" class="primary-btn">Create</button>
