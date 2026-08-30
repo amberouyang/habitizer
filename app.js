@@ -252,9 +252,42 @@ function getRoutineStreak(routine) {
   return streak;
 }
 
+function getLongestStreakFromDates(completionDates) {
+  const uniqueDates = [...new Set(completionDates)].sort();
+  if (uniqueDates.length === 0) return 0;
+  if (uniqueDates.length === 1) return 1;
+
+  let longest = 1;
+  let current = 1;
+
+  for (let i = 1; i < uniqueDates.length; i += 1) {
+    const previousDate = uniqueDates[i - 1];
+    const expectedPrevious = shiftDateKey(uniqueDates[i], -1);
+
+    if (expectedPrevious === previousDate) {
+      current += 1;
+    } else {
+      current = 1;
+    }
+
+    longest = Math.max(longest, current);
+  }
+
+  return longest;
+}
+
+function getRoutineLongestStreak(routine) {
+  return getLongestStreakFromDates(getRoutineCompletionDates(routine));
+}
+
 function formatStreakLabel(streak) {
   if (streak <= 0) return null;
   return streak === 1 ? "1 day streak" : `${streak} days in a row`;
+}
+
+function formatPersonalBestLabel(longestStreak) {
+  if (longestStreak <= 0) return null;
+  return longestStreak === 1 ? "Personal best: 1 day" : `Personal best: ${longestStreak} days`;
 }
 
 function getRoutineMetaText(routine) {
@@ -1147,9 +1180,12 @@ function endRoutine() {
 
   const totalMs = getTotalElapsedMs();
   const estimatedMs = getRoutineTotalDurationMs(routine);
+  const completionDatesBefore = getRoutineCompletionDates(routine);
 
   recordRoutineCompletion(routine);
   const streak = getRoutineStreak(routine);
+  const longestStreak = getRoutineLongestStreak(routine);
+  const previousLongestStreak = getLongestStreakFromDates(completionDatesBefore);
 
   state.lastCompletion = {
     routineId: routine.id,
@@ -1157,6 +1193,8 @@ function endRoutine() {
     totalMs,
     estimatedMs,
     streak,
+    longestStreak,
+    isNewPersonalBest: longestStreak > previousLongestStreak,
     activities: routine.activities.map((activity) => ({
       name: activity.name,
       timeSpentMs: Number(activity.timeSpentMs || 0),
@@ -1227,10 +1265,27 @@ function renderCompletionView() {
   card.append(headline, totalEl);
 
   if (data.streak > 0) {
+    const streakBlock = document.createElement("div");
+    streakBlock.className = "completion-streak-block";
+
     const streakEl = document.createElement("div");
     streakEl.className = "completion-streak";
     streakEl.textContent = formatStreakLabel(data.streak);
-    card.appendChild(streakEl);
+    streakBlock.appendChild(streakEl);
+
+    if (data.isNewPersonalBest) {
+      const badgeEl = document.createElement("div");
+      badgeEl.className = "completion-streak-badge";
+      badgeEl.textContent = "New personal best!";
+      streakBlock.appendChild(badgeEl);
+    } else if (data.longestStreak > data.streak) {
+      const bestEl = document.createElement("div");
+      bestEl.className = "completion-streak-best";
+      bestEl.textContent = formatPersonalBestLabel(data.longestStreak);
+      streakBlock.appendChild(bestEl);
+    }
+
+    card.appendChild(streakBlock);
   }
 
   if (data.estimatedMs > 0) {

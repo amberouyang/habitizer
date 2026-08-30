@@ -212,6 +212,32 @@ button {
   color: var(--primary);
 }
 
+.completion-streak-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.completion-streak-badge {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary-strong);
+  background: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  align-self: center;
+}
+
+.completion-streak-best {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .streak-row {
   margin: -4px 0 14px;
   padding: 10px 12px;
