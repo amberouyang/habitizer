@@ -268,31 +268,17 @@ button {
   color: var(--muted);
 }
 
-.routine-color-picker {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 14px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 18px var(--card-shadow);
-}
-
-.routine-color-label {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
-.color-swatches {
+.color-modal-swatches {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0 4px;
+}
+
+.color-modal-swatches .color-swatch {
+  width: 36px;
+  height: 36px;
 }
 
 .color-swatch {
@@ -688,6 +674,11 @@ button {
   background: var(--panel-alt);
   color: var(--text);
   font-size: 1.1rem;
+}
+
+.small-btn.color-btn {
+  background: var(--routine-color, var(--primary));
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .delete-btn {

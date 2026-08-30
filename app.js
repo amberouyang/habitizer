@@ -62,6 +62,10 @@ const confirmMessage = document.getElementById("confirmMessage");
 const confirmCancel = document.getElementById("confirmCancel");
 const confirmAction = document.getElementById("confirmAction");
 let confirmCallback = null;
+const colorModal = document.getElementById("colorModal");
+const colorModalSwatches = document.getElementById("colorModalSwatches");
+const colorModalClose = document.getElementById("colorModalClose");
+let colorModalRoutineId = null;
 const undoToast = document.getElementById("undoToast");
 const undoToastMessage = document.getElementById("undoToastMessage");
 const undoToastAction = document.getElementById("undoToastAction");
@@ -246,7 +250,40 @@ function setRoutineColor(routineId, colorId) {
 
   routine.color = colorId;
   saveRoutines();
+  closeColorModal();
   render();
+}
+
+function openColorModal(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  colorModalRoutineId = routineId;
+  colorModalSwatches.innerHTML = "";
+
+  ROUTINE_COLORS.forEach((color) => {
+    const swatch = document.createElement("button");
+    swatch.type = "button";
+    swatch.className = "color-swatch";
+    swatch.style.setProperty("--swatch-color", color.value);
+    swatch.title = color.label;
+    swatch.setAttribute("role", "radio");
+    swatch.setAttribute("aria-label", color.label);
+    swatch.setAttribute("aria-checked", String(getRoutineColor(routine).id === color.id));
+    swatch.addEventListener("click", () => setRoutineColor(routineId, color.id));
+    colorModalSwatches.appendChild(swatch);
+  });
+
+  colorModal.classList.remove("hidden");
+  colorModal.setAttribute("aria-hidden", "false");
+  colorModalSwatches.querySelector('[aria-checked="true"]')?.focus();
+}
+
+function closeColorModal() {
+  colorModal.classList.add("hidden");
+  colorModal.setAttribute("aria-hidden", "true");
+  colorModalRoutineId = null;
+  colorModalSwatches.innerHTML = "";
 }
 
 function formatDuration(ms) {
@@ -1227,7 +1264,15 @@ function renderRoutineView() {
   metaButton.title = "Edit time estimate";
   metaButton.addEventListener("click", () => editRoutineTime(routine.id));
 
-  headerActions.append(duplicateButton, metaButton);
+  const colorButton = document.createElement("button");
+  colorButton.type = "button";
+  colorButton.className = "small-btn color-btn";
+  colorButton.title = "Change color";
+  colorButton.setAttribute("aria-label", "Change routine color");
+  applyRoutineColorStyle(colorButton, routine);
+  colorButton.addEventListener("click", () => openColorModal(routine.id));
+
+  headerActions.append(duplicateButton, colorButton, metaButton);
   header.append(title, headerActions);
 
   const infoRow = document.createElement("button");
@@ -1237,37 +1282,10 @@ function renderRoutineView() {
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
-  const colorPicker = document.createElement("div");
-  colorPicker.className = "routine-color-picker";
-
-  const colorLabel = document.createElement("span");
-  colorLabel.className = "routine-color-label";
-  colorLabel.textContent = "Color";
-
-  const colorSwatches = document.createElement("div");
-  colorSwatches.className = "color-swatches";
-  colorSwatches.setAttribute("role", "radiogroup");
-  colorSwatches.setAttribute("aria-label", "Routine color");
-
-  ROUTINE_COLORS.forEach((color) => {
-    const swatch = document.createElement("button");
-    swatch.type = "button";
-    swatch.className = "color-swatch";
-    swatch.style.setProperty("--swatch-color", color.value);
-    swatch.title = color.label;
-    swatch.setAttribute("role", "radio");
-    swatch.setAttribute("aria-label", color.label);
-    swatch.setAttribute("aria-checked", String(getRoutineColor(routine).id === color.id));
-    swatch.addEventListener("click", () => setRoutineColor(routine.id, color.id));
-    colorSwatches.appendChild(swatch);
-  });
-
-  colorPicker.append(colorLabel, colorSwatches);
-
   const streak = getRoutineStreak(routine);
   const streakLabel = formatStreakLabel(streak);
 
-  wrapper.append(header, infoRow, colorPicker);
+  wrapper.append(header, infoRow);
   if (streakLabel) {
     const streakRow = document.createElement("div");
     streakRow.className = "streak-row";
@@ -1959,9 +1977,24 @@ confirmModal.addEventListener("click", (event) => {
   }
 });
 
+colorModalClose.addEventListener("click", closeColorModal);
+
+colorModal.addEventListener("click", (event) => {
+  if (event.target === colorModal) {
+    closeColorModal();
+  }
+});
+
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !confirmModal.classList.contains("hidden")) {
+  if (event.key !== "Escape") return;
+
+  if (!confirmModal.classList.contains("hidden")) {
     closeConfirmModal();
+    return;
+  }
+
+  if (!colorModal.classList.contains("hidden")) {
+    closeColorModal();
   }
 });
 
