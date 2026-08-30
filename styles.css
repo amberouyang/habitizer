@@ -204,6 +204,26 @@ button {
   color: var(--muted);
 }
 
+.streak-row,
+.completion-streak {
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.streak-row {
+  margin: -4px 0 14px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--accent);
+  border: 1px solid var(--border);
+}
+
+.completion-streak {
+  margin-bottom: 8px;
+}
+
 .item-actions {
   display: flex;
   align-items: center;

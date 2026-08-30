@@ -197,6 +197,78 @@ function formatDurationLabel(ms) {
   return minutes === 0 ? "0 min" : `${minutes} min`;
 }
 
+function getLocalDateKey(timestamp = Date.now()) {
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function shiftDateKey(dateKey, dayOffset) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + dayOffset);
+  return getLocalDateKey(date.getTime());
+}
+
+function getRoutineCompletionDates(routine) {
+  return Array.isArray(routine?.completionDates) ? routine.completionDates : [];
+}
+
+function recordRoutineCompletion(routine) {
+  if (!routine) return;
+
+  const today = getLocalDateKey();
+  const completionDates = getRoutineCompletionDates(routine);
+
+  if (!completionDates.includes(today)) {
+    routine.completionDates = [...completionDates, today];
+  }
+}
+
+function getRoutineStreak(routine) {
+  const completionDates = new Set(getRoutineCompletionDates(routine));
+  if (completionDates.size === 0) return 0;
+
+  const today = getLocalDateKey();
+  const yesterday = shiftDateKey(today, -1);
+  let cursor = null;
+
+  if (completionDates.has(today)) {
+    cursor = today;
+  } else if (completionDates.has(yesterday)) {
+    cursor = yesterday;
+  } else {
+    return 0;
+  }
+
+  let streak = 0;
+  while (cursor && completionDates.has(cursor)) {
+    streak += 1;
+    cursor = shiftDateKey(cursor, -1);
+  }
+
+  return streak;
+}
+
+function formatStreakLabel(streak) {
+  if (streak <= 0) return null;
+  return streak === 1 ? "1 day streak" : `${streak} days in a row`;
+}
+
+function getRoutineMetaText(routine) {
+  const parts = [
+    `${routine.activities.length} activities`,
+    formatDurationLabel(getRoutineTotalDurationMs(routine)),
+  ];
+  const streakLabel = formatStreakLabel(getRoutineStreak(routine));
+  if (streakLabel) {
+    parts.push(streakLabel);
+  }
+  return parts.join(" • ");
+}
+
 function getRoutineTotalDurationMs(routine) {
   if (!routine) return 0;
   return Number(routine.estimatedMinutes || 0) * 60 * 1000;
@@ -384,6 +456,7 @@ function submitRoutineCreation() {
     name,
     estimatedMinutes,
     activities: [],
+    completionDates: [],
   };
 
   state.routines.unshift(newRoutine);
@@ -477,6 +550,7 @@ function duplicateRoutine(routineId) {
       name: activity.name,
       timeSpentMs: 0,
     })),
+    completionDates: [],
   };
 
   const sourceIndex = state.routines.findIndex((item) => item.id === routineId);
@@ -710,7 +784,7 @@ function renderHomeView() {
 
     const meta = document.createElement("div");
     meta.className = "routine-meta";
-    meta.textContent = `${routine.activities.length} activities • ${formatDurationLabel(getRoutineTotalDurationMs(routine))}`;
+    meta.textContent = getRoutineMetaText(routine);
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
@@ -804,6 +878,17 @@ function renderRoutineView() {
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
+  const streak = getRoutineStreak(routine);
+  const streakLabel = formatStreakLabel(streak);
+  if (streakLabel) {
+    const streakRow = document.createElement("div");
+    streakRow.className = "streak-row";
+    streakRow.textContent = streakLabel;
+    wrapper.append(header, infoRow, streakRow);
+  } else {
+    wrapper.append(header, infoRow);
+  }
+
   const activityList = document.createElement("div");
   activityList.className = "activity-list";
 
@@ -871,7 +956,7 @@ function renderRoutineView() {
   addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
 
   actionRow.append(startBtn, addActivityButton);
-  wrapper.append(header, infoRow, activityList, actionRow);
+  wrapper.append(activityList, actionRow);
   return wrapper;
 }
 
@@ -1063,11 +1148,15 @@ function endRoutine() {
   const totalMs = getTotalElapsedMs();
   const estimatedMs = getRoutineTotalDurationMs(routine);
 
+  recordRoutineCompletion(routine);
+  const streak = getRoutineStreak(routine);
+
   state.lastCompletion = {
     routineId: routine.id,
     routineName: routine.name,
     totalMs,
     estimatedMs,
+    streak,
     activities: routine.activities.map((activity) => ({
       name: activity.name,
       timeSpentMs: Number(activity.timeSpentMs || 0),
@@ -1136,6 +1225,13 @@ function renderCompletionView() {
   totalEl.textContent = formatDuration(data.totalMs);
 
   card.append(headline, totalEl);
+
+  if (data.streak > 0) {
+    const streakEl = document.createElement("div");
+    streakEl.className = "completion-streak";
+    streakEl.textContent = formatStreakLabel(data.streak);
+    card.appendChild(streakEl);
+  }
 
   if (data.estimatedMs > 0) {
     const estimateEl = document.createElement("div");
