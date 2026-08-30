@@ -250,6 +250,146 @@ button {
   margin-bottom: 8px;
 }
 
+.streak-calendar {
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 18px var(--card-shadow);
+}
+
+.streak-calendar-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.streak-calendar-toggle-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.streak-calendar-chevron {
+  font-size: 0.8rem;
+  color: var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.streak-calendar.is-collapsed .streak-calendar-chevron {
+  transform: rotate(-90deg);
+}
+
+.streak-calendar-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.streak-calendar-body {
+  margin-top: 12px;
+}
+
+.streak-calendar.is-collapsed .streak-calendar-body {
+  display: none;
+}
+
+.streak-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.streak-calendar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.calendar-nav-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.calendar-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.streak-calendar-weekdays,
+.streak-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.streak-calendar-weekdays {
+  margin-bottom: 6px;
+}
+
+.streak-calendar-weekday {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.streak-calendar-day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.streak-calendar-day.is-today {
+  outline: 1px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.streak-calendar-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.streak-calendar-dot.is-muted {
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+}
+
+.streak-calendar-day.is-complete .streak-calendar-dot {
+  background: var(--primary);
+}
+
+.streak-calendar-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
 .item-actions {
   display: flex;
   align-items: center;

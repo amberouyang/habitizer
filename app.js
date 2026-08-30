@@ -6,6 +6,8 @@ const state = {
   currentRoutineId: null,
   currentView: "home",
   lastCompletion: null,
+  routineCalendarOffset: 0,
+  calendarRoutineId: null,
   timer: {
     routineId: null,
     isRunning: false,
@@ -19,6 +21,7 @@ const state = {
 const settings = {
   cumulativeMode: true,
   darkMode: false,
+  calendarExpanded: true,
 };
 
 let liveTimerIntervalId = null;
@@ -139,6 +142,7 @@ function loadSettings() {
     Object.assign(settings, JSON.parse(stored));
   }
   settings.darkMode = Boolean(settings.darkMode);
+  settings.calendarExpanded = settings.calendarExpanded !== false;
   applyTheme();
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
@@ -290,6 +294,180 @@ function formatPersonalBestLabel(longestStreak) {
   return longestStreak === 1 ? "Personal best: 1 day" : `Personal best: ${longestStreak} days`;
 }
 
+function getCalendarMonthDate(offset = 0) {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() + offset, 1);
+}
+
+function formatCalendarMonthLabel(year, month) {
+  return new Date(year, month, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
+}
+
+function getDateKeyForDay(year, month, day) {
+  const monthLabel = String(month + 1).padStart(2, "0");
+  const dayLabel = String(day).padStart(2, "0");
+  return `${year}-${monthLabel}-${dayLabel}`;
+}
+
+function getCalendarWeeks(year, month) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+
+  for (let i = 0; i < firstDay; i += 1) {
+    cells.push(null);
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push(day);
+  }
+
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7));
+  }
+
+  return weeks;
+}
+
+function changeRoutineCalendarMonth(delta) {
+  state.routineCalendarOffset += delta;
+  render();
+}
+
+function toggleCalendarExpanded() {
+  settings.calendarExpanded = !settings.calendarExpanded;
+  saveSettings();
+  render();
+}
+
+function renderStreakCalendar(routine) {
+  const completionDates = new Set(getRoutineCompletionDates(routine));
+  const monthDate = getCalendarMonthDate(state.routineCalendarOffset);
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const today = getLocalDateKey();
+  const weeks = getCalendarWeeks(year, month);
+  const weekdayLabels = ["S", "M", "T", "W", "T", "F", "S"];
+  const isExpanded = settings.calendarExpanded;
+
+  const calendar = document.createElement("section");
+  calendar.className = `streak-calendar${isExpanded ? "" : " is-collapsed"}`;
+  calendar.setAttribute("aria-label", "Routine completion calendar");
+
+  const toggleBtn = document.createElement("button");
+  toggleBtn.type = "button";
+  toggleBtn.className = "streak-calendar-toggle";
+  toggleBtn.setAttribute("aria-expanded", String(isExpanded));
+  toggleBtn.setAttribute("aria-controls", "streakCalendarBody");
+
+  const toggleLabel = document.createElement("span");
+  toggleLabel.className = "streak-calendar-toggle-label";
+  toggleLabel.textContent = "Completion calendar";
+
+  const chevron = document.createElement("span");
+  chevron.className = "streak-calendar-chevron";
+  chevron.setAttribute("aria-hidden", "true");
+  chevron.textContent = "▼";
+
+  toggleBtn.append(toggleLabel, chevron);
+  toggleBtn.addEventListener("click", toggleCalendarExpanded);
+
+  const body = document.createElement("div");
+  body.id = "streakCalendarBody";
+  body.className = "streak-calendar-body";
+
+  const calendarHeader = document.createElement("div");
+  calendarHeader.className = "streak-calendar-header";
+
+  const prevBtn = document.createElement("button");
+  prevBtn.type = "button";
+  prevBtn.className = "small-btn calendar-nav-btn";
+  prevBtn.textContent = "‹";
+  prevBtn.title = "Previous month";
+  prevBtn.setAttribute("aria-label", "Previous month");
+  prevBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    changeRoutineCalendarMonth(-1);
+  });
+
+  const title = document.createElement("div");
+  title.className = "streak-calendar-title";
+  title.textContent = formatCalendarMonthLabel(year, month);
+
+  const nextBtn = document.createElement("button");
+  nextBtn.type = "button";
+  nextBtn.className = "small-btn calendar-nav-btn";
+  nextBtn.textContent = "›";
+  nextBtn.title = "Next month";
+  nextBtn.setAttribute("aria-label", "Next month");
+  nextBtn.disabled = state.routineCalendarOffset >= 0;
+  nextBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    changeRoutineCalendarMonth(1);
+  });
+
+  calendarHeader.append(prevBtn, title, nextBtn);
+
+  const weekdayRow = document.createElement("div");
+  weekdayRow.className = "streak-calendar-weekdays";
+  weekdayLabels.forEach((label) => {
+    const weekday = document.createElement("span");
+    weekday.className = "streak-calendar-weekday";
+    weekday.textContent = label;
+    weekdayRow.appendChild(weekday);
+  });
+
+  const grid = document.createElement("div");
+  grid.className = "streak-calendar-grid";
+
+  weeks.forEach((week) => {
+    week.forEach((day) => {
+      const cell = document.createElement("div");
+      cell.className = "streak-calendar-day";
+
+      if (day === null) {
+        cell.classList.add("is-empty");
+        grid.appendChild(cell);
+        return;
+      }
+
+      const dateKey = getDateKeyForDay(year, month, day);
+      const isComplete = completionDates.has(dateKey);
+      const isToday = dateKey === today;
+
+      if (isComplete) {
+        cell.classList.add("is-complete");
+      }
+      if (isToday) {
+        cell.classList.add("is-today");
+      }
+
+      cell.title = isComplete ? `Completed on ${dateKey}` : dateKey;
+
+      const dot = document.createElement("span");
+      dot.className = "streak-calendar-dot";
+      if (!isComplete) {
+        dot.classList.add("is-muted");
+      }
+      cell.appendChild(dot);
+      grid.appendChild(cell);
+    });
+  });
+
+  const legend = document.createElement("div");
+  legend.className = "streak-calendar-legend";
+  legend.innerHTML = '<span class="streak-calendar-dot"></span><span>Completed</span>';
+
+  body.append(calendarHeader, weekdayRow, grid, legend);
+  calendar.append(toggleBtn, body);
+  return calendar;
+}
+
 function getRoutineMetaText(routine) {
   const parts = [
     `${routine.activities.length} activities`,
@@ -422,6 +600,11 @@ function setView(view, routineId = null) {
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", "Add routine");
   } else if (view === "routine") {
+    if (routineId !== state.calendarRoutineId) {
+      state.routineCalendarOffset = 0;
+      state.calendarRoutineId = routineId;
+    }
+
     const routine = getRoutineById(routineId);
     pageTitleEl.textContent = routine ? routine.name : "Routine";
     pageTitleEl.style.cursor = "pointer";
@@ -913,14 +1096,16 @@ function renderRoutineView() {
 
   const streak = getRoutineStreak(routine);
   const streakLabel = formatStreakLabel(streak);
+
+  wrapper.append(header, infoRow);
   if (streakLabel) {
     const streakRow = document.createElement("div");
     streakRow.className = "streak-row";
     streakRow.textContent = streakLabel;
-    wrapper.append(header, infoRow, streakRow);
-  } else {
-    wrapper.append(header, infoRow);
+    wrapper.appendChild(streakRow);
   }
+
+  wrapper.appendChild(renderStreakCalendar(routine));
 
   const activityList = document.createElement("div");
   activityList.className = "activity-list";
