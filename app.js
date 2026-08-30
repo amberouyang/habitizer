@@ -49,7 +49,17 @@ const confirmMessage = document.getElementById("confirmMessage");
 const confirmCancel = document.getElementById("confirmCancel");
 const confirmAction = document.getElementById("confirmAction");
 let confirmCallback = null;
+const undoToast = document.getElementById("undoToast");
+const undoToastMessage = document.getElementById("undoToastMessage");
+const undoToastAction = document.getElementById("undoToastAction");
 let settingsButton = null;
+
+const UNDO_DELETE_MS = 5000;
+let pendingDeleteTimeoutId = null;
+const pendingDelete = {
+  routine: null,
+  index: null,
+};
 
 const modalState = {
   mode: null,
@@ -732,12 +742,86 @@ function deleteRoutine(routineId) {
   const routine = getRoutineById(routineId);
   if (!routine) return;
 
-  const confirmed = window.confirm(`Delete "${routine.name}"?`);
-  if (!confirmed) return;
+  openConfirmModal({
+    title: "Delete routine?",
+    message: `Delete "${routine.name}"? You can undo this briefly after confirming.`,
+    confirmLabel: "Delete",
+    onConfirm: () => performDeleteRoutine(routineId),
+  });
+}
+
+function finalizePendingDelete() {
+  if (pendingDeleteTimeoutId) {
+    clearTimeout(pendingDeleteTimeoutId);
+    pendingDeleteTimeoutId = null;
+  }
+
+  if (!pendingDelete.routine) {
+    return;
+  }
+
+  saveRoutines();
+  pendingDelete.routine = null;
+  pendingDelete.index = null;
+  hideUndoToast();
+}
+
+function showUndoToast(message) {
+  undoToastMessage.textContent = message;
+  undoToast.classList.remove("hidden");
+  undoToast.setAttribute("aria-hidden", "false");
+}
+
+function hideUndoToast() {
+  undoToast.classList.add("hidden");
+  undoToast.setAttribute("aria-hidden", "true");
+  undoToastMessage.textContent = "";
+}
+
+function performDeleteRoutine(routineId) {
+  closeConfirmModal();
+
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  finalizePendingDelete();
+
+  const index = state.routines.findIndex((item) => item.id === routineId);
+  pendingDelete.routine = JSON.parse(JSON.stringify(routine));
+  pendingDelete.index = index;
 
   state.routines = state.routines.filter((item) => item.id !== routineId);
+
+  if (state.currentRoutineId === routineId) {
+    state.currentRoutineId = null;
+    setView("home");
+  } else {
+    render();
+  }
+
+  showUndoToast("Routine deleted");
+
+  pendingDeleteTimeoutId = setTimeout(() => {
+    finalizePendingDelete();
+  }, UNDO_DELETE_MS);
+}
+
+function undoDeleteRoutine() {
+  if (!pendingDelete.routine) return;
+
+  if (pendingDeleteTimeoutId) {
+    clearTimeout(pendingDeleteTimeoutId);
+    pendingDeleteTimeoutId = null;
+  }
+
+  const insertIndex = Math.min(pendingDelete.index, state.routines.length);
+  state.routines.splice(insertIndex, 0, pendingDelete.routine);
+  pendingDelete.routine = null;
+  pendingDelete.index = null;
+
   saveRoutines();
-  setView("home");
+  hideUndoToast();
+  render();
 }
 
 function getDuplicateRoutineName(name) {
@@ -1803,6 +1887,8 @@ cumulativeToggle.addEventListener("change", () => {
   settings.cumulativeMode = cumulativeToggle.checked;
   saveSettings();
 });
+
+undoToastAction.addEventListener("click", undoDeleteRoutine);
 
 function init() {
   loadRoutines();

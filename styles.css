@@ -89,6 +89,7 @@ button {
 }
 
 .app-shell {
+  position: relative;
   width: min(100%, 430px);
   margin-inline: auto;
   min-height: 820px;
@@ -147,6 +148,56 @@ button {
 
 .app-content {
   padding: 18px 16px 28px;
+}
+
+.undo-toast {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 28px var(--card-shadow);
+}
+
+.undo-toast.hidden {
+  display: none;
+}
+
+.undo-toast-message {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.undo-toast-btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: var(--accent);
+  color: var(--primary-strong);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.undo-toast-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.undo-toast-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .section-card,
