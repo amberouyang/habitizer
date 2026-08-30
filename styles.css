@@ -223,13 +223,26 @@ button {
 }
 
 .routine-item {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 14px;
+  padding: 16px 14px 16px 18px;
   cursor: pointer;
+  overflow: hidden;
   transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.routine-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--routine-color, var(--primary));
+  border-radius: 18px 0 0 18px;
 }
 
 .routine-item:hover {
@@ -253,6 +266,58 @@ button {
 .routine-meta {
   font-size: 0.82rem;
   color: var(--muted);
+}
+
+.routine-color-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 18px var(--card-shadow);
+}
+
+.routine-color-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: var(--swatch-color);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.08);
+}
+
+.color-swatch[aria-checked="true"] {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+
+.color-swatch:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .streak-row,

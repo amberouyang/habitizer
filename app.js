@@ -24,6 +24,19 @@ const settings = {
   calendarExpanded: true,
 };
 
+const ROUTINE_COLORS = [
+  { id: "sage", label: "Sage", value: "#2f6f52" },
+  { id: "ocean", label: "Ocean", value: "#2f5f8f" },
+  { id: "lavender", label: "Lavender", value: "#6b5b95" },
+  { id: "coral", label: "Coral", value: "#c96b5a" },
+  { id: "amber", label: "Amber", value: "#c9893f" },
+  { id: "rose", label: "Rose", value: "#b85c7a" },
+  { id: "slate", label: "Slate", value: "#5a6b7a" },
+  { id: "teal", label: "Teal", value: "#2a7a72" },
+];
+
+const DEFAULT_ROUTINE_COLOR_ID = ROUTINE_COLORS[0].id;
+
 let liveTimerIntervalId = null;
 
 const appEl = document.getElementById("app");
@@ -167,6 +180,7 @@ function seedData() {
     {
       id: crypto.randomUUID(),
       name: "Morning Routine",
+      color: "sage",
       estimatedMinutes: 15,
       activities: [
         { id: crypto.randomUUID(), name: "Drink water", timeSpentMs: 0 },
@@ -177,6 +191,7 @@ function seedData() {
     {
       id: crypto.randomUUID(),
       name: "Evening Routine",
+      color: "ocean",
       estimatedMinutes: 20,
       activities: [
         { id: crypto.randomUUID(), name: "Brush teeth", timeSpentMs: 0 },
@@ -191,6 +206,47 @@ function seedData() {
 
 function getRoutineById(routineId) {
   return state.routines.find((routine) => routine.id === routineId) || null;
+}
+
+function getRoutineColorById(colorId) {
+  return ROUTINE_COLORS.find((color) => color.id === colorId) || null;
+}
+
+function getRoutineColor(routine) {
+  return getRoutineColorById(routine?.color) || getRoutineColorById(DEFAULT_ROUTINE_COLOR_ID);
+}
+
+function getRoutineColorValue(routine) {
+  return getRoutineColor(routine).value;
+}
+
+function getNextRoutineColorId() {
+  return ROUTINE_COLORS[state.routines.length % ROUTINE_COLORS.length].id;
+}
+
+function applyRoutineColorStyle(element, routine) {
+  if (!element) return;
+  element.style.setProperty("--routine-color", getRoutineColorValue(routine));
+}
+
+function applyProgressFillColor(progressFill, routine) {
+  if (!progressFill || !routine) return;
+
+  const { isOver } = getRoutineProgress(routine);
+  if (isOver) {
+    progressFill.style.removeProperty("background");
+  } else {
+    progressFill.style.background = getRoutineColorValue(routine);
+  }
+}
+
+function setRoutineColor(routineId, colorId) {
+  const routine = getRoutineById(routineId);
+  if (!routine || !getRoutineColorById(colorId)) return;
+
+  routine.color = colorId;
+  saveRoutines();
+  render();
 }
 
 function formatDuration(ms) {
@@ -680,6 +736,7 @@ function submitRoutineCreation() {
   const newRoutine = {
     id: crypto.randomUUID(),
     name,
+    color: getNextRoutineColorId(),
     estimatedMinutes,
     activities: [],
     completionDates: [],
@@ -844,6 +901,7 @@ function duplicateRoutine(routineId) {
   const duplicate = {
     id: crypto.randomUUID(),
     name: getDuplicateRoutineName(routine.name),
+    color: routine.color || getNextRoutineColorId(),
     estimatedMinutes: Number(routine.estimatedMinutes || 0),
     activities: routine.activities.map((activity) => ({
       id: crypto.randomUUID(),
@@ -1073,6 +1131,7 @@ function renderHomeView() {
     const item = document.createElement("button");
     item.type = "button";
     item.className = "routine-item";
+    applyRoutineColorStyle(item, routine);
     item.addEventListener("click", () => setView("routine", routine.id));
 
     const info = document.createElement("div");
@@ -1178,10 +1237,37 @@ function renderRoutineView() {
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
+  const colorPicker = document.createElement("div");
+  colorPicker.className = "routine-color-picker";
+
+  const colorLabel = document.createElement("span");
+  colorLabel.className = "routine-color-label";
+  colorLabel.textContent = "Color";
+
+  const colorSwatches = document.createElement("div");
+  colorSwatches.className = "color-swatches";
+  colorSwatches.setAttribute("role", "radiogroup");
+  colorSwatches.setAttribute("aria-label", "Routine color");
+
+  ROUTINE_COLORS.forEach((color) => {
+    const swatch = document.createElement("button");
+    swatch.type = "button";
+    swatch.className = "color-swatch";
+    swatch.style.setProperty("--swatch-color", color.value);
+    swatch.title = color.label;
+    swatch.setAttribute("role", "radio");
+    swatch.setAttribute("aria-label", color.label);
+    swatch.setAttribute("aria-checked", String(getRoutineColor(routine).id === color.id));
+    swatch.addEventListener("click", () => setRoutineColor(routine.id, color.id));
+    colorSwatches.appendChild(swatch);
+  });
+
+  colorPicker.append(colorLabel, colorSwatches);
+
   const streak = getRoutineStreak(routine);
   const streakLabel = formatStreakLabel(streak);
 
-  wrapper.append(header, infoRow);
+  wrapper.append(header, infoRow, colorPicker);
   if (streakLabel) {
     const streakRow = document.createElement("div");
     streakRow.className = "streak-row";
@@ -1284,6 +1370,7 @@ function updateTimerDisplay() {
     const { percent, isOver } = getRoutineProgress(routine);
     progressFill.style.width = `${percent}%`;
     progressFill.classList.toggle("over", isOver);
+    applyProgressFillColor(progressFill, routine);
     progressLabel.textContent = `${formatDuration(getTotalElapsedMs())} / ${formatDurationLabel(getRoutineTotalDurationMs(routine))}`;
 
     const progressTrack = document.querySelector(".routine-progress-track");
@@ -1646,6 +1733,7 @@ function renderTimerView() {
     const { percent, isOver } = getRoutineProgress(routine);
     progressFill.style.width = `${percent}%`;
     progressFill.classList.toggle("over", isOver);
+    applyProgressFillColor(progressFill, routine);
     progressTrack.setAttribute("aria-valuenow", String(Math.round(percent)));
 
     progressTrack.appendChild(progressFill);
