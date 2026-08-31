@@ -959,11 +959,22 @@ button {
   color: var(--muted);
 }
 
-.deleted-routine-restore {
+.deleted-routine-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
+}
+
+.deleted-routine-restore {
   min-width: 78px;
   padding: 8px 12px;
   font-size: 0.82rem;
+}
+
+.deleted-routine-delete {
+  width: 34px;
+  height: 34px;
 }
 
 .toggle-input {

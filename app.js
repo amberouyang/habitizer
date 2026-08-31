@@ -267,6 +267,25 @@ function restoreDeletedRoutine(entryId) {
   render();
 }
 
+function requestPermanentDeleteArchivedRoutine(entryId) {
+  const entry = deletedRoutines.find((item) => item.id === entryId);
+  if (!entry) return;
+
+  openConfirmModal({
+    title: "Delete forever?",
+    message: `Permanently delete "${entry.routine.name}"? This cannot be undone.`,
+    confirmLabel: "Delete forever",
+    onConfirm: () => permanentlyDeleteArchivedRoutine(entryId),
+  });
+}
+
+function permanentlyDeleteArchivedRoutine(entryId) {
+  closeConfirmModal();
+  deletedRoutines = deletedRoutines.filter((item) => item.id !== entryId);
+  saveDeletedRoutines();
+  renderDeletedRoutinesList();
+}
+
 function renderDeletedRoutinesList() {
   if (!deletedRoutinesList) return;
 
@@ -304,7 +323,19 @@ function renderDeletedRoutinesList() {
     restoreBtn.textContent = "Restore";
     restoreBtn.addEventListener("click", () => restoreDeletedRoutine(entry.id));
 
-    item.append(info, restoreBtn);
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "small-btn delete-btn deleted-routine-delete";
+    deleteBtn.textContent = "✕";
+    deleteBtn.title = "Delete forever";
+    deleteBtn.setAttribute("aria-label", `Delete ${entry.routine.name} forever`);
+    deleteBtn.addEventListener("click", () => requestPermanentDeleteArchivedRoutine(entry.id));
+
+    const actions = document.createElement("div");
+    actions.className = "deleted-routine-actions";
+    actions.append(restoreBtn, deleteBtn);
+
+    item.append(info, actions);
     deletedRoutinesList.appendChild(item);
   });
 }
