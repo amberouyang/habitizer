@@ -1,88 +1,108 @@
 # Habitizer
 
-A modern web application for building, managing, and executing daily routines with built-in timing capabilities.
+A modern web app for building, managing, and running daily routines with built-in timing and streak tracking.
 
 ## Features
 
-**Create Your Own Routines** - Build custom routines tailored to your lifestyle (morning, evening, workout, etc.)
-
-**Manage Your Activities** - Add, rename, reorder, or remove activities from your routines anytime
-
-**Quick Editing** - Click any routine name to rename it right away (no complicated menus)
-
-**Track Your Time** - Set how long you think a routine should take, then see how long it actually takes
-
-**Live Timer** - Start a routine and watch a timer count up as you complete each activity
-
-**Auto-Saves** - Everything is saved automatically to your browser, so you never lose your routines
-
-**Works Everywhere** - Use it on your phone, tablet, or computer, get the same beautiful interface on all devices
+- **Custom routines** — Create routines for mornings, evenings, workouts, and more
+- **Activities** — Add, rename, drag to reorder, and delete activities
+- **Estimated time** — Set how long a routine should take when creating or editing it
+- **Routine colors** — Pick a color for each routine (card stripe + timer progress bar)
+- **Live timer** — Track total time and per-activity time while you run a routine
+- **Completion screen** — See your results, streak, and personal best after finishing
+- **Streaks** — Track daily completions with a calendar and streak badges
+- **Dark mode** — Toggle in settings
+- **Undo delete** — Brief undo window after deleting a routine or activity
+- **Auto-save** — Everything persists in your browser via localStorage
 
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/amberouyang/habitizer.git
 cd habitizer
 ```
 
-2. Start a local web server:
+2. Start a local web server from the project folder (the one containing `index.html`):
+
 ```bash
-# Using Python 3
 python3 -m http.server 8000
-
-# Or using Node.js
-npx http-server
-
-# Or using any other local server
 ```
 
-3. Open your browser and navigate to `http://localhost:8000`
+3. Open `http://localhost:8000` in your browser
+
+> **Note:** Serve from the inner `habitizer/` folder that contains `index.html`, not the parent directory.
 
 ## Usage
 
-### Creating a Routine
-1. Click the **+** button to create a new routine
-2. Enter a name for your routine
-3. Click **Create**
+### Home screen
 
-### Managing Routines
-- **Rename**: Click the pencil icon (✎) on a routine card, or click the routine name at the top of the routine detail view
-- **Edit Duration**: Click the clock icon (⏱) in the routine detail view to set estimated time
-- **Delete**: Click the trash icon (🗑) on a routine card
+- **Add routine** — Tap the **Add routine** button below your routine list
+- **Open a routine** — Tap a routine card
+- **Reorder** — Drag the **⋮⋮** handle on the left (when you have 2+ routines)
+- **Duplicate** — Tap **⎘** on a routine card
+- **Rename** — Tap **✎** on a routine card
+- **Delete** — Tap **🗑** on a routine card (undo available for 5 seconds)
+- **Settings** — Tap **⋯** in the top bar
 
-### Managing Activities
-1. Open a routine
-2. Click **+** to add a new activity
-3. Manage activities:
-   - Click activity name to rename
-   - Use ↑/↓ arrows to reorder
-   - Click ✕ to delete
+### Creating a routine
 
-### Running a Routine
-1. Open a routine
-2. Click **Start Routine** to begin the timer
-3. The timer tracks elapsed time and individual activity times
-4. Complete activities as you go through your routine
+1. Tap **Add routine**
+2. Enter a name
+3. Set estimated time (minutes)
+4. Pick a color (optional — a default is pre-selected)
+5. Tap **Create**
 
-## Technical Details
+### Routine detail
+
+- **Add activity** — Tap **Add activity** at the bottom
+- **Rename activity** — Tap the activity name
+- **Reorder activities** — Drag the **⋮⋮** handle
+- **Delete activity** — Tap **✕** (undo available for 5 seconds)
+- **Start routine** — Tap **Start Routine**
+- **Header actions:**
+  - **⎘** — Duplicate routine
+  - **📅** — Completion history calendar (dot shows if completed today)
+  - **🎨** — Change color
+  - **⏱** — Edit estimated time
+- **Rename routine** — Tap the routine name in the top bar
+
+### Running a routine
+
+1. Tap **Start Routine**
+2. Check off activities as you complete them
+3. Watch the progress bar against your estimated time
+4. Tap **Pause** / **Resume** as needed
+5. Tap **End Routine** to finish (confirmation required)
+6. Review your completion summary, then tap **Done**
+
+### Settings
+
+Open **⋯** from the home screen:
+
+- **Dark mode** — Switch between light and dark themes
+- **Cumulative Habit Tracker** — When on, activity times accumulate across runs; when off, times reset each session
+
+## Technical details
 
 ### Stack
-- **HTML5**: Semantic markup with accessibility features
-- **CSS3**: Modern styling with CSS variables and custom design
-- **Vanilla JavaScript**: No dependencies, pure ES6+
 
-### Project Structure
+- **HTML5** — Semantic markup with accessibility features
+- **CSS3** — CSS variables, dark mode, responsive layout
+- **Vanilla JavaScript** — No dependencies, pure ES6+
+
+### Project structure
+
 ```
 habitizer/
-├── index.html      # Main HTML structure
+├── index.html      # Main HTML structure and modals
 ├── app.js          # Application logic and state management
 ├── styles.css      # Styling and layout
 └── README.md       # This file
 ```
 
-## Development
+### Browser compatibility
 
-### Browser Compatibility
-- Modern browsers supporting ES6 (Chrome, Firefox, Safari, Edge)
-- Requires localStorage support
+- Modern browsers with ES6 support (Chrome, Firefox, Safari, Edge)
+- Requires localStorage
