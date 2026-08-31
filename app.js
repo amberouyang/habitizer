@@ -798,10 +798,6 @@ function setView(view, routineId = null) {
   render();
 }
 
-function promptForText(message, defaultValue = "") {
-  return window.prompt(message, defaultValue);
-}
-
 function addRoutine() {
   openNameModal({
     title: "New routine",
@@ -1065,23 +1061,6 @@ function duplicateRoutine(routineId) {
   state.routines.splice(sourceIndex + 1, 0, duplicate);
   saveRoutines();
   setView("routine", duplicate.id);
-}
-
-function addActivity(routineId) {
-  const routine = getRoutineById(routineId);
-  if (!routine) return;
-
-  const name = promptForText("Name your new activity:");
-  if (!name || !name.trim()) return;
-
-  routine.activities.push({
-    id: crypto.randomUUID(),
-    name: name.trim(),
-    timeSpentMs: 0,
-  });
-
-  saveRoutines();
-  render();
 }
 
 function openAddActivityModal(routineId) {
@@ -2145,8 +2124,6 @@ addButton.addEventListener("click", () => {
     openAddActivityModal(state.currentRoutineId);
   }
 });
-
-menuButton.addEventListener("click", openSettings);
 
 menuButton.addEventListener("click", openSettings);
 
