@@ -228,10 +228,52 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 14px 16px 18px;
-  cursor: pointer;
+  padding: 16px 14px 16px 12px;
   overflow: hidden;
-  transition: transform 0.12s ease, border-color 0.12s ease;
+  transform: none;
+  will-change: transform;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 180ms ease, background-color 180ms ease;
+  touch-action: pan-y;
+}
+
+.routine-item.is-dragging {
+  opacity: 0.92;
+  transition: box-shadow 180ms ease;
+}
+
+.routine-item.drop-target {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+.routine-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.routine-open {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.routine-open:hover {
+  opacity: 0.92;
+}
+
+.routine-open:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 10px;
 }
 
 .routine-item::before {
@@ -245,7 +287,7 @@ button {
   border-radius: 18px 0 0 18px;
 }
 
-.routine-item:hover {
+.routine-item:hover:not(.is-dragging) {
   transform: translateY(-1px);
   border-color: var(--hover-border);
 }

@@ -1226,6 +1226,146 @@ function setupActivityDragAndDrop(listEl, routine) {
   });
 }
 
+const routineDragState = {
+  routineId: null,
+  pointerId: null,
+  item: null,
+  list: null,
+  startY: 0,
+};
+
+function reorderRoutines(fromIndex, toIndex) {
+  if (fromIndex === toIndex) return false;
+  if (fromIndex < 0 || toIndex < 0) return false;
+  if (fromIndex >= state.routines.length || toIndex >= state.routines.length) return false;
+
+  const [moved] = state.routines.splice(fromIndex, 1);
+  state.routines.splice(toIndex, 0, moved);
+  saveRoutines();
+  return true;
+}
+
+function getRoutineDropIndex(listEl, pointerY, dragRoutineId) {
+  const items = [...listEl.querySelectorAll(".routine-item")];
+  const fromIndex = items.findIndex((item) => item.dataset.routineId === dragRoutineId);
+  if (fromIndex === -1) return fromIndex;
+
+  let insertBeforeIndex = items.length;
+  for (let i = 0; i < items.length; i += 1) {
+    const rect = items[i].getBoundingClientRect();
+    if (pointerY < rect.top + rect.height / 2) {
+      insertBeforeIndex = i;
+      break;
+    }
+  }
+
+  let toIndex = insertBeforeIndex;
+  if (toIndex > fromIndex) {
+    toIndex -= 1;
+  }
+
+  return toIndex;
+}
+
+function getRoutineItemAtPointer(listEl, pointerY, dragRoutineId) {
+  const items = [...listEl.querySelectorAll(".routine-item")];
+  return items.find((item) => {
+    if (item.dataset.routineId === dragRoutineId) return false;
+    const rect = item.getBoundingClientRect();
+    return pointerY >= rect.top && pointerY <= rect.bottom;
+  }) || null;
+}
+
+function clearRoutineDragState() {
+  if (routineDragState.item) {
+    routineDragState.item.classList.remove("is-dragging");
+    routineDragState.item.style.transform = "";
+    routineDragState.item.style.zIndex = "";
+    routineDragState.item.style.boxShadow = "";
+  }
+
+  routineDragState.list?.querySelectorAll(".routine-item").forEach((item) => {
+    item.classList.remove("drop-target");
+  });
+
+  routineDragState.routineId = null;
+  routineDragState.pointerId = null;
+  routineDragState.item = null;
+  routineDragState.list = null;
+  routineDragState.startY = 0;
+
+  window.removeEventListener("pointermove", handleRoutinePointerMove);
+  window.removeEventListener("pointerup", handleRoutinePointerUp);
+  window.removeEventListener("pointercancel", handleRoutinePointerUp);
+}
+
+function handleRoutinePointerMove(event) {
+  if (event.pointerId !== routineDragState.pointerId || !routineDragState.item) return;
+
+  const deltaY = event.clientY - routineDragState.startY;
+  routineDragState.item.style.transform = `translateY(${deltaY}px)`;
+  routineDragState.item.style.zIndex = "5";
+  routineDragState.item.style.boxShadow = "0 10px 24px var(--card-shadow)";
+
+  const { list, routineId } = routineDragState;
+  list.querySelectorAll(".routine-item").forEach((item) => {
+    item.classList.remove("drop-target");
+  });
+
+  const target = getRoutineItemAtPointer(list, event.clientY, routineId);
+  if (target) {
+    target.classList.add("drop-target");
+  }
+}
+
+function handleRoutinePointerUp(event) {
+  if (event.pointerId !== routineDragState.pointerId) return;
+
+  const { routineId, list, item } = routineDragState;
+
+  if (list && item) {
+    const fromIndex = state.routines.findIndex((routine) => routine.id === routineId);
+    const toIndex = getRoutineDropIndex(list, event.clientY, routineId);
+
+    if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+      reorderRoutines(fromIndex, toIndex);
+      state.routines.forEach((routine) => {
+        const node = list.querySelector(`[data-routine-id="${routine.id}"]`);
+        if (node) {
+          list.insertBefore(node, list.querySelector(".home-add-button"));
+        }
+      });
+    }
+  }
+
+  clearRoutineDragState();
+}
+
+function setupRoutineDragAndDrop(listEl) {
+  listEl.querySelectorAll(".routine-item .drag-handle").forEach((handle) => {
+    handle.addEventListener("pointerdown", (event) => {
+      const item = handle.closest(".routine-item");
+      if (!item) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      routineDragState.routineId = item.dataset.routineId;
+      routineDragState.pointerId = event.pointerId;
+      routineDragState.item = item;
+      routineDragState.list = listEl;
+      routineDragState.startY = event.clientY;
+
+      item.classList.add("is-dragging");
+      handle.setPointerCapture(event.pointerId);
+
+      window.addEventListener("pointermove", handleRoutinePointerMove);
+      window.addEventListener("pointerup", handleRoutinePointerUp);
+      window.addEventListener("pointercancel", handleRoutinePointerUp);
+    });
+  });
+}
+
 function renderHomeView() {
   const list = document.createElement("section");
   list.className = "routine-list";
@@ -1237,12 +1377,31 @@ function renderHomeView() {
     list.appendChild(empty);
   }
 
+  const canReorderRoutines = state.routines.length > 1;
+
   state.routines.forEach((routine) => {
-    const item = document.createElement("button");
-    item.type = "button";
+    const item = document.createElement("div");
     item.className = "routine-item";
+    item.dataset.routineId = routine.id;
     applyRoutineColorStyle(item, routine);
-    item.addEventListener("click", () => setView("routine", routine.id));
+
+    const main = document.createElement("div");
+    main.className = "routine-main";
+
+    if (canReorderRoutines) {
+      const dragHandle = document.createElement("button");
+      dragHandle.type = "button";
+      dragHandle.className = "drag-handle";
+      dragHandle.setAttribute("aria-label", `Drag to reorder ${routine.name}`);
+      dragHandle.title = "Drag to reorder";
+      main.appendChild(dragHandle);
+    }
+
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.className = "routine-open";
+    openBtn.title = `Open ${routine.name}`;
+    openBtn.addEventListener("click", () => setView("routine", routine.id));
 
     const info = document.createElement("div");
     info.className = "routine-info";
@@ -1268,6 +1427,9 @@ function renderHomeView() {
     const meta = document.createElement("div");
     meta.className = "routine-meta";
     meta.textContent = getRoutineMetaText(routine);
+
+    info.append(nameRow, meta);
+    openBtn.appendChild(info);
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
@@ -1302,11 +1464,15 @@ function renderHomeView() {
       deleteRoutine(routine.id);
     });
 
-    info.append(nameRow, meta);
     actions.append(duplicateBtn, renameBtn, deleteBtn);
-    item.append(info, actions);
+    main.append(openBtn);
+    item.append(main, actions);
     list.appendChild(item);
   });
+
+  if (canReorderRoutines) {
+    setupRoutineDragAndDrop(list);
+  }
 
   const addRoutineButton = document.createElement("button");
   addRoutineButton.type = "button";
