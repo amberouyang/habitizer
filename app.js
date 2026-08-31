@@ -21,7 +21,6 @@ const state = {
 const settings = {
   cumulativeMode: true,
   darkMode: false,
-  calendarExpanded: true,
 };
 
 const ROUTINE_COLORS = [
@@ -66,6 +65,12 @@ const colorModal = document.getElementById("colorModal");
 const colorModalSwatches = document.getElementById("colorModalSwatches");
 const colorModalClose = document.getElementById("colorModalClose");
 let colorModalRoutineId = null;
+const calendarModal = document.getElementById("calendarModal");
+const calendarModalTitle = document.getElementById("calendarModalTitle");
+const calendarModalSubtitle = document.getElementById("calendarModalSubtitle");
+const calendarModalBody = document.getElementById("calendarModalBody");
+const calendarModalClose = document.getElementById("calendarModalClose");
+let calendarModalRoutineId = null;
 const undoToast = document.getElementById("undoToast");
 const undoToastMessage = document.getElementById("undoToastMessage");
 const undoToastAction = document.getElementById("undoToastAction");
@@ -169,7 +174,6 @@ function loadSettings() {
     Object.assign(settings, JSON.parse(stored));
   }
   settings.darkMode = Boolean(settings.darkMode);
-  settings.calendarExpanded = settings.calendarExpanded !== false;
   applyTheme();
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
@@ -398,12 +402,6 @@ function formatStreakBadgeText(streak) {
   return String(streak);
 }
 
-function formatStreakCalendarSuffix(streak) {
-  const label = formatStreakLabel(streak);
-  if (!label || streak < STREAK_DISPLAY_MIN) return "";
-  return ` · ${label}`;
-}
-
 function formatPersonalBestLabel(longestStreak) {
   if (longestStreak <= 0) return null;
   return longestStreak === 1 ? "Personal best: 1 day" : `Personal best: ${longestStreak} days`;
@@ -451,16 +449,16 @@ function getCalendarWeeks(year, month) {
 
 function changeRoutineCalendarMonth(delta) {
   state.routineCalendarOffset += delta;
-  render();
+  if (!calendarModal.classList.contains("hidden")) {
+    refreshCalendarModalContent();
+  }
 }
 
-function toggleCalendarExpanded() {
-  settings.calendarExpanded = !settings.calendarExpanded;
-  saveSettings();
-  render();
+function routineCompletedToday(routine) {
+  return getRoutineCompletionDates(routine).includes(getLocalDateKey());
 }
 
-function renderStreakCalendar(routine) {
+function buildStreakCalendarContent(routine) {
   const completionDates = new Set(getRoutineCompletionDates(routine));
   const monthDate = getCalendarMonthDate(state.routineCalendarOffset);
   const year = monthDate.getFullYear();
@@ -468,35 +466,10 @@ function renderStreakCalendar(routine) {
   const today = getLocalDateKey();
   const weeks = getCalendarWeeks(year, month);
   const weekdayLabels = ["S", "M", "T", "W", "T", "F", "S"];
-  const isExpanded = settings.calendarExpanded;
 
-  const calendar = document.createElement("section");
-  calendar.className = `streak-calendar${isExpanded ? "" : " is-collapsed"}`;
+  const calendar = document.createElement("div");
+  calendar.className = "streak-calendar";
   calendar.setAttribute("aria-label", "Routine completion calendar");
-
-  const toggleBtn = document.createElement("button");
-  toggleBtn.type = "button";
-  toggleBtn.className = "streak-calendar-toggle";
-  toggleBtn.setAttribute("aria-expanded", String(isExpanded));
-  toggleBtn.setAttribute("aria-controls", "streakCalendarBody");
-
-  const toggleLabel = document.createElement("span");
-  toggleLabel.className = "streak-calendar-toggle-label";
-  const streak = getRoutineStreak(routine);
-  const streakSuffix = formatStreakCalendarSuffix(streak);
-  toggleLabel.innerHTML = `Completion calendar<span class="streak-calendar-toggle-streak">${streakSuffix}</span>`;
-
-  const chevron = document.createElement("span");
-  chevron.className = "streak-calendar-chevron";
-  chevron.setAttribute("aria-hidden", "true");
-  chevron.textContent = "▼";
-
-  toggleBtn.append(toggleLabel, chevron);
-  toggleBtn.addEventListener("click", toggleCalendarExpanded);
-
-  const body = document.createElement("div");
-  body.id = "streakCalendarBody";
-  body.className = "streak-calendar-body";
 
   const calendarHeader = document.createElement("div");
   calendarHeader.className = "streak-calendar-header";
@@ -580,9 +553,55 @@ function renderStreakCalendar(routine) {
   legend.className = "streak-calendar-legend";
   legend.innerHTML = '<span class="streak-calendar-dot"></span><span>Completed</span>';
 
-  body.append(calendarHeader, weekdayRow, grid, legend);
-  calendar.append(toggleBtn, body);
+  calendar.append(calendarHeader, weekdayRow, grid, legend);
   return calendar;
+}
+
+function updateCalendarModal(routine) {
+  const streak = getRoutineStreak(routine);
+  const streakLabel = formatStreakLabel(streak);
+
+  calendarModalTitle.textContent = "Completion history";
+  if (streakLabel && streak >= STREAK_DISPLAY_MIN) {
+    calendarModalSubtitle.textContent = streakLabel;
+    calendarModalSubtitle.classList.remove("hidden");
+  } else {
+    calendarModalSubtitle.textContent = "";
+    calendarModalSubtitle.classList.add("hidden");
+  }
+
+  calendarModalBody.replaceChildren(buildStreakCalendarContent(routine));
+}
+
+function refreshCalendarModalContent() {
+  const routine = getRoutineById(calendarModalRoutineId);
+  if (!routine) return;
+  updateCalendarModal(routine);
+}
+
+function openCalendarModal(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  if (routineId !== state.calendarRoutineId) {
+    state.routineCalendarOffset = 0;
+    state.calendarRoutineId = routineId;
+  }
+
+  calendarModalRoutineId = routineId;
+  updateCalendarModal(routine);
+  calendarModal.classList.remove("hidden");
+  calendarModal.setAttribute("aria-hidden", "false");
+  calendarModalClose.focus();
+}
+
+function closeCalendarModal() {
+  calendarModal.classList.add("hidden");
+  calendarModal.setAttribute("aria-hidden", "true");
+  calendarModalRoutineId = null;
+  calendarModalBody.replaceChildren();
+  calendarModalSubtitle.textContent = "";
+  calendarModalSubtitle.classList.add("hidden");
 }
 
 function getRoutineMetaText(routine) {
@@ -1295,7 +1314,18 @@ function renderRoutineView() {
   applyRoutineColorStyle(colorButton, routine);
   colorButton.addEventListener("click", () => openColorModal(routine.id));
 
-  headerActions.append(duplicateButton, colorButton, metaButton);
+  const calendarButton = document.createElement("button");
+  calendarButton.type = "button";
+  calendarButton.className = "small-btn calendar-btn";
+  calendarButton.textContent = "📅";
+  calendarButton.title = "Completion history";
+  calendarButton.setAttribute("aria-label", "Completion history");
+  if (routineCompletedToday(routine)) {
+    calendarButton.classList.add("has-today");
+  }
+  calendarButton.addEventListener("click", () => openCalendarModal(routine.id));
+
+  headerActions.append(duplicateButton, calendarButton, colorButton, metaButton);
   header.append(title, headerActions);
 
   const infoRow = document.createElement("button");
@@ -1306,8 +1336,6 @@ function renderRoutineView() {
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
   wrapper.append(header, infoRow);
-
-  wrapper.appendChild(renderStreakCalendar(routine));
 
   const activityList = document.createElement("div");
   activityList.className = "activity-list";
@@ -1999,6 +2027,14 @@ colorModal.addEventListener("click", (event) => {
   }
 });
 
+calendarModalClose.addEventListener("click", closeCalendarModal);
+
+calendarModal.addEventListener("click", (event) => {
+  if (event.target === calendarModal) {
+    closeCalendarModal();
+  }
+});
+
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
 
@@ -2009,6 +2045,11 @@ document.addEventListener("keydown", (event) => {
 
   if (!colorModal.classList.contains("hidden")) {
     closeColorModal();
+    return;
+  }
+
+  if (!calendarModal.classList.contains("hidden")) {
+    closeCalendarModal();
   }
 });
 

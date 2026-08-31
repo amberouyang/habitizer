@@ -361,66 +361,19 @@ button {
 }
 
 .streak-calendar {
-  margin-bottom: 16px;
-  padding: 14px;
-  border-radius: 18px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 18px var(--card-shadow);
+  margin-top: 4px;
 }
 
-.streak-calendar-toggle {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
+.calendar-modal-card {
+  width: min(100%, 360px);
 }
 
-.streak-calendar-toggle-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  text-align: left;
-}
-
-.streak-calendar-toggle-streak {
-  text-transform: none;
-  letter-spacing: normal;
+.calendar-modal-subtitle {
+  margin: -4px 0 12px;
+  text-align: center;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--primary);
-}
-
-.streak-calendar-chevron {
-  font-size: 0.8rem;
-  color: var(--muted);
-  transition: transform 0.2s ease;
-}
-
-.streak-calendar.is-collapsed .streak-calendar-chevron {
-  transform: rotate(-90deg);
-}
-
-.streak-calendar-toggle:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 4px;
-  border-radius: 8px;
-}
-
-.streak-calendar-body {
-  margin-top: 12px;
-}
-
-.streak-calendar.is-collapsed .streak-calendar-body {
-  display: none;
 }
 
 .streak-calendar-header {
@@ -695,6 +648,22 @@ button {
 .small-btn.color-btn {
   background: var(--routine-color, var(--primary));
   border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.small-btn.calendar-btn {
+  position: relative;
+}
+
+.small-btn.calendar-btn.has-today::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 1px solid var(--panel-alt);
 }
 
 .delete-btn {
