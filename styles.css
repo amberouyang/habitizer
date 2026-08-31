@@ -797,6 +797,17 @@ button {
   display: none;
 }
 
+.modal-color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modal-color-swatches .color-swatch {
+  width: 32px;
+  height: 32px;
+}
+
 .modal-actions {
   display: flex;
   gap: 10px;

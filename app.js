@@ -49,6 +49,8 @@ const modalLabel = document.getElementById("modalLabel");
 const modalInput = document.getElementById("modalInput");
 const modalMinutesGroup = document.getElementById("modalMinutesGroup");
 const modalMinutesInput = document.getElementById("modalMinutesInput");
+const modalColorGroup = document.getElementById("modalColorGroup");
+const modalColorSwatches = document.getElementById("modalColorSwatches");
 const modalConfirm = document.getElementById("modalConfirm");
 const modalCancel = document.getElementById("modalCancel");
 const settingsModal = document.getElementById("settingsModal");
@@ -93,6 +95,31 @@ const modalState = {
   activityId: null,
 };
 
+let createModalColorId = DEFAULT_ROUTINE_COLOR_ID;
+
+function buildColorSwatches(container, selectedColorId, onSelect) {
+  container.innerHTML = "";
+
+  ROUTINE_COLORS.forEach((color) => {
+    const swatch = document.createElement("button");
+    swatch.type = "button";
+    swatch.className = "color-swatch";
+    swatch.dataset.colorId = color.id;
+    swatch.style.setProperty("--swatch-color", color.value);
+    swatch.title = color.label;
+    swatch.setAttribute("role", "radio");
+    swatch.setAttribute("aria-label", color.label);
+    swatch.setAttribute("aria-checked", String(selectedColorId === color.id));
+    swatch.addEventListener("click", () => {
+      onSelect(color.id);
+      container.querySelectorAll(".color-swatch").forEach((node) => {
+        node.setAttribute("aria-checked", String(node.dataset.colorId === color.id));
+      });
+    });
+    container.appendChild(swatch);
+  });
+}
+
 function openNameModal({
   title,
   placeholder,
@@ -105,6 +132,8 @@ function openNameModal({
   inputType = "text",
   showEstimatedMinutes = false,
   estimatedMinutesDefault = "10",
+  showColorPicker = false,
+  colorDefault = null,
 }) {
   modalState.mode = mode;
   modalState.routineId = routineId;
@@ -133,6 +162,18 @@ function openNameModal({
     modalMinutesInput.value = "";
   }
 
+  if (showColorPicker) {
+    modalColorGroup.classList.remove("hidden");
+    createModalColorId = colorDefault || getNextRoutineColorId();
+    buildColorSwatches(modalColorSwatches, createModalColorId, (colorId) => {
+      createModalColorId = colorId;
+    });
+  } else {
+    modalColorGroup.classList.add("hidden");
+    modalColorSwatches.innerHTML = "";
+    createModalColorId = DEFAULT_ROUTINE_COLOR_ID;
+  }
+
   modalConfirm.textContent = confirmLabel;
   modalOverlay.classList.remove("hidden");
   modalOverlay.setAttribute("aria-hidden", "false");
@@ -150,6 +191,9 @@ function closeNameModal() {
   modalInput.removeAttribute("step");
   modalMinutesGroup.classList.add("hidden");
   modalMinutesInput.value = "";
+  modalColorGroup.classList.add("hidden");
+  modalColorSwatches.innerHTML = "";
+  createModalColorId = DEFAULT_ROUTINE_COLOR_ID;
   modalState.mode = null;
   modalState.routineId = null;
   modalState.activityId = null;
@@ -267,19 +311,8 @@ function openColorModal(routineId) {
   if (!routine) return;
 
   colorModalRoutineId = routineId;
-  colorModalSwatches.innerHTML = "";
-
-  ROUTINE_COLORS.forEach((color) => {
-    const swatch = document.createElement("button");
-    swatch.type = "button";
-    swatch.className = "color-swatch";
-    swatch.style.setProperty("--swatch-color", color.value);
-    swatch.title = color.label;
-    swatch.setAttribute("role", "radio");
-    swatch.setAttribute("aria-label", color.label);
-    swatch.setAttribute("aria-checked", String(getRoutineColor(routine).id === color.id));
-    swatch.addEventListener("click", () => setRoutineColor(routineId, color.id));
-    colorModalSwatches.appendChild(swatch);
+  buildColorSwatches(colorModalSwatches, getRoutineColor(routine).id, (colorId) => {
+    setRoutineColor(routineId, colorId);
   });
 
   colorModal.classList.remove("hidden");
@@ -777,6 +810,8 @@ function addRoutine() {
     mode: "routine",
     showEstimatedMinutes: true,
     estimatedMinutesDefault: "10",
+    showColorPicker: true,
+    colorDefault: getNextRoutineColorId(),
   });
 }
 
@@ -805,7 +840,7 @@ function submitRoutineCreation() {
   const newRoutine = {
     id: crypto.randomUUID(),
     name,
-    color: getNextRoutineColorId(),
+    color: getRoutineColorById(createModalColorId)?.id || getNextRoutineColorId(),
     estimatedMinutes,
     activities: [],
     completionDates: [],
