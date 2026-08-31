@@ -646,8 +646,19 @@ button {
 }
 
 .small-btn.color-btn {
+  position: relative;
+}
+
+.small-btn.color-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   background: var(--routine-color, var(--primary));
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--panel-alt);
 }
 
 .small-btn.calendar-btn {

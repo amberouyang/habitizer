@@ -1309,6 +1309,7 @@ function renderRoutineView() {
   const colorButton = document.createElement("button");
   colorButton.type = "button";
   colorButton.className = "small-btn color-btn";
+  colorButton.textContent = "🎨";
   colorButton.title = "Change color";
   colorButton.setAttribute("aria-label", "Change routine color");
   applyRoutineColorStyle(colorButton, routine);
