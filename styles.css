@@ -848,6 +848,8 @@ button {
 /* Give the settings copy more room without changing the other dialogs. */
 #settingsModal .modal-card {
   width: min(100%, 400px);
+  max-height: min(90vh, 720px);
+  overflow-y: auto;
 }
 
 .settings-row {
@@ -883,6 +885,85 @@ button {
   font-size: 0.72rem;
   color: var(--muted);
   line-height: 1.4;
+}
+
+.settings-deleted-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-section-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-section-desc {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.deleted-routines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.deleted-routines-empty {
+  margin: 0;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: var(--panel-alt);
+  border: 1px dashed var(--border);
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.deleted-routine-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+}
+
+.deleted-routine-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deleted-routine-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleted-routine-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.deleted-routine-restore {
+  flex-shrink: 0;
+  min-width: 78px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
 }
 
 .toggle-input {

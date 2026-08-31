@@ -1,5 +1,7 @@
 const STORAGE_KEY = "habitizer-routines-v1";
 const SETTINGS_KEY = "habitizer-settings-v1";
+const DELETED_ROUTINES_KEY = "habitizer-deleted-routines-v1";
+const DELETED_ROUTINE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 const state = {
   routines: [],
@@ -57,6 +59,7 @@ const settingsModal = document.getElementById("settingsModal");
 const settingsClose = document.getElementById("settingsClose");
 const darkModeToggle = document.getElementById("darkModeToggle");
 const cumulativeToggle = document.getElementById("cumulativeToggle");
+const deletedRoutinesList = document.getElementById("deletedRoutinesList");
 const confirmModal = document.getElementById("confirmModal");
 const confirmTitle = document.getElementById("confirmTitle");
 const confirmMessage = document.getElementById("confirmMessage");
@@ -96,6 +99,7 @@ const modalState = {
 };
 
 let createModalColorId = DEFAULT_ROUTINE_COLOR_ID;
+let deletedRoutines = [];
 
 function buildColorSwatches(container, selectedColorId, onSelect) {
   container.innerHTML = "";
@@ -206,6 +210,103 @@ function saveRoutines() {
 function loadRoutines() {
   const stored = localStorage.getItem(STORAGE_KEY);
   state.routines = stored ? JSON.parse(stored) : [];
+}
+
+function loadDeletedRoutines() {
+  const stored = localStorage.getItem(DELETED_ROUTINES_KEY);
+  deletedRoutines = stored ? JSON.parse(stored) : [];
+  pruneExpiredDeletedRoutines();
+}
+
+function saveDeletedRoutines() {
+  localStorage.setItem(DELETED_ROUTINES_KEY, JSON.stringify(deletedRoutines));
+}
+
+function pruneExpiredDeletedRoutines() {
+  const cutoff = Date.now() - DELETED_ROUTINE_RETENTION_MS;
+  const pruned = deletedRoutines.filter((entry) => entry.deletedAt >= cutoff);
+  if (pruned.length !== deletedRoutines.length) {
+    deletedRoutines = pruned;
+    saveDeletedRoutines();
+  }
+}
+
+function formatDeletedAtLabel(deletedAt) {
+  return new Date(deletedAt).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function archiveDeletedRoutine(routine, routineIndex) {
+  if (!routine) return;
+
+  pruneExpiredDeletedRoutines();
+  deletedRoutines = deletedRoutines.filter((entry) => entry.routine.id !== routine.id);
+  deletedRoutines.unshift({
+    id: crypto.randomUUID(),
+    deletedAt: Date.now(),
+    routineIndex,
+    routine: JSON.parse(JSON.stringify(routine)),
+  });
+  saveDeletedRoutines();
+}
+
+function restoreDeletedRoutine(entryId) {
+  const entry = deletedRoutines.find((item) => item.id === entryId);
+  if (!entry) return;
+
+  const insertIndex = Math.min(entry.routineIndex, state.routines.length);
+  state.routines.splice(insertIndex, 0, entry.routine);
+  deletedRoutines = deletedRoutines.filter((item) => item.id !== entryId);
+
+  saveRoutines();
+  saveDeletedRoutines();
+  renderDeletedRoutinesList();
+  render();
+}
+
+function renderDeletedRoutinesList() {
+  if (!deletedRoutinesList) return;
+
+  pruneExpiredDeletedRoutines();
+  deletedRoutinesList.innerHTML = "";
+
+  if (deletedRoutines.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "deleted-routines-empty";
+    empty.textContent = "No recently deleted routines.";
+    deletedRoutinesList.appendChild(empty);
+    return;
+  }
+
+  deletedRoutines.forEach((entry) => {
+    const item = document.createElement("div");
+    item.className = "deleted-routine-item";
+
+    const info = document.createElement("div");
+    info.className = "deleted-routine-info";
+
+    const name = document.createElement("div");
+    name.className = "deleted-routine-name";
+    name.textContent = entry.routine.name;
+
+    const meta = document.createElement("div");
+    meta.className = "deleted-routine-meta";
+    meta.textContent = `Deleted ${formatDeletedAtLabel(entry.deletedAt)}`;
+
+    info.append(name, meta);
+
+    const restoreBtn = document.createElement("button");
+    restoreBtn.type = "button";
+    restoreBtn.className = "secondary-btn deleted-routine-restore";
+    restoreBtn.textContent = "Restore";
+    restoreBtn.addEventListener("click", () => restoreDeletedRoutine(entry.id));
+
+    item.append(info, restoreBtn);
+    deletedRoutinesList.appendChild(item);
+  });
 }
 
 function saveSettings() {
@@ -710,6 +811,7 @@ function getActivityElapsedMs(activity) {
 function openSettings() {
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
+  renderDeletedRoutinesList();
   settingsModal.classList.remove("hidden");
   settingsModal.setAttribute("aria-hidden", "false");
 }
@@ -928,6 +1030,10 @@ function finalizePendingDelete() {
 
   if (!hasPendingDelete()) {
     return;
+  }
+
+  if (pendingDelete.type === "routine" && pendingDelete.routine) {
+    archiveDeletedRoutine(pendingDelete.routine, pendingDelete.routineIndex);
   }
 
   saveRoutines();
@@ -2301,6 +2407,7 @@ undoToastAction.addEventListener("click", undoDelete);
 
 function init() {
   loadRoutines();
+  loadDeletedRoutines();
   loadSettings();
   seedData();
   setView("home");
