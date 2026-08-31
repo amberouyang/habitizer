@@ -392,6 +392,18 @@ function formatStreakLabel(streak) {
   return streak === 1 ? "1 day streak" : `${streak} days in a row`;
 }
 
+const STREAK_DISPLAY_MIN = 2;
+
+function formatStreakBadgeText(streak) {
+  return String(streak);
+}
+
+function formatStreakCalendarSuffix(streak) {
+  const label = formatStreakLabel(streak);
+  if (!label || streak < STREAK_DISPLAY_MIN) return "";
+  return ` · ${label}`;
+}
+
 function formatPersonalBestLabel(longestStreak) {
   if (longestStreak <= 0) return null;
   return longestStreak === 1 ? "Personal best: 1 day" : `Personal best: ${longestStreak} days`;
@@ -470,7 +482,9 @@ function renderStreakCalendar(routine) {
 
   const toggleLabel = document.createElement("span");
   toggleLabel.className = "streak-calendar-toggle-label";
-  toggleLabel.textContent = "Completion calendar";
+  const streak = getRoutineStreak(routine);
+  const streakSuffix = formatStreakCalendarSuffix(streak);
+  toggleLabel.innerHTML = `Completion calendar<span class="streak-calendar-toggle-streak">${streakSuffix}</span>`;
 
   const chevron = document.createElement("span");
   chevron.className = "streak-calendar-chevron";
@@ -572,15 +586,10 @@ function renderStreakCalendar(routine) {
 }
 
 function getRoutineMetaText(routine) {
-  const parts = [
+  return [
     `${routine.activities.length} activities`,
     formatDurationLabel(getRoutineTotalDurationMs(routine)),
-  ];
-  const streakLabel = formatStreakLabel(getRoutineStreak(routine));
-  if (streakLabel) {
-    parts.push(streakLabel);
-  }
-  return parts.join(" • ");
+  ].join(" • ");
 }
 
 function getRoutineTotalDurationMs(routine) {
@@ -1174,9 +1183,23 @@ function renderHomeView() {
     const info = document.createElement("div");
     info.className = "routine-info";
 
+    const nameRow = document.createElement("div");
+    nameRow.className = "routine-name-row";
+
     const name = document.createElement("div");
     name.className = "routine-name";
     name.textContent = routine.name;
+
+    const streak = getRoutineStreak(routine);
+    if (streak >= STREAK_DISPLAY_MIN) {
+      const streakBadge = document.createElement("span");
+      streakBadge.className = "streak-badge";
+      streakBadge.textContent = `🔥 ${formatStreakBadgeText(streak)}`;
+      streakBadge.title = formatStreakLabel(streak);
+      nameRow.append(name, streakBadge);
+    } else {
+      nameRow.appendChild(name);
+    }
 
     const meta = document.createElement("div");
     meta.className = "routine-meta";
@@ -1215,7 +1238,7 @@ function renderHomeView() {
       deleteRoutine(routine.id);
     });
 
-    info.append(name, meta);
+    info.append(nameRow, meta);
     actions.append(duplicateBtn, renameBtn, deleteBtn);
     item.append(info, actions);
     list.appendChild(item);
@@ -1282,16 +1305,7 @@ function renderRoutineView() {
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
-  const streak = getRoutineStreak(routine);
-  const streakLabel = formatStreakLabel(streak);
-
   wrapper.append(header, infoRow);
-  if (streakLabel) {
-    const streakRow = document.createElement("div");
-    streakRow.className = "streak-row";
-    streakRow.textContent = streakLabel;
-    wrapper.appendChild(streakRow);
-  }
 
   wrapper.appendChild(renderStreakCalendar(routine));
 
