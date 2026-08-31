@@ -733,6 +733,19 @@ button {
   color: var(--muted);
 }
 
+.empty-state-title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .hidden {
   visibility: hidden;
   pointer-events: none;

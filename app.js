@@ -1387,7 +1387,16 @@ function renderHomeView() {
   if (state.routines.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "No routines yet. Create your first one below.";
+
+    const title = document.createElement("p");
+    title.className = "empty-state-title";
+    title.textContent = "No routines yet";
+
+    const hint = document.createElement("p");
+    hint.className = "empty-state-hint";
+    hint.textContent = "Create a morning routine to get started.";
+
+    empty.append(title, hint);
     list.appendChild(empty);
   }
 
