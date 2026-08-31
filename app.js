@@ -79,8 +79,12 @@ let settingsButton = null;
 const UNDO_DELETE_MS = 5000;
 let pendingDeleteTimeoutId = null;
 const pendingDelete = {
+  type: null,
+  routineId: null,
   routine: null,
-  index: null,
+  routineIndex: null,
+  activity: null,
+  activityIndex: null,
 };
 
 const modalState = {
@@ -872,19 +876,31 @@ function deleteRoutine(routineId) {
   });
 }
 
+function hasPendingDelete() {
+  return pendingDelete.type !== null;
+}
+
+function clearPendingDeleteState() {
+  pendingDelete.type = null;
+  pendingDelete.routineId = null;
+  pendingDelete.routine = null;
+  pendingDelete.routineIndex = null;
+  pendingDelete.activity = null;
+  pendingDelete.activityIndex = null;
+}
+
 function finalizePendingDelete() {
   if (pendingDeleteTimeoutId) {
     clearTimeout(pendingDeleteTimeoutId);
     pendingDeleteTimeoutId = null;
   }
 
-  if (!pendingDelete.routine) {
+  if (!hasPendingDelete()) {
     return;
   }
 
   saveRoutines();
-  pendingDelete.routine = null;
-  pendingDelete.index = null;
+  clearPendingDeleteState();
   hideUndoToast();
 }
 
@@ -909,8 +925,9 @@ function performDeleteRoutine(routineId) {
   finalizePendingDelete();
 
   const index = state.routines.findIndex((item) => item.id === routineId);
+  pendingDelete.type = "routine";
   pendingDelete.routine = JSON.parse(JSON.stringify(routine));
-  pendingDelete.index = index;
+  pendingDelete.routineIndex = index;
 
   state.routines = state.routines.filter((item) => item.id !== routineId);
 
@@ -928,21 +945,54 @@ function performDeleteRoutine(routineId) {
   }, UNDO_DELETE_MS);
 }
 
-function undoDeleteRoutine() {
-  if (!pendingDelete.routine) return;
+function undoDelete() {
+  if (!hasPendingDelete()) return;
 
   if (pendingDeleteTimeoutId) {
     clearTimeout(pendingDeleteTimeoutId);
     pendingDeleteTimeoutId = null;
   }
 
-  const insertIndex = Math.min(pendingDelete.index, state.routines.length);
-  state.routines.splice(insertIndex, 0, pendingDelete.routine);
-  pendingDelete.routine = null;
-  pendingDelete.index = null;
+  if (pendingDelete.type === "routine") {
+    const insertIndex = Math.min(pendingDelete.routineIndex, state.routines.length);
+    state.routines.splice(insertIndex, 0, pendingDelete.routine);
+  } else if (pendingDelete.type === "activity") {
+    const routine = getRoutineById(pendingDelete.routineId);
+    if (routine && pendingDelete.activity) {
+      const insertIndex = Math.min(pendingDelete.activityIndex, routine.activities.length);
+      routine.activities.splice(insertIndex, 0, pendingDelete.activity);
+    }
+  }
 
+  clearPendingDeleteState();
   saveRoutines();
   hideUndoToast();
+  render();
+}
+
+function performDeleteActivity(routineId, activityId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const activity = routine.activities.find((item) => item.id === activityId);
+  if (!activity) return;
+
+  finalizePendingDelete();
+
+  const index = routine.activities.findIndex((item) => item.id === activityId);
+  pendingDelete.type = "activity";
+  pendingDelete.routineId = routineId;
+  pendingDelete.activity = JSON.parse(JSON.stringify(activity));
+  pendingDelete.activityIndex = index;
+
+  routine.activities = routine.activities.filter((item) => item.id !== activityId);
+
+  showUndoToast("Activity deleted");
+
+  pendingDeleteTimeoutId = setTimeout(() => {
+    finalizePendingDelete();
+  }, UNDO_DELETE_MS);
+
   render();
 }
 
@@ -1028,12 +1078,7 @@ function renameActivity(routineId, activityId) {
 }
 
 function deleteActivity(routineId, activityId) {
-  const routine = getRoutineById(routineId);
-  if (!routine) return;
-
-  routine.activities = routine.activities.filter((item) => item.id !== activityId);
-  saveRoutines();
-  render();
+  performDeleteActivity(routineId, activityId);
 }
 
 
@@ -2065,7 +2110,7 @@ cumulativeToggle.addEventListener("change", () => {
   saveSettings();
 });
 
-undoToastAction.addEventListener("click", undoDeleteRoutine);
+undoToastAction.addEventListener("click", undoDelete);
 
 function init() {
   loadRoutines();
