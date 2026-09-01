@@ -115,7 +115,12 @@ Open **⋯** from the home screen:
 ```
 habitizer/
 ├── index.html      # Main HTML structure and modals
-├── app.js          # Application logic and state management
+├── js/             # ES module application code
+│   ├── main.js     # Entry point and initialization
+│   ├── state.js    # Shared application state
+│   ├── views.js    # View rendering and navigation
+│   └── ...         # constants, dom, utils, models, persistence, etc.
+├── app.js          # Legacy re-export to js/main.js (optional)
 ├── styles.css      # Styling and layout
 └── README.md       # This file
 ```
