@@ -310,6 +310,7 @@ function renderDeletedRoutinesList() {
     const name = document.createElement("div");
     name.className = "deleted-routine-name";
     name.textContent = entry.routine.name;
+    name.title = entry.routine.name;
 
     const meta = document.createElement("div");
     meta.className = "deleted-routine-meta";
@@ -894,6 +895,7 @@ function setView(view, routineId = null) {
 
   if (view === "home") {
     pageTitleEl.textContent = "Habitizer";
+    pageTitleEl.title = "";
     backButton.classList.add("hidden");
     menuButton.classList.remove("hidden");
     // The routine creation control lives below the list on the home screen.
@@ -908,6 +910,7 @@ function setView(view, routineId = null) {
 
     const routine = getRoutineById(routineId);
     pageTitleEl.textContent = routine ? routine.name : "Routine";
+    pageTitleEl.title = routine ? routine.name : "";
     pageTitleEl.style.cursor = "pointer";
     pageTitleEl.onclick = () => renameRoutine(routineId);
     pageTitleEl.title = "Click to rename";
@@ -918,11 +921,13 @@ function setView(view, routineId = null) {
     addButton.setAttribute("aria-label", "Add activity");
   } else if (view === "timer") {
     pageTitleEl.textContent = "Live Routine";
+    pageTitleEl.title = "";
     backButton.classList.add("hidden");
     menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
   } else if (view === "complete") {
     pageTitleEl.textContent = "Routine complete";
+    pageTitleEl.title = "";
     backButton.classList.add("hidden");
     menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
@@ -1572,6 +1577,7 @@ function renderHomeView() {
     const name = document.createElement("div");
     name.className = "routine-name";
     name.textContent = routine.name;
+    name.title = routine.name;
 
     const streak = getRoutineStreak(routine);
     if (streak >= STREAK_DISPLAY_MIN) {
@@ -1736,7 +1742,7 @@ function renderRoutineView() {
       label.type = "button";
       label.className = "activity-name";
       label.textContent = activity.name;
-      label.title = "Click to rename";
+      label.title = activity.name;
       label.addEventListener("click", () => renameActivity(routine.id, activity.id));
 
       main.append(dragHandle, label);
@@ -2045,6 +2051,7 @@ function renderCompletionView() {
   const headline = document.createElement("p");
   headline.className = "completion-headline";
   headline.textContent = data.routineName;
+  headline.title = data.routineName;
 
   const totalEl = document.createElement("div");
   totalEl.className = "completion-total";
@@ -2097,6 +2104,7 @@ function renderCompletionView() {
 
     const name = document.createElement("span");
     name.textContent = activity.name;
+    name.title = activity.name;
 
     const time = document.createElement("strong");
     time.textContent = formatDuration(activity.timeSpentMs);
@@ -2194,6 +2202,7 @@ function renderTimerView() {
     const labelText = document.createElement("span");
     labelText.className = "progress-label";
     labelText.textContent = activity.name;
+    labelText.title = activity.name;
 
     const timeText = document.createElement("span");
     timeText.className = "progress-time";

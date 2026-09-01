@@ -144,6 +144,9 @@ button {
   font-size: 1.3rem;
   text-align: center;
   letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-content {
@@ -296,13 +299,19 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
   text-align: left;
 }
 
 .routine-name {
+  flex: 1;
+  min-width: 0;
   font-size: 1.06rem;
   font-weight: 600;
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .routine-name-row {
@@ -507,6 +516,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .icon-btn,
@@ -676,6 +686,7 @@ button {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .small-btn {
@@ -1116,6 +1127,9 @@ button {
 .progress-label {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .progress-time {
@@ -1230,12 +1244,22 @@ button {
 .summary-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
   font-size: 0.94rem;
   color: var(--muted);
+  min-width: 0;
+}
+
+.summary-item > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .summary-item strong {
+  flex-shrink: 0;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
@@ -1261,6 +1285,9 @@ button {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .completion-total {
