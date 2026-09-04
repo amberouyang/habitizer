@@ -6,7 +6,7 @@ import {
 import { parseEstimatedMinutes } from "./utils.js";
 import {
   getRoutineById,
-  getRoutineColorById,
+  isValidRoutineColor,
   getNextRoutineColorId,
 } from "./models.js";
 import { saveRoutines } from "./persistence.js";
@@ -48,7 +48,7 @@ export function submitRoutineCreation() {
   const newRoutine = {
     id: crypto.randomUUID(),
     name,
-    color: getRoutineColorById(createModalColorId)?.id || getNextRoutineColorId(),
+    color: isValidRoutineColor(createModalColorId) ? createModalColorId : getNextRoutineColorId(),
     estimatedMinutes,
     activities: [],
     completionDates: [],

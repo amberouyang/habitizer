@@ -13,16 +13,40 @@ export function getRoutineById(routineId) {
   return state.routines.find((routine) => routine.id === routineId) || null;
 }
 
+export function isHexColor(value) {
+  return typeof value === "string" && /^#[0-9A-Fa-f]{6}$/.test(value);
+}
+
+export function normalizeHexColor(value) {
+  if (!isHexColor(value)) return null;
+  return value.toLowerCase();
+}
+
+export function isValidRoutineColor(value) {
+  return Boolean(getRoutineColorById(value)) || isHexColor(value);
+}
+
 export function getRoutineColorById(colorId) {
   return ROUTINE_COLORS.find((color) => color.id === colorId) || null;
 }
 
 export function getRoutineColor(routine) {
-  return getRoutineColorById(routine?.color) || getRoutineColorById(DEFAULT_ROUTINE_COLOR_ID);
+  const color = routine?.color;
+  const hex = normalizeHexColor(color);
+  if (hex) {
+    return { id: "custom", label: "Custom", value: hex };
+  }
+  return getRoutineColorById(color) || getRoutineColorById(DEFAULT_ROUTINE_COLOR_ID);
 }
 
 export function getRoutineColorValue(routine) {
   return getRoutineColor(routine).value;
+}
+
+export function getRoutineColorSelection(routine) {
+  const hex = normalizeHexColor(routine?.color);
+  if (hex) return hex;
+  return getRoutineColor(routine).id;
 }
 
 export function getNextRoutineColorId() {

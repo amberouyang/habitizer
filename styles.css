@@ -377,6 +377,36 @@ button {
   outline-offset: 2px;
 }
 
+.color-swatch-custom {
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(
+    from 0deg,
+    #e74c3c,
+    #f1c40f,
+    #2ecc71,
+    #3498db,
+    #9b59b6,
+    #e74c3c
+  );
+}
+
+.color-swatch-custom[aria-checked="true"] {
+  background: var(--swatch-color);
+}
+
+.color-swatch-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
 .completion-streak {
   text-align: center;
   font-size: 0.88rem;

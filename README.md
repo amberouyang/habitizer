@@ -7,7 +7,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Custom routines** — Create routines for mornings, evenings, workouts, and more
 - **Activities** — Add, rename, drag to reorder, and delete activities
 - **Estimated time** — Set how long a routine should take when creating or editing it
-- **Routine colors** — Pick a color when creating or editing a routine (card stripe + timer progress bar)
+- **Routine colors** — Pick a preset or custom color when creating or editing a routine (card stripe + timer progress bar)
 - **Live timer** — Track total time and per-activity time while you run a routine
 - **Completion screen** — See your results, streak, and personal best after finishing
 - **Streaks** — Daily completion tracking with calendar history and streak badges

@@ -1,4 +1,4 @@
-import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, STREAK_DISPLAY_MIN } from "./constants.js";
+import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, DEFAULT_CUSTOM_COLOR, STREAK_DISPLAY_MIN } from "./constants.js";
 import {
   state,
   settings,
@@ -54,8 +54,10 @@ import {
 } from "./utils.js";
 import {
   getRoutineById,
-  getRoutineColor,
-  getRoutineColorById,
+  getRoutineColorSelection,
+  isHexColor,
+  isValidRoutineColor,
+  normalizeHexColor,
   getNextRoutineColorId,
 } from "./models.js";
 import {
@@ -67,8 +69,28 @@ import {
 } from "./persistence.js";
 import { render } from "./views.js";
 
-export function buildColorSwatches(container, selectedColorId, onSelect) {
+function updateSwatchSelection(container, selectedColor) {
+  container.querySelectorAll(".color-swatch").forEach((node) => {
+    const isCustomSwatch = node.dataset.colorId === "custom";
+    const checked = isCustomSwatch
+      ? isHexColor(selectedColor)
+      : node.dataset.colorId === selectedColor;
+    node.setAttribute("aria-checked", String(checked));
+
+    if (isCustomSwatch && isHexColor(selectedColor)) {
+      node.style.setProperty("--swatch-color", selectedColor);
+      const input = node.querySelector('input[type="color"]');
+      if (input) input.value = selectedColor;
+    }
+  });
+}
+
+export function buildColorSwatches(container, selectedColor, onSelect) {
   container.innerHTML = "";
+
+  const initialSelection = isValidRoutineColor(selectedColor)
+    ? (normalizeHexColor(selectedColor) || selectedColor)
+    : DEFAULT_ROUTINE_COLOR_ID;
 
   ROUTINE_COLORS.forEach((color) => {
     const swatch = document.createElement("button");
@@ -79,15 +101,49 @@ export function buildColorSwatches(container, selectedColorId, onSelect) {
     swatch.title = color.label;
     swatch.setAttribute("role", "radio");
     swatch.setAttribute("aria-label", color.label);
-    swatch.setAttribute("aria-checked", String(selectedColorId === color.id));
+    swatch.setAttribute("aria-checked", String(initialSelection === color.id));
     swatch.addEventListener("click", () => {
-      onSelect(color.id);
-      container.querySelectorAll(".color-swatch").forEach((node) => {
-        node.setAttribute("aria-checked", String(node.dataset.colorId === color.id));
-      });
+      onSelect(color.id, { isCustom: false });
+      updateSwatchSelection(container, color.id);
     });
     container.appendChild(swatch);
   });
+
+  const customSelected = isHexColor(initialSelection);
+  const customValue = customSelected ? initialSelection : DEFAULT_CUSTOM_COLOR;
+
+  const customSwatch = document.createElement("label");
+  customSwatch.className = "color-swatch color-swatch-custom";
+  customSwatch.dataset.colorId = "custom";
+  customSwatch.title = "Custom color";
+  customSwatch.setAttribute("role", "radio");
+  customSwatch.setAttribute("aria-label", "Custom color");
+  customSwatch.setAttribute("aria-checked", String(customSelected));
+  if (customSelected) {
+    customSwatch.style.setProperty("--swatch-color", customValue);
+  }
+
+  const colorInput = document.createElement("input");
+  colorInput.type = "color";
+  colorInput.className = "color-swatch-input";
+  colorInput.value = customValue;
+  colorInput.setAttribute("aria-label", "Pick a custom color");
+  colorInput.addEventListener("input", () => {
+    const hex = normalizeHexColor(colorInput.value) || DEFAULT_CUSTOM_COLOR;
+    customSwatch.style.setProperty("--swatch-color", hex);
+    onSelect(hex, { isCustom: true });
+    updateSwatchSelection(container, hex);
+  });
+  colorInput.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const hex = normalizeHexColor(colorInput.value) || DEFAULT_CUSTOM_COLOR;
+    customSwatch.style.setProperty("--swatch-color", hex);
+    onSelect(hex, { isCustom: true });
+    updateSwatchSelection(container, hex);
+  });
+
+  customSwatch.appendChild(colorInput);
+  container.appendChild(customSwatch);
 }
 
 export function openNameModal({
@@ -135,8 +191,8 @@ export function openNameModal({
   if (showColorPicker) {
     modalColorGroup.classList.remove("hidden");
     setCreateModalColorId(colorDefault || getNextRoutineColorId());
-    buildColorSwatches(modalColorSwatches, createModalColorId, (colorId) => {
-      setCreateModalColorId(colorId);
+    buildColorSwatches(modalColorSwatches, createModalColorId, (colorValue) => {
+      setCreateModalColorId(colorValue);
     });
   } else {
     modalColorGroup.classList.add("hidden");
@@ -169,13 +225,15 @@ export function closeNameModal() {
   modalState.activityId = null;
 }
 
-function setRoutineColor(routineId, colorId) {
+function setRoutineColor(routineId, colorValue, { close = true } = {}) {
   const routine = getRoutineById(routineId);
-  if (!routine || !getRoutineColorById(colorId)) return;
+  if (!routine || !isValidRoutineColor(colorValue)) return;
 
-  routine.color = colorId;
+  routine.color = normalizeHexColor(colorValue) || colorValue;
   saveRoutines();
-  closeColorModal();
+  if (close) {
+    closeColorModal();
+  }
   render();
 }
 
@@ -184,8 +242,8 @@ export function openColorModal(routineId) {
   if (!routine) return;
 
   setColorModalRoutineId(routineId);
-  buildColorSwatches(colorModalSwatches, getRoutineColor(routine).id, (colorId) => {
-    setRoutineColor(routineId, colorId);
+  buildColorSwatches(colorModalSwatches, getRoutineColorSelection(routine), (colorValue, meta = {}) => {
+    setRoutineColor(routineId, colorValue, { close: !meta.isCustom });
   });
 
   colorModal.classList.remove("hidden");
