@@ -1,6 +1,7 @@
 import { loadRoutines, loadDeletedRoutines, loadSettings, seedData } from "./persistence.js";
 import { setView } from "./views.js";
 import { wireEvents } from "./events.js";
+import { restoreTimerSession } from "./timer.js";
 
 export function init() {
   loadRoutines();
@@ -8,7 +9,10 @@ export function init() {
   loadSettings();
   seedData();
   wireEvents();
-  setView("home");
+
+  if (!restoreTimerSession()) {
+    setView("home");
+  }
 }
 
 init();

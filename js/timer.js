@@ -18,7 +18,7 @@ import {
   applyProgressFillColor,
   recordRoutineCompletion,
 } from "./models.js";
-import { saveRoutines } from "./persistence.js";
+import { saveRoutines, saveTimerSession, clearTimerSession, loadTimerSession } from "./persistence.js";
 import { openConfirmModal, closeConfirmModal } from "./modals.js";
 import { setView, render } from "./views.js";
 
@@ -92,8 +92,21 @@ export function startRoutine(routineId) {
     activityStartTimes: {},
   };
 
+  saveTimerSession();
   setView("timer", routineId);
   startLiveTimerLoop();
+}
+
+export function restoreTimerSession() {
+  const session = loadTimerSession();
+  if (!session?.routineId) {
+    return false;
+  }
+
+  setView("timer", session.routineId);
+  startLiveTimerLoop();
+  saveTimerSession();
+  return true;
 }
 
 export function pauseTimer() {
@@ -116,6 +129,7 @@ export function pauseTimer() {
   });
 
   saveRoutines();
+  saveTimerSession();
   render();
 }
 
@@ -131,6 +145,7 @@ export function resumeTimer() {
     }
   });
 
+  saveTimerSession();
   render();
 }
 
@@ -165,6 +180,7 @@ export function toggleActivityCompletion(activityId, checked) {
   }
 
   saveRoutines();
+  saveTimerSession();
 
   if (state.currentView === "timer") {
     const checkbox = document.querySelector(`input[type="checkbox"][data-activity-id="${activityId}"]`);
@@ -251,6 +267,7 @@ export function endRoutine() {
     setLiveTimerIntervalId(null);
   }
 
+  clearTimerSession();
   saveRoutines();
   setView("complete");
 }

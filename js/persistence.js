@@ -2,10 +2,89 @@ import {
   STORAGE_KEY,
   SETTINGS_KEY,
   DELETED_ROUTINES_KEY,
+  TIMER_SESSION_KEY,
   DELETED_ROUTINE_RETENTION_MS,
+  TIMER_SESSION_MAX_AGE_MS,
 } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import { darkModeToggle, cumulativeToggle } from "./dom.js";
+
+function emptyTimerState() {
+  return {
+    routineId: null,
+    isRunning: false,
+    elapsedMs: 0,
+    lastTimestamp: null,
+    completedActivityIds: new Set(),
+    activityStartTimes: {},
+  };
+}
+
+export function saveTimerSession() {
+  if (!state.timer.routineId) {
+    clearTimerSession();
+    return;
+  }
+
+  const payload = {
+    savedAt: Date.now(),
+    routineId: state.timer.routineId,
+    isRunning: Boolean(state.timer.isRunning),
+    elapsedMs: Number(state.timer.elapsedMs || 0),
+    lastTimestamp: state.timer.lastTimestamp,
+    completedActivityIds: [...state.timer.completedActivityIds],
+    activityStartTimes: { ...state.timer.activityStartTimes },
+  };
+
+  localStorage.setItem(TIMER_SESSION_KEY, JSON.stringify(payload));
+}
+
+export function clearTimerSession() {
+  localStorage.removeItem(TIMER_SESSION_KEY);
+}
+
+export function loadTimerSession() {
+  const stored = localStorage.getItem(TIMER_SESSION_KEY);
+  if (!stored) {
+    state.timer = emptyTimerState();
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(stored);
+    const savedAt = Number(parsed?.savedAt || 0);
+    const routineId = parsed?.routineId;
+    const routineExists = state.routines.some((routine) => routine.id === routineId);
+    const isFresh = savedAt > 0 && Date.now() - savedAt <= TIMER_SESSION_MAX_AGE_MS;
+
+    if (!routineId || !routineExists || !isFresh) {
+      clearTimerSession();
+      state.timer = emptyTimerState();
+      return null;
+    }
+
+    const activityStartTimes = parsed.activityStartTimes && typeof parsed.activityStartTimes === "object"
+      ? parsed.activityStartTimes
+      : {};
+
+    state.timer = {
+      routineId,
+      isRunning: Boolean(parsed.isRunning),
+      elapsedMs: Number(parsed.elapsedMs || 0),
+      lastTimestamp: parsed.isRunning && parsed.lastTimestamp ? Number(parsed.lastTimestamp) : null,
+      completedActivityIds: new Set(
+        Array.isArray(parsed.completedActivityIds) ? parsed.completedActivityIds : []
+      ),
+      activityStartTimes: parsed.isRunning ? activityStartTimes : {},
+    };
+
+    return state.timer;
+  } catch {
+    clearTimerSession();
+    state.timer = emptyTimerState();
+    return null;
+  }
+}
 
 export function saveRoutines() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.routines));

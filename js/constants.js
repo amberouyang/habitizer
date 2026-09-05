@@ -1,7 +1,9 @@
 export const STORAGE_KEY = "habitizer-routines-v1";
 export const SETTINGS_KEY = "habitizer-settings-v1";
 export const DELETED_ROUTINES_KEY = "habitizer-deleted-routines-v1";
+export const TIMER_SESSION_KEY = "habitizer-timer-v1";
 export const DELETED_ROUTINE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+export const TIMER_SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const UNDO_DELETE_MS = 5000;
 
 export const ROUTINE_COLORS = [

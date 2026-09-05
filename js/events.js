@@ -21,7 +21,7 @@ import {
   cumulativeToggle,
   undoToastAction,
 } from "./dom.js";
-import { saveRoutines, saveSettings, applyTheme } from "./persistence.js";
+import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
 import { getRoutineById } from "./models.js";
 import {
   closeNameModal,
@@ -218,4 +218,10 @@ export function wireEvents() {
   });
 
   undoToastAction.addEventListener("click", undoDelete);
+
+  window.addEventListener("pagehide", () => {
+    if (state.timer.routineId) {
+      saveTimerSession();
+    }
+  });
 }

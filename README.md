@@ -8,7 +8,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Activities** — Add, rename, drag to reorder, and delete activities
 - **Estimated time** — Set how long a routine should take when creating or editing it
 - **Routine colors** — Pick a preset or custom color when creating or editing a routine (card stripe + timer progress bar)
-- **Live timer** — Track total time and per-activity time while you run a routine
+- **Live timer** — Track total time and per-activity time while you run a routine (survives page refresh)
 - **Completion screen** — See your results, streak, and personal best after finishing
 - **Streaks** — Daily completion tracking with calendar history and streak badges
 - **Drag to reorder** — Reorder routines on the home screen and activities within a routine
@@ -109,6 +109,7 @@ Open **⋯** from the home screen:
 | `habitizer-routines-v1` | Active routines and activities |
 | `habitizer-settings-v1` | Dark mode and cumulative timer preference |
 | `habitizer-deleted-routines-v1` | Recently deleted routines (30-day retention) |
+| `habitizer-timer-v1` | In-progress timer session (cleared when the run ends; max 24h) |
 
 ### Project structure
 
