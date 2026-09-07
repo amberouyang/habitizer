@@ -1,4 +1,4 @@
-import { state, settings, modalState, confirmCallback } from "./state.js";
+import { state, settings, modalState, confirmCallback, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
 import {
   backButton,
   addButton,
@@ -19,6 +19,9 @@ import {
   calendarModalClose,
   darkModeToggle,
   cumulativeToggle,
+  exportBackupBtn,
+  importBackupBtn,
+  importBackupInput,
   undoToastAction,
 } from "./dom.js";
 import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
@@ -30,6 +33,7 @@ import {
   closeColorModal,
   closeCalendarModal,
   openSettings,
+  openConfirmModal,
 } from "./modals.js";
 import {
   addRoutine,
@@ -38,6 +42,7 @@ import {
   openAddActivityModal,
 } from "./routines.js";
 import { undoDelete } from "./delete.js";
+import { exportBackup, readBackupFile, applyBackup } from "./backup.js";
 import { setView, render } from "./views.js";
 
 export function wireEvents() {
@@ -215,6 +220,53 @@ export function wireEvents() {
   cumulativeToggle.addEventListener("change", () => {
     settings.cumulativeMode = cumulativeToggle.checked;
     saveSettings();
+  });
+
+  exportBackupBtn.addEventListener("click", () => {
+    exportBackup();
+  });
+
+  importBackupBtn.addEventListener("click", () => {
+    importBackupInput.value = "";
+    importBackupInput.click();
+  });
+
+  importBackupInput.addEventListener("change", async () => {
+    const file = importBackupInput.files?.[0];
+    if (!file) return;
+
+    try {
+      const parsed = await readBackupFile(file);
+      const routineCount = parsed.routines.length;
+
+      openConfirmModal({
+        title: "Replace all data?",
+        message: `Import ${routineCount} routine${routineCount === 1 ? "" : "s"} from this backup? This will replace your current routines, settings, and recently deleted list.`,
+        confirmLabel: "Import",
+        onConfirm: () => {
+          closeConfirmModal();
+
+          if (liveTimerIntervalId) {
+            clearInterval(liveTimerIntervalId);
+            setLiveTimerIntervalId(null);
+          }
+
+          applyBackup(parsed);
+          closeSettings();
+          setView("home");
+          render();
+        },
+      });
+    } catch (error) {
+      openConfirmModal({
+        title: "Import failed",
+        message: error?.message || "Could not import that backup file.",
+        confirmLabel: "OK",
+        onConfirm: closeConfirmModal,
+      });
+    } finally {
+      importBackupInput.value = "";
+    }
   });
 
   undoToastAction.addEventListener("click", undoDelete);

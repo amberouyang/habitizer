@@ -16,6 +16,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Undo delete** — Brief undo window after deleting a routine or activity
 - **Recently deleted** — Deleted routines are kept in settings for 30 days and can be restored
 - **Dark mode** — Toggle in settings
+- **Export / import** — Back up and restore routines, settings, and recently deleted items as JSON
 - **Auto-save** — Everything persists in your browser via localStorage
 
 ## Installation
@@ -90,6 +91,9 @@ Open **⋯** from the home screen:
 
 - **Dark mode** — Switch between light and dark themes
 - **Cumulative Habit Tracker** — When on, activity times accumulate across runs; when off, times reset each session
+- **Backup** — Export or import a JSON file with your routines, settings, and recently deleted items
+  - **Export** — Download a `habitizer-backup-YYYY-MM-DD.json` file
+  - **Import** — Replace current data from a backup (confirmation required)
 - **Recently deleted** — View routines deleted in the last 30 days
   - **Restore** — Bring a routine back to your list
   - **✕** — Permanently delete a routine from the archive (confirmation required)
@@ -118,9 +122,9 @@ habitizer/
 ├── index.html      # Main HTML structure and modals
 ├── js/             # ES module application code
 │   ├── main.js     # Entry point and initialization
-│   ├── state.js    # Shared application state
-│   ├── views.js    # View rendering and navigation
-│   └── ...         # constants, dom, utils, models, persistence, etc.
+│   ├── backup.js   # JSON export/import
+│   ├── persistence.js
+│   └── ...         # state, views, timer, modals, etc.
 ├── app.js          # Legacy re-export to js/main.js (optional)
 ├── styles.css      # Styling and layout
 └── README.md       # This file

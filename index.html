@@ -70,6 +70,15 @@
             <input id="cumulativeToggle" class="toggle-input" type="checkbox" role="switch" aria-label="Cumulative habit tracker" />
           </label>
         </div>
+        <section class="settings-backup-section" aria-labelledby="backupTitle">
+          <h3 id="backupTitle" class="settings-section-title">Backup</h3>
+          <p class="settings-section-desc">Export or restore routines, settings, and recently deleted items as a JSON file.</p>
+          <div class="settings-backup-actions">
+            <button id="exportBackupBtn" type="button" class="secondary-btn">Export</button>
+            <button id="importBackupBtn" type="button" class="secondary-btn">Import</button>
+            <input id="importBackupInput" class="hidden" type="file" accept="application/json,.json" aria-hidden="true" tabindex="-1" />
+          </div>
+        </section>
         <section class="settings-deleted-section" aria-labelledby="deletedRoutinesTitle">
           <h3 id="deletedRoutinesTitle" class="settings-section-title">Recently deleted</h3>
           <p class="settings-section-desc">Routines stay here for 30 days.</p>
