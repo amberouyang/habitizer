@@ -11,6 +11,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Live timer** — Track total time and per-activity time while you run a routine (survives page refresh)
 - **Completion screen** — See your results, streak, and personal best after finishing
 - **Streaks** — Daily completion tracking with calendar history and streak badges
+- **Run history** — Past run durations per routine (best time + recent runs, up to 50)
 - **Drag to reorder** — Reorder routines on the home screen and activities within a routine
 - **Duplicate routines** — Copy a routine with all activities and settings
 - **Undo delete** — Brief undo window after deleting a routine or activity
@@ -70,7 +71,7 @@ When you have no routines yet, the home screen shows a short hint to help you ge
 - **Start routine** — Tap **Start Routine**
 - **Header actions:**
   - **⎘** — Duplicate routine
-  - **📅** — Completion history calendar (green dot if completed today)
+  - **📅** — Completion history calendar and recent run durations (green dot if completed today)
   - **🎨** — Change color
   - **⏱** — Edit estimated time
 - **Rename routine** — Tap the routine name in the top bar

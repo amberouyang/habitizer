@@ -1,11 +1,13 @@
 import {
   ROUTINE_COLORS,
   DEFAULT_ROUTINE_COLOR_ID,
+  RUN_HISTORY_LIMIT,
 } from "./constants.js";
 import { state } from "./state.js";
 import {
   formatDurationLabel,
   getRoutineCompletionDates,
+  getRoutineRunHistory,
   getLocalDateKey,
 } from "./utils.js";
 
@@ -144,6 +146,28 @@ export function recordRoutineCompletion(routine) {
   if (!completionDates.includes(today)) {
     routine.completionDates = [...completionDates, today];
   }
+}
+
+export function recordRoutineRun(routine, {
+  totalMs,
+  estimatedMs,
+  activitiesCompleted,
+  activitiesTotal,
+}) {
+  if (!routine) return;
+
+  const history = [...getRoutineRunHistory(routine)];
+  history.unshift({
+    id: crypto.randomUUID(),
+    completedAt: Date.now(),
+    dateKey: getLocalDateKey(),
+    totalMs: Math.max(0, Number(totalMs) || 0),
+    estimatedMs: Math.max(0, Number(estimatedMs) || 0),
+    activitiesCompleted: Math.max(0, Number(activitiesCompleted) || 0),
+    activitiesTotal: Math.max(0, Number(activitiesTotal) || 0),
+  });
+
+  routine.runHistory = history.slice(0, RUN_HISTORY_LIMIT);
 }
 
 export function routineCompletedToday(routine) {

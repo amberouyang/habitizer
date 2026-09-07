@@ -52,6 +52,7 @@ export function submitRoutineCreation() {
     estimatedMinutes,
     activities: [],
     completionDates: [],
+    runHistory: [],
   };
 
   state.routines.unshift(newRoutine);
@@ -147,9 +148,8 @@ export function duplicateRoutine(routineId) {
       timeSpentMs: 0,
     })),
     completionDates: [],
+    runHistory: [],
   };
-
-  const sourceIndex = state.routines.findIndex((item) => item.id === routineId);
   state.routines.splice(sourceIndex + 1, 0, duplicate);
   saveRoutines();
   setView("routine", duplicate.id);

@@ -44,13 +44,19 @@ import {
 import {
   formatDeletedAtLabel,
   formatStreakLabel,
+  formatDuration,
+  formatRunCompletedAt,
+  formatDurationLabel,
   getLocalDateKey,
   getCalendarMonthDate,
   formatCalendarMonthLabel,
   getDateKeyForDay,
   getCalendarWeeks,
   getRoutineCompletionDates,
+  getRoutineRunHistory,
   getRoutineStreak,
+  getFastestRunMs,
+  getCompletionEstimateMessage,
 } from "./utils.js";
 import {
   getRoutineById,
@@ -364,6 +370,86 @@ function buildStreakCalendarContent(routine) {
   return calendar;
 }
 
+function buildRunHistoryContent(routine) {
+  const section = document.createElement("section");
+  section.className = "run-history";
+  section.setAttribute("aria-label", "Recent runs");
+
+  const header = document.createElement("div");
+  header.className = "run-history-header";
+
+  const title = document.createElement("h3");
+  title.className = "run-history-title";
+  title.textContent = "Recent runs";
+
+  header.appendChild(title);
+
+  const fastestMs = getFastestRunMs(routine);
+  if (fastestMs != null) {
+    const best = document.createElement("p");
+    best.className = "run-history-best";
+    best.textContent = `Best time: ${formatDuration(fastestMs)}`;
+    header.appendChild(best);
+  }
+
+  section.appendChild(header);
+
+  const runs = getRoutineRunHistory(routine);
+  if (runs.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "run-history-empty";
+    empty.textContent = "No runs yet. Finish a routine to see durations here.";
+    section.appendChild(empty);
+    return section;
+  }
+
+  const list = document.createElement("div");
+  list.className = "run-history-list";
+
+  runs.forEach((run) => {
+    const item = document.createElement("div");
+    item.className = "run-history-item";
+
+    const top = document.createElement("div");
+    top.className = "run-history-item-top";
+
+    const when = document.createElement("span");
+    when.className = "run-history-when";
+    when.textContent = formatRunCompletedAt(run.completedAt);
+
+    const duration = document.createElement("strong");
+    duration.className = "run-history-duration";
+    duration.textContent = formatDuration(run.totalMs);
+
+    top.append(when, duration);
+
+    const meta = document.createElement("div");
+    meta.className = "run-history-meta";
+
+    const parts = [];
+    if (run.activitiesTotal > 0) {
+      parts.push(`${run.activitiesCompleted} of ${run.activitiesTotal} activities`);
+    }
+    if (run.estimatedMs > 0) {
+      const estimateMessage = getCompletionEstimateMessage(run.totalMs, run.estimatedMs);
+      if (estimateMessage) {
+        parts.push(`${formatDurationLabel(run.estimatedMs)} estimate · ${estimateMessage}`);
+      }
+    }
+    meta.textContent = parts.join(" · ");
+
+    if (fastestMs != null && Number(run.totalMs) === fastestMs) {
+      item.classList.add("is-best");
+    }
+
+    item.append(top, meta);
+    list.appendChild(item);
+  });
+
+  section.appendChild(list);
+  return section;
+}
+
 function updateCalendarModal(routine) {
   const streak = getRoutineStreak(routine);
   const streakLabel = formatStreakLabel(streak);
@@ -377,7 +463,10 @@ function updateCalendarModal(routine) {
     calendarModalSubtitle.classList.add("hidden");
   }
 
-  calendarModalBody.replaceChildren(buildStreakCalendarContent(routine));
+  calendarModalBody.replaceChildren(
+    buildStreakCalendarContent(routine),
+    buildRunHistoryContent(routine)
+  );
 }
 
 function refreshCalendarModalContent() {

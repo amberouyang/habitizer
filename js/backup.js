@@ -1,4 +1,4 @@
-import { DEFAULT_ROUTINE_COLOR_ID } from "./constants.js";
+import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import {
   saveRoutines,
@@ -27,6 +27,30 @@ function sanitizeActivity(activity) {
   };
 }
 
+function sanitizeRun(run) {
+  if (!run || typeof run !== "object") return null;
+
+  const completedAt = Number(run.completedAt);
+  const totalMs = Number(run.totalMs);
+  if (!Number.isFinite(completedAt) || !Number.isFinite(totalMs) || totalMs < 0) {
+    return null;
+  }
+
+  const dateKey = typeof run.dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(run.dateKey)
+    ? run.dateKey
+    : null;
+
+  return {
+    id: typeof run.id === "string" && run.id ? run.id : crypto.randomUUID(),
+    completedAt,
+    dateKey,
+    totalMs,
+    estimatedMs: Math.max(0, Number(run.estimatedMs) || 0),
+    activitiesCompleted: Math.max(0, Number(run.activitiesCompleted) || 0),
+    activitiesTotal: Math.max(0, Number(run.activitiesTotal) || 0),
+  };
+}
+
 function sanitizeRoutine(routine) {
   if (!routine || typeof routine !== "object") return null;
 
@@ -45,6 +69,9 @@ function sanitizeRoutine(routine) {
   const completionDates = Array.isArray(routine.completionDates)
     ? [...new Set(routine.completionDates.filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)))]
     : [];
+  const runHistory = Array.isArray(routine.runHistory)
+    ? routine.runHistory.map(sanitizeRun).filter(Boolean).slice(0, RUN_HISTORY_LIMIT)
+    : [];
 
   return {
     id: typeof routine.id === "string" && routine.id ? routine.id : crypto.randomUUID(),
@@ -55,6 +82,7 @@ function sanitizeRoutine(routine) {
       : 0,
     activities,
     completionDates,
+    runHistory,
   };
 }
 

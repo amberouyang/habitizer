@@ -35,6 +35,26 @@ export function getRoutineCompletionDates(routine) {
   return Array.isArray(routine?.completionDates) ? routine.completionDates : [];
 }
 
+export function getRoutineRunHistory(routine) {
+  return Array.isArray(routine?.runHistory) ? routine.runHistory : [];
+}
+
+export function formatRunCompletedAt(timestamp) {
+  return new Date(timestamp).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+export function getFastestRunMs(routine) {
+  const runs = getRoutineRunHistory(routine).filter((run) => Number(run.totalMs) > 0);
+  if (runs.length === 0) return null;
+  return Math.min(...runs.map((run) => Number(run.totalMs)));
+}
+
 export function getRoutineStreak(routine) {
   const completionDates = new Set(getRoutineCompletionDates(routine));
   if (completionDates.size === 0) return 0;

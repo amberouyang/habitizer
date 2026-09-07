@@ -17,6 +17,7 @@ import {
   getActivityElapsedMs,
   applyProgressFillColor,
   recordRoutineCompletion,
+  recordRoutineRun,
 } from "./models.js";
 import { saveRoutines, saveTimerSession, clearTimerSession, loadTimerSession } from "./persistence.js";
 import { openConfirmModal, closeConfirmModal } from "./modals.js";
@@ -226,9 +227,16 @@ export function endRoutine() {
 
   const totalMs = getTotalElapsedMs();
   const estimatedMs = getRoutineTotalDurationMs(routine);
+  const { completed, total } = getActivityCompletionCount(routine);
   const completionDatesBefore = getRoutineCompletionDates(routine);
 
   recordRoutineCompletion(routine);
+  recordRoutineRun(routine, {
+    totalMs,
+    estimatedMs,
+    activitiesCompleted: completed,
+    activitiesTotal: total,
+  });
   const streak = getRoutineStreak(routine);
   const longestStreak = getRoutineLongestStreak(routine);
   const previousLongestStreak = getLongestStreakFromDates(completionDatesBefore);
