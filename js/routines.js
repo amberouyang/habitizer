@@ -8,6 +8,7 @@ import {
   getRoutineById,
   isValidRoutineColor,
   getNextRoutineColorId,
+  syncRoutineEstimatedMinutes,
 } from "./models.js";
 import { saveRoutines } from "./persistence.js";
 import {
@@ -145,12 +146,16 @@ export function duplicateRoutine(routineId) {
     activities: routine.activities.map((activity) => ({
       id: crypto.randomUUID(),
       name: activity.name,
+      estimatedMinutes: Number(activity.estimatedMinutes || 0),
       timeSpentMs: 0,
     })),
     completionDates: [],
     runHistory: [],
   };
+
+  const sourceIndex = state.routines.findIndex((item) => item.id === routineId);
   state.routines.splice(sourceIndex + 1, 0, duplicate);
+  syncRoutineEstimatedMinutes(duplicate);
   saveRoutines();
   setView("routine", duplicate.id);
 }
@@ -162,6 +167,8 @@ export function openAddActivityModal(routineId) {
     confirmLabel: "Add",
     mode: "activity",
     routineId,
+    showEstimatedMinutes: true,
+    estimatedMinutesDefault: "5",
   });
 }
 
@@ -173,13 +180,15 @@ export function renameActivity(routineId, activityId) {
   if (!activity) return;
 
   openNameModal({
-    title: "Rename activity",
+    title: "Edit activity",
     placeholder: "Activity name",
-    confirmLabel: "Rename",
+    confirmLabel: "Save",
     mode: "renameActivity",
     routineId,
     activityId,
     initialValue: activity.name,
+    showEstimatedMinutes: true,
+    estimatedMinutesDefault: String(activity.estimatedMinutes ?? 5),
   });
 }
 

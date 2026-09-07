@@ -28,6 +28,8 @@ import {
   getActivityElapsedMs,
   applyRoutineColorStyle,
   applyProgressFillColor,
+  getActivityEstimatedMinutes,
+  getActivityEstimatedMs,
   routineCompletedToday,
 } from "./models.js";
 import {
@@ -329,7 +331,13 @@ export function renderRoutineView() {
       label.title = activity.name;
       label.addEventListener("click", () => renameActivity(routine.id, activity.id));
 
-      main.append(dragHandle, label);
+      const estimate = document.createElement("span");
+      estimate.className = "activity-estimate";
+      const estimateMinutes = getActivityEstimatedMinutes(activity);
+      estimate.textContent = formatDurationLabel(estimateMinutes * 60 * 1000);
+      estimate.title = "Estimated time";
+
+      main.append(dragHandle, label, estimate);
 
       const controls = document.createElement("div");
       controls.className = "drag-controls";
@@ -542,7 +550,14 @@ export function renderTimerView() {
     const timeText = document.createElement("span");
     timeText.className = "progress-time";
     timeText.dataset.activityId = activity.id;
-    timeText.textContent = formatDuration(getActivityElapsedMs(activity));
+    const elapsedMs = getActivityElapsedMs(activity);
+    const estimateMs = getActivityEstimatedMs(activity);
+    timeText.textContent = estimateMs > 0
+      ? `${formatDuration(elapsedMs)} / ${formatDurationLabel(estimateMs)}`
+      : formatDuration(elapsedMs);
+    if (estimateMs > 0 && elapsedMs > estimateMs) {
+      timeText.classList.add("over");
+    }
 
     item.append(checkbox, labelText, timeText);
     progressList.appendChild(item);

@@ -15,6 +15,7 @@ import {
   formatActivityCompletionLabel,
   getTotalElapsedMs,
   getActivityElapsedMs,
+  getActivityEstimatedMs,
   applyProgressFillColor,
   recordRoutineCompletion,
   recordRoutineRun,
@@ -63,7 +64,12 @@ export function updateTimerDisplay() {
     }
 
     if (timeEl) {
-      timeEl.textContent = formatDuration(getActivityElapsedMs(activity));
+      const elapsedMs = getActivityElapsedMs(activity);
+      const estimateMs = getActivityEstimatedMs(activity);
+      timeEl.textContent = estimateMs > 0
+        ? `${formatDuration(elapsedMs)} / ${formatDurationLabel(estimateMs)}`
+        : formatDuration(elapsedMs);
+      timeEl.classList.toggle("over", estimateMs > 0 && elapsedMs > estimateMs);
     }
   });
 }
@@ -191,7 +197,12 @@ export function toggleActivityCompletion(activityId, checked) {
       checkbox.checked = nextChecked;
     }
     if (timeEl) {
-      timeEl.textContent = formatDuration(getActivityElapsedMs(activity));
+      const elapsedMs = getActivityElapsedMs(activity);
+      const estimateMs = getActivityEstimatedMs(activity);
+      timeEl.textContent = estimateMs > 0
+        ? `${formatDuration(elapsedMs)} / ${formatDurationLabel(estimateMs)}`
+        : formatDuration(elapsedMs);
+      timeEl.classList.toggle("over", estimateMs > 0 && elapsedMs > estimateMs);
     }
     if (progressItem) {
       progressItem.classList.toggle("completed", nextChecked);

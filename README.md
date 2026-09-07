@@ -5,10 +5,10 @@ A modern web app for building, managing, and running daily routines with built-i
 ## Features
 
 - **Custom routines** — Create routines for mornings, evenings, workouts, and more
-- **Activities** — Add, rename, drag to reorder, and delete activities
-- **Estimated time** — Set how long a routine should take when creating or editing it
+- **Activities** — Add, rename, set time estimates, drag to reorder, and delete activities
+- **Estimated time** — Set how long each activity should take; routine total sums from activities
 - **Routine colors** — Pick a preset or custom color when creating or editing a routine (card stripe + timer progress bar)
-- **Live timer** — Track total time and per-activity time while you run a routine (survives page refresh)
+- **Live timer** — Track total time and per-activity time vs estimates while you run a routine (survives page refresh)
 - **Completion screen** — See your results, streak, and personal best after finishing
 - **Streaks** — Daily completion tracking with calendar history and streak badges
 - **Run history** — Past run durations per routine (best time + recent runs, up to 50)
@@ -63,10 +63,19 @@ When you have no routines yet, the home screen shows a short hint to help you ge
 4. Pick a color (a default is pre-selected)
 5. Tap **Create**
 
+### Creating an activity
+
+1. Open a routine, then tap **Add activity**
+2. Enter a name
+3. Set estimated time (minutes)
+4. Tap **Add**
+
+The routine total estimate updates from the sum of activity estimates.
+
 ### Routine detail
 
 - **Add activity** — Tap **Add activity** at the bottom
-- **Rename activity** — Tap the activity name
+- **Rename activity** — Tap the activity name (edit name and estimated minutes)
 - **Reorder activities** — Drag the **⋮⋮** handle
 - **Delete activity** — Tap **✕** (confirmation required; undo available for 5 seconds)
 - **Start routine** — Tap **Start Routine**
@@ -74,18 +83,19 @@ When you have no routines yet, the home screen shows a short hint to help you ge
   - **⎘** — Duplicate routine
   - **📅** — Completion history calendar and recent run durations (green dot if completed today)
   - **🎨** — Change color
-  - **⏱** — Edit estimated time
+  - **⏱** — Edit estimated time (overridden when activities have estimates)
 - **Rename routine** — Tap the routine name in the top bar
-- **Estimated time** — Tap the estimated time row or **⏱**
+- **Estimated time** — Totals from activity estimates; tap the row or **⏱** to set manually when needed
 
 ### Running a routine
 
 1. Tap **Start Routine**
 2. Check off activities as you complete them
 3. Watch the progress bar against your estimated time (tinted with your routine color)
-4. Tap **Pause** / **Resume** as needed
-5. Tap **End Routine** to finish (confirmation required)
-6. Review your completion summary, then tap **Done**
+4. Check activity times as `actual / estimate` (turns amber if over estimate)
+5. Tap **Pause** / **Resume** as needed
+6. Tap **End Routine** to finish (confirmation required)
+7. Review your completion summary, then tap **Done**
 
 ### Settings
 

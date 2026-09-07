@@ -20,9 +20,14 @@ function sanitizeActivity(activity) {
   const name = String(activity.name || "").trim();
   if (!name) return null;
 
+  const estimatedMinutes = Number(activity.estimatedMinutes);
+
   return {
     id: typeof activity.id === "string" && activity.id ? activity.id : crypto.randomUUID(),
     name: name.slice(0, 80),
+    estimatedMinutes: Number.isFinite(estimatedMinutes) && estimatedMinutes >= 0
+      ? estimatedMinutes
+      : 0,
     timeSpentMs: Math.max(0, Number(activity.timeSpentMs) || 0),
   };
 }

@@ -161,9 +161,9 @@ export function seedData() {
       color: "sage",
       estimatedMinutes: 15,
       activities: [
-        { id: crypto.randomUUID(), name: "Drink water", timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Stretch", timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Check calendar", timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Drink water", estimatedMinutes: 1, timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Stretch", estimatedMinutes: 5, timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Check calendar", estimatedMinutes: 2, timeSpentMs: 0 },
       ],
     },
     {
@@ -172,12 +172,19 @@ export function seedData() {
       color: "ocean",
       estimatedMinutes: 20,
       activities: [
-        { id: crypto.randomUUID(), name: "Brush teeth", timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Skincare", timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Read", timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Brush teeth", estimatedMinutes: 3, timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Skincare", estimatedMinutes: 7, timeSpentMs: 0 },
+        { id: crypto.randomUUID(), name: "Read", estimatedMinutes: 10, timeSpentMs: 0 },
       ],
     },
   ];
+
+  state.routines.forEach((routine) => {
+    routine.estimatedMinutes = routine.activities.reduce(
+      (sum, activity) => sum + Number(activity.estimatedMinutes || 0),
+      0
+    );
+  });
 
   saveRoutines();
 }

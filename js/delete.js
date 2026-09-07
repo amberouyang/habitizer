@@ -10,7 +10,7 @@ import {
   undoToastMessage,
 } from "./dom.js";
 import { saveRoutines, archiveDeletedRoutine } from "./persistence.js";
-import { getRoutineById } from "./models.js";
+import { getRoutineById, syncRoutineEstimatedMinutes } from "./models.js";
 import { closeConfirmModal } from "./modals.js";
 import { setView, render } from "./views.js";
 
@@ -103,6 +103,7 @@ export function undoDelete() {
     if (routine && pendingDelete.activity) {
       const insertIndex = Math.min(pendingDelete.activityIndex, routine.activities.length);
       routine.activities.splice(insertIndex, 0, pendingDelete.activity);
+      syncRoutineEstimatedMinutes(routine);
     }
   }
 
@@ -131,6 +132,7 @@ export function performDeleteActivity(routineId, activityId) {
 
   routine.activities = routine.activities.filter((item) => item.id !== activityId);
 
+  syncRoutineEstimatedMinutes(routine);
   showUndoToast("Activity deleted");
 
   setPendingDeleteTimeoutId(setTimeout(() => {

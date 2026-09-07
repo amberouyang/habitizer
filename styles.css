@@ -797,6 +797,14 @@ button {
   color: var(--primary);
 }
 
+.activity-estimate {
+  flex-shrink: 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .drag-controls {
   display: flex;
   align-items: center;
@@ -1267,6 +1275,12 @@ button {
   font-variant-numeric: tabular-nums;
   color: var(--muted);
   font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.progress-time.over {
+  color: var(--warning);
+  font-weight: 600;
 }
 
 .routine-actions {

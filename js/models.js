@@ -78,6 +78,36 @@ export function getRoutineMetaText(routine) {
   ].join(" • ");
 }
 
+export function getActivityEstimatedMinutes(activity) {
+  const minutes = Number(activity?.estimatedMinutes);
+  return Number.isFinite(minutes) && minutes >= 0 ? minutes : 0;
+}
+
+export function getActivityEstimatedMs(activity) {
+  return getActivityEstimatedMinutes(activity) * 60 * 1000;
+}
+
+export function getActivitiesEstimatedMinutes(routine) {
+  if (!routine?.activities?.length) return 0;
+  return routine.activities.reduce(
+    (sum, activity) => sum + getActivityEstimatedMinutes(activity),
+    0
+  );
+}
+
+export function syncRoutineEstimatedMinutes(routine) {
+  if (!routine || !Array.isArray(routine.activities) || routine.activities.length === 0) {
+    return;
+  }
+
+  const hasActivityEstimates = routine.activities.some(
+    (activity) => getActivityEstimatedMinutes(activity) > 0
+  );
+  if (!hasActivityEstimates) return;
+
+  routine.estimatedMinutes = getActivitiesEstimatedMinutes(routine);
+}
+
 export function getRoutineTotalDurationMs(routine) {
   if (!routine) return 0;
   return Number(routine.estimatedMinutes || 0) * 60 * 1000;

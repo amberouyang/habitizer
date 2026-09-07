@@ -1,8 +1,8 @@
 import { state, settings, modalState, confirmCallback, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
+import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
+import { getRoutineById, syncRoutineEstimatedMinutes } from "./models.js";
+import { parseEstimatedMinutes } from "./utils.js";
 import {
-  backButton,
-  addButton,
-  menuButton,
   modalOverlay,
   modalInput,
   modalMinutesInput,
@@ -23,9 +23,10 @@ import {
   importBackupBtn,
   importBackupInput,
   undoToastAction,
+  backButton,
+  addButton,
+  menuButton,
 } from "./dom.js";
-import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
-import { getRoutineById } from "./models.js";
 import {
   closeNameModal,
   closeSettings,
@@ -104,12 +105,21 @@ export function wireEvents() {
         return;
       }
 
+      const estimatedMinutes = parseEstimatedMinutes(modalMinutesInput.value);
+      if (estimatedMinutes === null) {
+        modalMinutesInput.focus();
+        modalMinutesInput.select();
+        return;
+      }
+
       routine.activities.push({
         id: crypto.randomUUID(),
         name,
+        estimatedMinutes,
         timeSpentMs: 0,
       });
 
+      syncRoutineEstimatedMinutes(routine);
       saveRoutines();
       closeNameModal();
       render();
@@ -126,7 +136,16 @@ export function wireEvents() {
         return;
       }
 
+      const estimatedMinutes = parseEstimatedMinutes(modalMinutesInput.value);
+      if (estimatedMinutes === null) {
+        modalMinutesInput.focus();
+        modalMinutesInput.select();
+        return;
+      }
+
       activity.name = name;
+      activity.estimatedMinutes = estimatedMinutes;
+      syncRoutineEstimatedMinutes(routine);
       saveRoutines();
       closeNameModal();
       render();
