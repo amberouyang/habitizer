@@ -67,7 +67,7 @@ When you have no routines yet, the home screen shows a short hint to help you ge
 - **Add activity** — Tap **Add activity** at the bottom
 - **Rename activity** — Tap the activity name
 - **Reorder activities** — Drag the **⋮⋮** handle
-- **Delete activity** — Tap **✕** (undo available for 5 seconds)
+- **Delete activity** — Tap **✕** (confirmation required; undo available for 5 seconds)
 - **Start routine** — Tap **Start Routine**
 - **Header actions:**
   - **⎘** — Duplicate routine

@@ -184,5 +184,16 @@ export function renameActivity(routineId, activityId) {
 }
 
 export function deleteActivity(routineId, activityId) {
-  performDeleteActivity(routineId, activityId);
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  const activity = routine.activities.find((item) => item.id === activityId);
+  if (!activity) return;
+
+  openConfirmModal({
+    title: "Delete activity?",
+    message: `Delete "${activity.name}"? You can undo this briefly after confirming.`,
+    confirmLabel: "Delete",
+    onConfirm: () => performDeleteActivity(routineId, activityId),
+  });
 }

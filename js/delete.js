@@ -113,6 +113,8 @@ export function undoDelete() {
 }
 
 export function performDeleteActivity(routineId, activityId) {
+  closeConfirmModal();
+
   const routine = getRoutineById(routineId);
   if (!routine) return;
 
