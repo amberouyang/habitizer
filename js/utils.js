@@ -39,6 +39,47 @@ export function getRoutineRunHistory(routine) {
   return Array.isArray(routine?.runHistory) ? routine.runHistory : [];
 }
 
+export function getLastCompletedDateKey(routine) {
+  const runs = getRoutineRunHistory(routine);
+  if (runs.length > 0) {
+    const latest = runs[0];
+    if (typeof latest?.dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(latest.dateKey)) {
+      return latest.dateKey;
+    }
+    if (Number.isFinite(Number(latest?.completedAt))) {
+      return getLocalDateKey(Number(latest.completedAt));
+    }
+  }
+
+  const dates = getRoutineCompletionDates(routine);
+  if (dates.length === 0) return null;
+  return [...dates].sort().at(-1);
+}
+
+export function formatRelativeCompletedDay(dateKey) {
+  if (!dateKey) return null;
+
+  const today = getLocalDateKey();
+  if (dateKey === today) return "Today";
+  if (dateKey === shiftDateKey(today, -1)) return "Yesterday";
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const includeYear = year !== new Date().getFullYear();
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    ...(includeYear ? { year: "numeric" } : {}),
+  });
+}
+
+export function formatLastCompletedLabel(routine) {
+  const dateKey = getLastCompletedDateKey(routine);
+  if (!dateKey) return "Not completed yet";
+  return `Last completed ${formatRelativeCompletedDay(dateKey)}`;
+}
+
 export function formatRunCompletedAt(timestamp) {
   return new Date(timestamp).toLocaleString(undefined, {
     month: "short",

@@ -47,6 +47,7 @@ python3 -m http.server 8000
 - **Open a routine** — Tap a routine card
 - **Reorder** — Drag the **⋮⋮** handle on the left (when you have 2+ routines)
 - **Streak badge** — Routines with a 2+ day streak show a **🔥** badge on the card
+- **Last completed** — Each card shows when the routine was last finished (Today, Yesterday, or a date)
 - **Duplicate** — Tap **⎘** on a routine card
 - **Rename** — Tap **✎** on a routine card
 - **Delete** — Tap **🗑** on a routine card (confirmation required; undo available for 5 seconds)

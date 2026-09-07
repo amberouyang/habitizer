@@ -13,6 +13,7 @@ import {
   formatStreakLabel,
   formatStreakBadgeText,
   formatPersonalBestLabel,
+  formatLastCompletedLabel,
   getCompletionEstimateMessage,
   getRoutineStreak,
 } from "./utils.js";
@@ -173,7 +174,11 @@ export function renderHomeView() {
     meta.className = "routine-meta";
     meta.textContent = getRoutineMetaText(routine);
 
-    info.append(nameRow, meta);
+    const lastCompleted = document.createElement("div");
+    lastCompleted.className = "routine-last-completed";
+    lastCompleted.textContent = formatLastCompletedLabel(routine);
+
+    info.append(nameRow, meta, lastCompleted);
     openBtn.appendChild(info);
 
     const actions = document.createElement("div");

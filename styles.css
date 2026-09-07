@@ -339,6 +339,12 @@ button {
   color: var(--muted);
 }
 
+.routine-last-completed {
+  font-size: 0.76rem;
+  color: var(--muted);
+  opacity: 0.9;
+}
+
 .color-modal-swatches {
   display: flex;
   flex-wrap: wrap;
