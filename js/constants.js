@@ -7,14 +7,14 @@ export const TIMER_SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const UNDO_DELETE_MS = 5000;
 
 export const ROUTINE_COLORS = [
-  { id: "sage", label: "Sage", value: "#2f6f52" },
-  { id: "ocean", label: "Ocean", value: "#2f5f8f" },
-  { id: "lavender", label: "Lavender", value: "#6b5b95" },
-  { id: "coral", label: "Coral", value: "#c96b5a" },
-  { id: "amber", label: "Amber", value: "#c9893f" },
-  { id: "rose", label: "Rose", value: "#b85c7a" },
-  { id: "slate", label: "Slate", value: "#5a6b7a" },
-  { id: "teal", label: "Teal", value: "#2a7a72" },
+  { id: "sage", label: "Sage", value: "#0e7490" },
+  { id: "ocean", label: "Ocean", value: "#2563eb" },
+  { id: "lavender", label: "Lavender", value: "#6366f1" },
+  { id: "coral", label: "Coral", value: "#e11d48" },
+  { id: "amber", label: "Amber", value: "#d97706" },
+  { id: "rose", label: "Rose", value: "#db2777" },
+  { id: "slate", label: "Slate", value: "#475569" },
+  { id: "teal", label: "Teal", value: "#0f766e" },
 ];
 
 export const DEFAULT_ROUTINE_COLOR_ID = ROUTINE_COLORS[0].id;
