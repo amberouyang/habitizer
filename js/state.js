@@ -12,6 +12,7 @@ export const state = {
     isRunning: false,
     elapsedMs: 0,
     lastTimestamp: null,
+    activeActivityIds: new Set(),
     completedActivityIds: new Set(),
     activityStartTimes: {},
   },

@@ -90,12 +90,13 @@ The routine total estimate updates from the sum of activity estimates.
 ### Running a routine
 
 1. Tap **Start Routine**
-2. Check off activities as you complete them
-3. Watch the progress bar against your estimated time (tinted with your routine color)
-4. Check activity times as `actual / estimate` (turns amber if over estimate)
-5. Tap **Pause** / **Resume** as needed
-6. Tap **End Routine** to finish (confirmation required)
-7. Review your completion summary, then tap **Done**
+2. Tap an activity once to **start** its timer
+3. Tap it again to **finish** it
+4. Watch the progress bar against your estimated time (tinted with your routine color)
+5. Check activity times as `actual / estimate` (turns amber if over estimate)
+6. Tap **Pause** / **Resume** as needed
+7. Tap **End Routine** to finish (confirmation required)
+8. Review your completion summary, then tap **Done**
 
 ### Settings
 

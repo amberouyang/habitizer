@@ -15,6 +15,7 @@ function emptyTimerState() {
     isRunning: false,
     elapsedMs: 0,
     lastTimestamp: null,
+    activeActivityIds: new Set(),
     completedActivityIds: new Set(),
     activityStartTimes: {},
   };
@@ -32,6 +33,7 @@ export function saveTimerSession() {
     isRunning: Boolean(state.timer.isRunning),
     elapsedMs: Number(state.timer.elapsedMs || 0),
     lastTimestamp: state.timer.lastTimestamp,
+    activeActivityIds: [...(state.timer.activeActivityIds || [])],
     completedActivityIds: [...state.timer.completedActivityIds],
     activityStartTimes: { ...state.timer.activityStartTimes },
   };
@@ -66,16 +68,27 @@ export function loadTimerSession() {
     const activityStartTimes = parsed.activityStartTimes && typeof parsed.activityStartTimes === "object"
       ? parsed.activityStartTimes
       : {};
+    const completedActivityIds = new Set(
+      Array.isArray(parsed.completedActivityIds) ? parsed.completedActivityIds : []
+    );
+    const activeActivityIds = new Set(
+      Array.isArray(parsed.activeActivityIds)
+        ? parsed.activeActivityIds
+        : Object.keys(activityStartTimes).filter((id) => !completedActivityIds.has(id))
+    );
 
     state.timer = {
       routineId,
       isRunning: Boolean(parsed.isRunning),
       elapsedMs: Number(parsed.elapsedMs || 0),
       lastTimestamp: parsed.isRunning && parsed.lastTimestamp ? Number(parsed.lastTimestamp) : null,
-      completedActivityIds: new Set(
-        Array.isArray(parsed.completedActivityIds) ? parsed.completedActivityIds : []
-      ),
-      activityStartTimes: parsed.isRunning ? activityStartTimes : {},
+      activeActivityIds,
+      completedActivityIds,
+      activityStartTimes: parsed.isRunning
+        ? Object.fromEntries(
+            Object.entries(activityStartTimes).filter(([id]) => activeActivityIds.has(id))
+          )
+        : {},
     };
 
     return state.timer;

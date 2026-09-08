@@ -193,6 +193,7 @@ export function applyBackup(parsed) {
     isRunning: false,
     elapsedMs: 0,
     lastTimestamp: null,
+    activeActivityIds: new Set(),
     completedActivityIds: new Set(),
     activityStartTimes: {},
   };

@@ -58,9 +58,16 @@ export function updateTimerDisplay() {
   routine.activities.forEach((activity) => {
     const checkbox = document.querySelector(`input[type="checkbox"][data-activity-id="${activity.id}"]`);
     const timeEl = document.querySelector(`.progress-time[data-activity-id="${activity.id}"]`);
+    const progressItem = checkbox?.closest(".progress-item");
+    const status = getActivityRunStatus(activity.id);
 
     if (checkbox) {
-      checkbox.checked = state.timer.completedActivityIds.has(activity.id);
+      applyActivityCheckboxState(checkbox, status);
+    }
+
+    if (progressItem) {
+      progressItem.classList.toggle("active", status === "active");
+      progressItem.classList.toggle("completed", status === "completed");
     }
 
     if (timeEl) {
@@ -72,6 +79,36 @@ export function updateTimerDisplay() {
       timeEl.classList.toggle("over", estimateMs > 0 && elapsedMs > estimateMs);
     }
   });
+}
+
+function ensureTimerSets() {
+  if (!(state.timer.activeActivityIds instanceof Set)) {
+    state.timer.activeActivityIds = new Set(state.timer.activeActivityIds || []);
+  }
+  if (!(state.timer.completedActivityIds instanceof Set)) {
+    state.timer.completedActivityIds = new Set(state.timer.completedActivityIds || []);
+  }
+}
+
+export function getActivityRunStatus(activityId) {
+  ensureTimerSets();
+  if (state.timer.completedActivityIds.has(activityId)) return "completed";
+  if (state.timer.activeActivityIds.has(activityId)) return "active";
+  return "idle";
+}
+
+export function applyActivityCheckboxState(checkbox, status) {
+  if (!checkbox) return;
+  checkbox.checked = status === "completed";
+  checkbox.indeterminate = status === "active";
+  checkbox.setAttribute(
+    "aria-label",
+    status === "completed"
+      ? "Finished — tap to reset"
+      : status === "active"
+        ? "In progress — tap to finish"
+        : "Tap to start"
+  );
 }
 
 export function startLiveTimerLoop() {
@@ -95,6 +132,7 @@ export function startRoutine(routineId) {
     isRunning: true,
     elapsedMs: 0,
     lastTimestamp: Date.now(),
+    activeActivityIds: new Set(),
     completedActivityIds: new Set(),
     activityStartTimes: {},
   };
@@ -142,11 +180,12 @@ export function pauseTimer() {
 
 export function resumeTimer() {
   if (!state.timer.routineId || state.timer.isRunning) return;
+  ensureTimerSets();
 
   state.timer.isRunning = true;
   state.timer.lastTimestamp = Date.now();
 
-  state.timer.completedActivityIds.forEach((activityId) => {
+  state.timer.activeActivityIds.forEach((activityId) => {
     if (!state.timer.activityStartTimes[activityId]) {
       state.timer.activityStartTimes[activityId] = Date.now();
     }
@@ -156,7 +195,7 @@ export function resumeTimer() {
   render();
 }
 
-export function toggleActivityCompletion(activityId, checked) {
+export function advanceActivityState(activityId) {
   if (!state.timer.routineId) return;
 
   const routine = getRoutineById(state.timer.routineId);
@@ -165,24 +204,24 @@ export function toggleActivityCompletion(activityId, checked) {
   const activity = routine.activities.find((item) => item.id === activityId);
   if (!activity) return;
 
-  const nextChecked = Boolean(checked);
-  const isCurrentlyChecked = state.timer.completedActivityIds.has(activityId);
+  ensureTimerSets();
+  const status = getActivityRunStatus(activityId);
+  const now = Date.now();
 
-  if (isCurrentlyChecked === nextChecked) {
-    return;
-  }
-
-  if (nextChecked) {
-    state.timer.completedActivityIds.add(activityId);
-    if (!state.timer.activityStartTimes[activityId]) {
-      state.timer.activityStartTimes[activityId] = Date.now();
+  if (status === "idle") {
+    state.timer.activeActivityIds.add(activityId);
+    if (state.timer.isRunning) {
+      state.timer.activityStartTimes[activityId] = now;
     }
-  } else {
+  } else if (status === "active") {
     const start = state.timer.activityStartTimes[activityId];
     if (start) {
-      activity.timeSpentMs += Date.now() - start;
+      activity.timeSpentMs += now - start;
     }
     delete state.timer.activityStartTimes[activityId];
+    state.timer.activeActivityIds.delete(activityId);
+    state.timer.completedActivityIds.add(activityId);
+  } else {
     state.timer.completedActivityIds.delete(activityId);
   }
 
@@ -193,9 +232,10 @@ export function toggleActivityCompletion(activityId, checked) {
     const checkbox = document.querySelector(`input[type="checkbox"][data-activity-id="${activityId}"]`);
     const timeEl = document.querySelector(`.progress-time[data-activity-id="${activityId}"]`);
     const progressItem = checkbox?.closest(".progress-item");
-    if (checkbox) {
-      checkbox.checked = nextChecked;
-    }
+    const nextStatus = getActivityRunStatus(activityId);
+
+    applyActivityCheckboxState(checkbox, nextStatus);
+
     if (timeEl) {
       const elapsedMs = getActivityElapsedMs(activity);
       const estimateMs = getActivityEstimatedMs(activity);
@@ -205,7 +245,8 @@ export function toggleActivityCompletion(activityId, checked) {
       timeEl.classList.toggle("over", estimateMs > 0 && elapsedMs > estimateMs);
     }
     if (progressItem) {
-      progressItem.classList.toggle("completed", nextChecked);
+      progressItem.classList.toggle("active", nextStatus === "active");
+      progressItem.classList.toggle("completed", nextStatus === "completed");
     }
 
     const completionCountEl = document.querySelector(".activity-completion-count");
@@ -215,6 +256,11 @@ export function toggleActivityCompletion(activityId, checked) {
       completionCountEl.classList.toggle("complete", total > 0 && completed === total);
     }
   }
+}
+
+/** @deprecated use advanceActivityState — kept for older call sites */
+export function toggleActivityCompletion(activityId) {
+  advanceActivityState(activityId);
 }
 
 export function endRoutine() {
@@ -277,6 +323,7 @@ export function endRoutine() {
     isRunning: false,
     elapsedMs: 0,
     lastTimestamp: null,
+    activeActivityIds: new Set(),
     completedActivityIds: new Set(),
     activityStartTimes: {},
   };

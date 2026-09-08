@@ -50,7 +50,9 @@ import {
   startRoutine,
   pauseTimer,
   resumeTimer,
-  toggleActivityCompletion,
+  advanceActivityState,
+  getActivityRunStatus,
+  applyActivityCheckboxState,
   requestEndRoutine,
 } from "./timer.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop } from "./drag.js";
@@ -530,16 +532,17 @@ export function renderTimerView() {
   routine.activities.forEach((activity) => {
     const item = document.createElement("label");
     item.className = "progress-item";
-    if (state.timer.completedActivityIds.has(activity.id)) {
-      item.classList.add("completed");
-    }
+    const status = getActivityRunStatus(activity.id);
+    if (status === "active") item.classList.add("active");
+    if (status === "completed") item.classList.add("completed");
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.dataset.activityId = activity.id;
-    checkbox.checked = state.timer.completedActivityIds.has(activity.id);
-    checkbox.addEventListener("change", () => {
-      toggleActivityCompletion(activity.id, checkbox.checked);
+    applyActivityCheckboxState(checkbox, status);
+    checkbox.addEventListener("click", (event) => {
+      event.preventDefault();
+      advanceActivityState(activity.id);
     });
 
     const labelText = document.createElement("span");
