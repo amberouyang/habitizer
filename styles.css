@@ -1239,13 +1239,16 @@ button {
 }
 
 .progress-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 10px;
+  padding: 12px 10px 12px 14px;
   border-radius: 12px;
   background: var(--panel-alt);
-  transition: background-color 0.2s ease, opacity 0.2s ease;
+  border: 1px solid transparent;
+  overflow: hidden;
+  transition: background-color 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .progress-item.completed {
@@ -1253,12 +1256,26 @@ button {
 }
 
 .progress-item.active {
-  background: rgba(14, 116, 144, 0.12);
-  box-shadow: inset 0 0 0 1px var(--hover-border);
+  background: rgba(14, 116, 144, 0.16);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.14);
+  animation: progress-active-pulse 1.6s ease-in-out infinite;
+}
+
+.progress-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--primary);
 }
 
 [data-theme="dark"] .progress-item.active {
-  background: rgba(45, 212, 191, 0.12);
+  background: rgba(45, 212, 191, 0.16);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.14);
+  animation-name: progress-active-pulse-dark;
 }
 
 .progress-item.completed .progress-label {
@@ -1267,8 +1284,60 @@ button {
 }
 
 .progress-item.active .progress-label {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--primary-strong);
+}
+
+.progress-status {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.progress-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  animation: progress-status-dot 1s ease-in-out infinite;
+}
+
+.progress-status[hidden] {
+  display: none;
+}
+
+@keyframes progress-status-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+@keyframes progress-active-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(14, 116, 144, 0.22);
+  }
+}
+
+@keyframes progress-active-pulse-dark {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(45, 212, 191, 0.24);
+  }
 }
 
 .progress-item input[type="checkbox"] {

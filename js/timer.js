@@ -68,6 +68,10 @@ export function updateTimerDisplay() {
     if (progressItem) {
       progressItem.classList.toggle("active", status === "active");
       progressItem.classList.toggle("completed", status === "completed");
+      const statusBadge = progressItem.querySelector(".progress-status");
+      if (statusBadge) {
+        statusBadge.hidden = status !== "active";
+      }
     }
 
     if (timeEl) {
@@ -247,6 +251,10 @@ export function advanceActivityState(activityId) {
     if (progressItem) {
       progressItem.classList.toggle("active", nextStatus === "active");
       progressItem.classList.toggle("completed", nextStatus === "completed");
+      const statusBadge = progressItem.querySelector(".progress-status");
+      if (statusBadge) {
+        statusBadge.hidden = nextStatus !== "active";
+      }
     }
 
     const completionCountEl = document.querySelector(".activity-completion-count");

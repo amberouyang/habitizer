@@ -550,6 +550,11 @@ export function renderTimerView() {
     labelText.textContent = activity.name;
     labelText.title = activity.name;
 
+    const statusBadge = document.createElement("span");
+    statusBadge.className = "progress-status";
+    statusBadge.textContent = "In progress";
+    statusBadge.hidden = status !== "active";
+
     const timeText = document.createElement("span");
     timeText.className = "progress-time";
     timeText.dataset.activityId = activity.id;
@@ -562,7 +567,7 @@ export function renderTimerView() {
       timeText.classList.add("over");
     }
 
-    item.append(checkbox, labelText, timeText);
+    item.append(checkbox, labelText, statusBadge, timeText);
     progressList.appendChild(item);
   });
 
