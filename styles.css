@@ -1202,6 +1202,14 @@ button {
   color: var(--primary);
 }
 
+.timer-start-hint {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
 .routine-progress {
   margin-bottom: 16px;
 }

@@ -53,6 +53,7 @@ import {
   advanceActivityState,
   getActivityRunStatus,
   applyActivityCheckboxState,
+  hasRoutineClockStarted,
   requestEndRoutine,
 } from "./timer.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop } from "./drag.js";
@@ -330,8 +331,8 @@ export function renderRoutineView() {
       label.type = "button";
       label.className = "activity-name";
       label.textContent = activity.name;
-      label.title = activity.name;
-      label.addEventListener("click", () => renameActivity(routine.id, activity.id));
+      label.title = `Start with ${activity.name}`;
+      label.addEventListener("click", () => startRoutine(routine.id, activity.id));
 
       const estimate = document.createElement("span");
       estimate.className = "activity-estimate";
@@ -344,6 +345,14 @@ export function renderRoutineView() {
       const controls = document.createElement("div");
       controls.className = "drag-controls";
 
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "small-btn";
+      editBtn.textContent = "✎";
+      editBtn.title = "Edit activity";
+      editBtn.setAttribute("aria-label", `Edit ${activity.name}`);
+      editBtn.addEventListener("click", () => renameActivity(routine.id, activity.id));
+
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
       deleteBtn.className = "small-btn delete-btn";
@@ -351,7 +360,7 @@ export function renderRoutineView() {
       deleteBtn.title = "Delete activity";
       deleteBtn.addEventListener("click", () => deleteActivity(routine.id, activity.id));
 
-      controls.appendChild(deleteBtn);
+      controls.append(editBtn, deleteBtn);
       item.append(main, controls);
       activityList.appendChild(item);
     });
@@ -498,6 +507,13 @@ export function renderTimerView() {
 
   const timerCardChildren = [totalTimeEl, completionCountEl];
 
+  if (!hasRoutineClockStarted()) {
+    const hint = document.createElement("p");
+    hint.className = "timer-start-hint";
+    hint.textContent = "Tap an activity to begin";
+    timerCardChildren.push(hint);
+  }
+
   const { hasEstimate } = getRoutineProgress(routine);
   if (hasEstimate) {
     const progressSection = document.createElement("div");
@@ -579,7 +595,9 @@ export function renderTimerView() {
   const pauseResumeBtn = document.createElement("button");
   pauseResumeBtn.type = "button";
   pauseResumeBtn.className = "secondary-btn";
+  const clockStarted = hasRoutineClockStarted();
   pauseResumeBtn.textContent = state.timer.isRunning ? "Pause" : "Resume";
+  pauseResumeBtn.disabled = !clockStarted;
   pauseResumeBtn.addEventListener("click", () => {
     if (state.timer.isRunning) {
       pauseTimer();

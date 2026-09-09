@@ -75,10 +75,11 @@ The routine total estimate updates from the sum of activity estimates.
 ### Routine detail
 
 - **Add activity** — Tap **Add activity** at the bottom
-- **Rename activity** — Tap the activity name (edit name and estimated minutes)
+- **Start from an activity** — Tap an activity name to start the routine with that step already in progress
+- **Edit activity** — Tap **✎** (name and estimated minutes)
 - **Reorder activities** — Drag the **⋮⋮** handle
 - **Delete activity** — Tap **✕** (confirmation required; undo available for 5 seconds)
-- **Start routine** — Tap **Start Routine**
+- **Start routine** — Tap **Start Routine** (or tap any activity)
 - **Header actions:**
   - **⎘** — Duplicate routine
   - **📅** — Completion history calendar and recent run durations (green dot if completed today)
@@ -89,14 +90,16 @@ The routine total estimate updates from the sum of activity estimates.
 
 ### Running a routine
 
-1. Tap **Start Routine**
-2. Tap an activity once to **start** its timer
+1. Tap **Start Routine** to open the live timer (clock waits)
+2. Tap an activity once to **start** it — this also starts the routine clock
 3. Tap it again to **finish** it
 4. Watch the progress bar against your estimated time (tinted with your routine color)
 5. Check activity times as `actual / estimate` (turns amber if over estimate)
 6. Tap **Pause** / **Resume** as needed
 7. Tap **End Routine** to finish (confirmation required)
 8. Review your completion summary, then tap **Done**
+
+Tip: From the routine detail screen, tap an activity name to jump straight in with that step already running.
 
 ### Settings
 

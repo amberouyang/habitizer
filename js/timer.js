@@ -127,18 +127,23 @@ export function startLiveTimerLoop() {
   }, 100));
 }
 
-export function startRoutine(routineId) {
+export function startRoutine(routineId, startActivityId = null) {
   const routine = getRoutineById(routineId);
   if (!routine || routine.activities.length === 0) return;
 
+  const shouldStartActivity = startActivityId
+    && routine.activities.some((activity) => activity.id === startActivityId);
+
   state.timer = {
     routineId,
-    isRunning: true,
+    isRunning: shouldStartActivity,
     elapsedMs: 0,
-    lastTimestamp: Date.now(),
-    activeActivityIds: new Set(),
+    lastTimestamp: shouldStartActivity ? Date.now() : null,
+    activeActivityIds: new Set(shouldStartActivity ? [startActivityId] : []),
     completedActivityIds: new Set(),
-    activityStartTimes: {},
+    activityStartTimes: shouldStartActivity
+      ? { [startActivityId]: Date.now() }
+      : {},
   };
 
   saveTimerSession();
@@ -184,6 +189,7 @@ export function pauseTimer() {
 
 export function resumeTimer() {
   if (!state.timer.routineId || state.timer.isRunning) return;
+  if (!hasRoutineClockStarted()) return;
   ensureTimerSets();
 
   state.timer.isRunning = true;
@@ -197,6 +203,22 @@ export function resumeTimer() {
 
   saveTimerSession();
   render();
+}
+
+export function hasRoutineClockStarted() {
+  ensureTimerSets();
+  return Boolean(
+    state.timer.isRunning
+    || state.timer.elapsedMs > 0
+    || state.timer.activeActivityIds.size > 0
+    || state.timer.completedActivityIds.size > 0
+  );
+}
+
+function ensureRoutineClockRunning(now = Date.now()) {
+  if (state.timer.isRunning) return;
+  state.timer.isRunning = true;
+  state.timer.lastTimestamp = now;
 }
 
 export function advanceActivityState(activityId) {
@@ -213,10 +235,9 @@ export function advanceActivityState(activityId) {
   const now = Date.now();
 
   if (status === "idle") {
+    ensureRoutineClockRunning(now);
     state.timer.activeActivityIds.add(activityId);
-    if (state.timer.isRunning) {
-      state.timer.activityStartTimes[activityId] = now;
-    }
+    state.timer.activityStartTimes[activityId] = now;
   } else if (status === "active") {
     const start = state.timer.activityStartTimes[activityId];
     if (start) {
@@ -231,39 +252,7 @@ export function advanceActivityState(activityId) {
 
   saveRoutines();
   saveTimerSession();
-
-  if (state.currentView === "timer") {
-    const checkbox = document.querySelector(`input[type="checkbox"][data-activity-id="${activityId}"]`);
-    const timeEl = document.querySelector(`.progress-time[data-activity-id="${activityId}"]`);
-    const progressItem = checkbox?.closest(".progress-item");
-    const nextStatus = getActivityRunStatus(activityId);
-
-    applyActivityCheckboxState(checkbox, nextStatus);
-
-    if (timeEl) {
-      const elapsedMs = getActivityElapsedMs(activity);
-      const estimateMs = getActivityEstimatedMs(activity);
-      timeEl.textContent = estimateMs > 0
-        ? `${formatDuration(elapsedMs)} / ${formatDurationLabel(estimateMs)}`
-        : formatDuration(elapsedMs);
-      timeEl.classList.toggle("over", estimateMs > 0 && elapsedMs > estimateMs);
-    }
-    if (progressItem) {
-      progressItem.classList.toggle("active", nextStatus === "active");
-      progressItem.classList.toggle("completed", nextStatus === "completed");
-      const statusBadge = progressItem.querySelector(".progress-status");
-      if (statusBadge) {
-        statusBadge.hidden = nextStatus !== "active";
-      }
-    }
-
-    const completionCountEl = document.querySelector(".activity-completion-count");
-    if (completionCountEl) {
-      const { completed, total } = getActivityCompletionCount(routine);
-      completionCountEl.textContent = formatActivityCompletionLabel(routine);
-      completionCountEl.classList.toggle("complete", total > 0 && completed === total);
-    }
-  }
+  render();
 }
 
 /** @deprecated use advanceActivityState — kept for older call sites */
