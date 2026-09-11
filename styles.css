@@ -30,6 +30,10 @@
   --hover-border-strong: rgba(14, 116, 144, 0.32);
   --toggle-off: #d5dee6;
   --toggle-knob: #ffffff;
+  --atmosphere-1: rgba(14, 116, 144, 0.18);
+  --atmosphere-2: rgba(37, 99, 235, 0.1);
+  --atmosphere-3: rgba(45, 212, 191, 0.14);
+  --atmosphere-grid: rgba(15, 23, 42, 0.035);
 }
 
 [data-theme="dark"] {
@@ -64,6 +68,10 @@
   --hover-border-strong: rgba(45, 212, 191, 0.42);
   --toggle-off: #3a4552;
   --toggle-knob: #e2e8f0;
+  --atmosphere-1: rgba(45, 212, 191, 0.16);
+  --atmosphere-2: rgba(37, 99, 235, 0.14);
+  --atmosphere-3: rgba(14, 116, 144, 0.2);
+  --atmosphere-grid: rgba(226, 232, 240, 0.03);
 }
 
 * {
@@ -74,14 +82,65 @@ html, body {
   margin: 0;
   min-height: 100%;
   font-family: "Sora", "Segoe UI", sans-serif;
-  background: linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--bg) 100%);
+  background-color: var(--bg);
   color: var(--text);
 }
 
 body {
+  position: relative;
   display: flex;
   justify-content: center;
   padding: 24px 0;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(900px 520px at 12% -8%, var(--atmosphere-1), transparent 58%),
+    radial-gradient(760px 480px at 92% 8%, var(--atmosphere-2), transparent 55%),
+    radial-gradient(700px 520px at 50% 110%, var(--atmosphere-3), transparent 60%),
+    linear-gradient(165deg, var(--bg-gradient-top) 0%, var(--bg) 48%, var(--bg) 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.7;
+  background-image:
+    linear-gradient(var(--atmosphere-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--atmosphere-grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 75%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: -20% -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 30%, var(--atmosphere-1), transparent 42%),
+    radial-gradient(circle at 78% 70%, var(--atmosphere-3), transparent 40%);
+  filter: blur(40px);
+  opacity: 0.55;
+  animation: atmosphere-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes atmosphere-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2%, -1.5%, 0) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    animation: none;
+  }
 }
 
 button {
@@ -90,6 +149,7 @@ button {
 
 .app-shell {
   position: relative;
+  z-index: 1;
   width: min(100%, 430px);
   margin-inline: auto;
   min-height: 820px;
