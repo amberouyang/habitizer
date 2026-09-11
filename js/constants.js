@@ -21,3 +21,4 @@ export const DEFAULT_ROUTINE_COLOR_ID = ROUTINE_COLORS[0].id;
 export const DEFAULT_CUSTOM_COLOR = "#5b7cfa";
 export const STREAK_DISPLAY_MIN = 2;
 export const RUN_HISTORY_LIMIT = 50;
+export const SAVED_COLORS_LIMIT = 12;

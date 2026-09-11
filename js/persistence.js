@@ -5,6 +5,7 @@ import {
   TIMER_SESSION_KEY,
   DELETED_ROUTINE_RETENTION_MS,
   TIMER_SESSION_MAX_AGE_MS,
+  SAVED_COLORS_LIMIT,
 } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import { darkModeToggle, cumulativeToggle } from "./dom.js";
@@ -157,6 +158,16 @@ export function loadSettings() {
     Object.assign(settings, JSON.parse(stored));
   }
   settings.darkMode = Boolean(settings.darkMode);
+  settings.cumulativeMode = settings.cumulativeMode !== undefined
+    ? Boolean(settings.cumulativeMode)
+    : true;
+  settings.savedColors = Array.isArray(settings.savedColors)
+    ? settings.savedColors
+        .filter((color) => typeof color === "string" && /^#[0-9A-Fa-f]{6}$/.test(color))
+        .map((color) => color.toLowerCase())
+        .filter((color, index, list) => list.indexOf(color) === index)
+        .slice(0, SAVED_COLORS_LIMIT)
+    : [];
   applyTheme();
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;

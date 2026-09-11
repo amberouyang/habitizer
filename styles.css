@@ -443,22 +443,27 @@ button {
   outline-offset: 2px;
 }
 
-.color-swatch-custom {
+.color-swatch-add {
   position: relative;
-  overflow: hidden;
-  background: conic-gradient(
-    from 0deg,
-    #e74c3c,
-    #f1c40f,
-    #2ecc71,
-    #3498db,
-    #9b59b6,
-    #e74c3c
-  );
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px dashed color-mix(in srgb, var(--text) 35%, transparent);
+  color: var(--muted);
 }
 
-.color-swatch-custom[aria-checked="true"] {
-  background: var(--swatch-color);
+.color-swatch-add:hover {
+  border-color: color-mix(in srgb, var(--text) 55%, transparent);
+  color: var(--text);
+}
+
+.color-swatch-add-icon {
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
 }
 
 .color-swatch-input {

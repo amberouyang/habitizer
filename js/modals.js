@@ -1,4 +1,4 @@
-import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, DEFAULT_CUSTOM_COLOR, STREAK_DISPLAY_MIN } from "./constants.js";
+import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, DEFAULT_CUSTOM_COLOR, STREAK_DISPLAY_MIN, SAVED_COLORS_LIMIT } from "./constants.js";
 import {
   state,
   settings,
@@ -61,7 +61,6 @@ import {
 import {
   getRoutineById,
   getRoutineColorSelection,
-  isHexColor,
   isValidRoutineColor,
   normalizeHexColor,
   getNextRoutineColorId,
@@ -75,20 +74,164 @@ import {
 } from "./persistence.js";
 import { render } from "./views.js";
 
+function getPresetValues() {
+  return new Set(ROUTINE_COLORS.map((color) => color.value.toLowerCase()));
+}
+
+function getSavedColors() {
+  if (!Array.isArray(settings.savedColors)) {
+    settings.savedColors = [];
+  }
+  return settings.savedColors;
+}
+
+function addSavedColor(hex) {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return null;
+  if (getPresetValues().has(normalized)) return normalized;
+
+  const saved = getSavedColors().filter((color) => color !== normalized);
+  saved.unshift(normalized);
+  settings.savedColors = saved.slice(0, SAVED_COLORS_LIMIT);
+  saveSettings();
+  return normalized;
+}
+
+function removeSavedColor(hex) {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return;
+  settings.savedColors = getSavedColors().filter((color) => color !== normalized);
+  saveSettings();
+}
+
+function swatchMatchesSelection(node, selectedColor) {
+  if (node.classList.contains("color-swatch-add")) return false;
+  const selectedHex = normalizeHexColor(selectedColor);
+  const value = node.dataset.colorValue || node.dataset.colorId;
+  if (selectedHex) {
+    return normalizeHexColor(value) === selectedHex;
+  }
+  return value === selectedColor;
+}
+
 function updateSwatchSelection(container, selectedColor) {
   container.querySelectorAll(".color-swatch").forEach((node) => {
-    const isCustomSwatch = node.dataset.colorId === "custom";
-    const checked = isCustomSwatch
-      ? isHexColor(selectedColor)
-      : node.dataset.colorId === selectedColor;
-    node.setAttribute("aria-checked", String(checked));
-
-    if (isCustomSwatch && isHexColor(selectedColor)) {
-      node.style.setProperty("--swatch-color", selectedColor);
-      const input = node.querySelector('input[type="color"]');
-      if (input) input.value = selectedColor;
-    }
+    if (node.classList.contains("color-swatch-add")) return;
+    node.setAttribute("aria-checked", String(swatchMatchesSelection(node, selectedColor)));
   });
+}
+
+function createPresetSwatch(color, selectedColor, onSelect, container) {
+  const swatch = document.createElement("button");
+  swatch.type = "button";
+  swatch.className = "color-swatch";
+  swatch.dataset.colorId = color.id;
+  swatch.dataset.colorValue = color.value;
+  swatch.style.setProperty("--swatch-color", color.value);
+  swatch.title = color.label;
+  swatch.setAttribute("role", "radio");
+  swatch.setAttribute("aria-label", color.label);
+  swatch.setAttribute("aria-checked", String(selectedColor === color.id));
+  swatch.addEventListener("click", () => {
+    onSelect(color.id, { isCustom: false });
+    updateSwatchSelection(container, color.id);
+  });
+  return swatch;
+}
+
+function createHexSwatch(hex, selectedColor, onSelect, container, { removable = false } = {}) {
+  const swatch = document.createElement("button");
+  swatch.type = "button";
+  swatch.className = "color-swatch color-swatch-saved";
+  swatch.dataset.colorValue = hex;
+  swatch.style.setProperty("--swatch-color", hex);
+  swatch.title = removable ? `${hex} · hold to remove` : hex;
+  swatch.setAttribute("role", "radio");
+  swatch.setAttribute("aria-label", removable ? `Saved color ${hex}` : `Custom color ${hex}`);
+  swatch.setAttribute("aria-checked", String(normalizeHexColor(selectedColor) === hex));
+
+  let holdTimer = null;
+  let holdTriggered = false;
+
+  const clearHold = () => {
+    if (holdTimer) {
+      clearTimeout(holdTimer);
+      holdTimer = null;
+    }
+  };
+
+  swatch.addEventListener("click", () => {
+    if (holdTriggered) {
+      holdTriggered = false;
+      return;
+    }
+    onSelect(hex, { isCustom: true });
+    updateSwatchSelection(container, hex);
+  });
+
+  if (removable) {
+    swatch.addEventListener("pointerdown", () => {
+      holdTriggered = false;
+      clearHold();
+      holdTimer = setTimeout(() => {
+        holdTriggered = true;
+        openConfirmModal({
+          title: "Remove saved color?",
+          message: `Remove ${hex} from your saved colors?`,
+          confirmLabel: "Remove",
+          onConfirm: () => {
+            closeConfirmModal();
+            const nextSelection = normalizeHexColor(selectedColor) === hex
+              ? DEFAULT_ROUTINE_COLOR_ID
+              : selectedColor;
+            removeSavedColor(hex);
+            if (normalizeHexColor(selectedColor) === hex) {
+              onSelect(DEFAULT_ROUTINE_COLOR_ID, { isCustom: false });
+            }
+            buildColorSwatches(container, nextSelection, onSelect);
+          },
+        });
+      }, 550);
+    });
+
+    swatch.addEventListener("pointerup", clearHold);
+    swatch.addEventListener("pointerleave", clearHold);
+    swatch.addEventListener("pointercancel", clearHold);
+  }
+
+  return swatch;
+}
+
+function createAddSwatch(selectedColor, onSelect, container) {
+  const addSwatch = document.createElement("label");
+  addSwatch.className = "color-swatch color-swatch-add";
+  addSwatch.title = "Add saved color";
+  addSwatch.setAttribute("aria-label", "Add saved color");
+
+  const plus = document.createElement("span");
+  plus.className = "color-swatch-add-icon";
+  plus.textContent = "+";
+  plus.setAttribute("aria-hidden", "true");
+
+  const colorInput = document.createElement("input");
+  colorInput.type = "color";
+  colorInput.className = "color-swatch-input";
+  colorInput.value = normalizeHexColor(selectedColor) || DEFAULT_CUSTOM_COLOR;
+  colorInput.setAttribute("aria-label", "Pick a color to save");
+
+  colorInput.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  colorInput.addEventListener("change", () => {
+    const hex = addSavedColor(colorInput.value);
+    if (!hex) return;
+    onSelect(hex, { isCustom: true });
+    buildColorSwatches(container, hex, onSelect);
+  });
+
+  addSwatch.append(plus, colorInput);
+  return addSwatch;
 }
 
 export function buildColorSwatches(container, selectedColor, onSelect) {
@@ -99,57 +242,22 @@ export function buildColorSwatches(container, selectedColor, onSelect) {
     : DEFAULT_ROUTINE_COLOR_ID;
 
   ROUTINE_COLORS.forEach((color) => {
-    const swatch = document.createElement("button");
-    swatch.type = "button";
-    swatch.className = "color-swatch";
-    swatch.dataset.colorId = color.id;
-    swatch.style.setProperty("--swatch-color", color.value);
-    swatch.title = color.label;
-    swatch.setAttribute("role", "radio");
-    swatch.setAttribute("aria-label", color.label);
-    swatch.setAttribute("aria-checked", String(initialSelection === color.id));
-    swatch.addEventListener("click", () => {
-      onSelect(color.id, { isCustom: false });
-      updateSwatchSelection(container, color.id);
-    });
-    container.appendChild(swatch);
+    container.appendChild(createPresetSwatch(color, initialSelection, onSelect, container));
   });
 
-  const customSelected = isHexColor(initialSelection);
-  const customValue = customSelected ? initialSelection : DEFAULT_CUSTOM_COLOR;
-
-  const customSwatch = document.createElement("label");
-  customSwatch.className = "color-swatch color-swatch-custom";
-  customSwatch.dataset.colorId = "custom";
-  customSwatch.title = "Custom color";
-  customSwatch.setAttribute("role", "radio");
-  customSwatch.setAttribute("aria-label", "Custom color");
-  customSwatch.setAttribute("aria-checked", String(customSelected));
-  if (customSelected) {
-    customSwatch.style.setProperty("--swatch-color", customValue);
+  const saved = getSavedColors();
+  const selectedHex = normalizeHexColor(initialSelection);
+  if (selectedHex && !saved.includes(selectedHex) && !getPresetValues().has(selectedHex)) {
+    // Show the current custom color even if it wasn't saved yet.
+    container.appendChild(createHexSwatch(selectedHex, initialSelection, onSelect, container));
   }
 
-  const colorInput = document.createElement("input");
-  colorInput.type = "color";
-  colorInput.className = "color-swatch-input";
-  colorInput.value = customValue;
-  colorInput.setAttribute("aria-label", "Pick a custom color");
-  colorInput.addEventListener("input", () => {
-    const hex = normalizeHexColor(colorInput.value) || DEFAULT_CUSTOM_COLOR;
-    customSwatch.style.setProperty("--swatch-color", hex);
-    onSelect(hex, { isCustom: true });
-    updateSwatchSelection(container, hex);
-  });
-  colorInput.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const hex = normalizeHexColor(colorInput.value) || DEFAULT_CUSTOM_COLOR;
-    customSwatch.style.setProperty("--swatch-color", hex);
-    onSelect(hex, { isCustom: true });
-    updateSwatchSelection(container, hex);
+  saved.forEach((hex) => {
+    container.appendChild(createHexSwatch(hex, initialSelection, onSelect, container, { removable: true }));
   });
 
-  customSwatch.appendChild(colorInput);
-  container.appendChild(customSwatch);
+  container.appendChild(createAddSwatch(initialSelection, onSelect, container));
+  updateSwatchSelection(container, initialSelection);
 }
 
 export function openNameModal({

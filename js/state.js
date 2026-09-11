@@ -21,6 +21,7 @@ export const state = {
 export const settings = {
   cumulativeMode: true,
   darkMode: false,
+  savedColors: [],
 };
 
 export let deletedRoutines = [];

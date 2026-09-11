@@ -1,4 +1,4 @@
-import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT } from "./constants.js";
+import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT, SAVED_COLORS_LIMIT } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import {
   saveRoutines,
@@ -113,14 +113,24 @@ function sanitizeSettings(raw) {
     return {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
+      savedColors: [...(settings.savedColors || [])],
     };
   }
+
+  const savedColors = Array.isArray(raw.savedColors)
+    ? raw.savedColors
+        .filter((color) => typeof color === "string" && /^#[0-9A-Fa-f]{6}$/.test(color))
+        .map((color) => color.toLowerCase())
+        .filter((color, index, list) => list.indexOf(color) === index)
+        .slice(0, SAVED_COLORS_LIMIT)
+    : [...(settings.savedColors || [])];
 
   return {
     darkMode: Boolean(raw.darkMode),
     cumulativeMode: raw.cumulativeMode !== undefined
       ? Boolean(raw.cumulativeMode)
       : Boolean(settings.cumulativeMode),
+    savedColors,
   };
 }
 
@@ -133,6 +143,7 @@ export function buildBackupPayload() {
     settings: {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
+      savedColors: [...(settings.savedColors || [])],
     },
     deletedRoutines: deletedRoutines,
   };
