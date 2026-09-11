@@ -458,12 +458,96 @@ button {
   color: var(--text);
 }
 
+.color-swatch-add.is-picking {
+  border-style: solid;
+  border-color: transparent;
+  background: var(--swatch-color);
+  color: transparent;
+}
+
+.color-swatch-add.is-picking .color-swatch-add-icon {
+  opacity: 0;
+}
+
 .color-swatch-add-icon {
   font-size: 1.1rem;
   font-weight: 500;
   line-height: 1;
   pointer-events: none;
   user-select: none;
+}
+
+.color-add-pending {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 6%, var(--panel));
+}
+
+.color-add-pending.hidden {
+  display: none;
+}
+
+.color-swatch-pending-preview {
+  flex: 0 0 auto;
+  pointer-events: none;
+  cursor: default;
+}
+
+.color-add-pending-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.color-add-pending-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.color-add-cancel,
+.color-add-confirm {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.color-add-cancel {
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  background: transparent;
+  color: var(--muted);
+}
+
+.color-add-cancel:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--text) 35%, transparent);
+}
+
+.color-add-confirm {
+  border: none;
+  background: var(--primary);
+  color: #fff;
+}
+
+.color-add-confirm:hover {
+  filter: brightness(1.05);
+}
+
+.color-add-cancel:focus-visible,
+.color-add-confirm:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .color-swatch-wrap {

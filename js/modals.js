@@ -194,11 +194,11 @@ function createHexSwatch(hex, selectedColor, onSelect, container, { removable = 
   return wrap;
 }
 
-function createAddSwatch(selectedColor, onSelect, container) {
+function createAddColorControl(selectedColor, onSelect, container) {
   const addSwatch = document.createElement("label");
   addSwatch.className = "color-swatch color-swatch-add";
-  addSwatch.title = "Add saved color";
-  addSwatch.setAttribute("aria-label", "Add saved color");
+  addSwatch.title = "Pick a color";
+  addSwatch.setAttribute("aria-label", "Pick a color");
 
   const plus = document.createElement("span");
   plus.className = "color-swatch-add-icon";
@@ -209,21 +209,82 @@ function createAddSwatch(selectedColor, onSelect, container) {
   colorInput.type = "color";
   colorInput.className = "color-swatch-input";
   colorInput.value = normalizeHexColor(selectedColor) || DEFAULT_CUSTOM_COLOR;
-  colorInput.setAttribute("aria-label", "Pick a color to save");
+  colorInput.setAttribute("aria-label", "Pick a color");
+
+  const pendingRow = document.createElement("div");
+  pendingRow.className = "color-add-pending hidden";
+
+  const preview = document.createElement("span");
+  preview.className = "color-swatch color-swatch-pending-preview";
+  preview.setAttribute("aria-hidden", "true");
+
+  const pendingLabel = document.createElement("span");
+  pendingLabel.className = "color-add-pending-label";
+  pendingLabel.textContent = "New color";
+
+  const actions = document.createElement("div");
+  actions.className = "color-add-pending-actions";
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "color-add-cancel";
+  cancelBtn.textContent = "Cancel";
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.type = "button";
+  confirmBtn.className = "color-add-confirm";
+  confirmBtn.textContent = "Add";
+
+  let pendingHex = null;
+
+  const hidePending = () => {
+    pendingHex = null;
+    pendingRow.classList.add("hidden");
+    addSwatch.classList.remove("is-picking");
+    addSwatch.style.removeProperty("--swatch-color");
+  };
+
+  const showPending = (rawValue) => {
+    const hex = normalizeHexColor(rawValue);
+    if (!hex) return;
+    pendingHex = hex;
+    colorInput.value = hex;
+    preview.style.setProperty("--swatch-color", hex);
+    pendingLabel.textContent = hex;
+    pendingRow.classList.remove("hidden");
+    addSwatch.classList.add("is-picking");
+    addSwatch.style.setProperty("--swatch-color", hex);
+  };
 
   colorInput.addEventListener("click", (event) => {
     event.stopPropagation();
   });
 
+  colorInput.addEventListener("input", () => {
+    showPending(colorInput.value);
+  });
+
   colorInput.addEventListener("change", () => {
-    const hex = addSavedColor(colorInput.value);
+    showPending(colorInput.value);
+  });
+
+  cancelBtn.addEventListener("click", () => {
+    hidePending();
+  });
+
+  confirmBtn.addEventListener("click", () => {
+    if (!pendingHex) return;
+    const hex = addSavedColor(pendingHex);
     if (!hex) return;
     onSelect(hex, { isCustom: true });
     buildColorSwatches(container, hex, onSelect);
   });
 
   addSwatch.append(plus, colorInput);
-  return addSwatch;
+  actions.append(cancelBtn, confirmBtn);
+  pendingRow.append(preview, pendingLabel, actions);
+
+  return { addSwatch, pendingRow };
 }
 
 export function buildColorSwatches(container, selectedColor, onSelect) {
@@ -248,7 +309,8 @@ export function buildColorSwatches(container, selectedColor, onSelect) {
     container.appendChild(createHexSwatch(hex, initialSelection, onSelect, container, { removable: true }));
   });
 
-  container.appendChild(createAddSwatch(initialSelection, onSelect, container));
+  const { addSwatch, pendingRow } = createAddColorControl(initialSelection, onSelect, container);
+  container.append(addSwatch, pendingRow);
   updateSwatchSelection(container, initialSelection);
 }
 
