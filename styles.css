@@ -1094,6 +1094,10 @@ button {
   padding: 24px;
 }
 
+.confirm-modal-overlay {
+  z-index: 60;
+}
+
 .modal-card {
   width: min(100%, 340px);
   background: var(--panel);

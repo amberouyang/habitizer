@@ -16,7 +16,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=savedcolors3" />
+    <link rel="stylesheet" href="styles.css?v=confirmz1" />
   </head>
   <body>
     <div class="app-shell">
@@ -94,17 +94,6 @@
       </div>
     </div>
 
-    <div id="confirmModal" class="modal-overlay hidden" aria-hidden="true">
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-        <h2 id="confirmTitle">Confirm</h2>
-        <p id="confirmMessage" class="confirm-message"></p>
-        <div class="modal-actions">
-          <button id="confirmCancel" type="button" class="secondary-btn">Cancel</button>
-          <button id="confirmAction" type="button" class="danger-btn">Confirm</button>
-        </div>
-      </div>
-    </div>
-
     <div id="colorModal" class="modal-overlay hidden" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle">
         <h2 id="colorModalTitle">Routine color</h2>
@@ -122,6 +111,17 @@
         <div id="calendarModalBody"></div>
         <div class="modal-actions">
           <button id="calendarModalClose" type="button" class="primary-btn">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirmModal" class="modal-overlay confirm-modal-overlay hidden" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle">Confirm</h2>
+        <p id="confirmMessage" class="confirm-message"></p>
+        <div class="modal-actions">
+          <button id="confirmCancel" type="button" class="secondary-btn">Cancel</button>
+          <button id="confirmAction" type="button" class="danger-btn">Confirm</button>
         </div>
       </div>
     </div>
