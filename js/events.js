@@ -227,6 +227,11 @@ export function wireEvents() {
 
     if (!calendarModal.classList.contains("hidden")) {
       closeCalendarModal();
+      return;
+    }
+
+    if (!settingsModal.classList.contains("hidden")) {
+      closeSettings();
     }
   });
 
