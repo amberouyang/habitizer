@@ -145,61 +145,53 @@ function createHexSwatch(hex, selectedColor, onSelect, container, { removable = 
   swatch.className = "color-swatch color-swatch-saved";
   swatch.dataset.colorValue = hex;
   swatch.style.setProperty("--swatch-color", hex);
-  swatch.title = removable ? `${hex} · hold to remove` : hex;
+  swatch.title = hex;
   swatch.setAttribute("role", "radio");
   swatch.setAttribute("aria-label", removable ? `Saved color ${hex}` : `Custom color ${hex}`);
   swatch.setAttribute("aria-checked", String(normalizeHexColor(selectedColor) === hex));
 
-  let holdTimer = null;
-  let holdTriggered = false;
-
-  const clearHold = () => {
-    if (holdTimer) {
-      clearTimeout(holdTimer);
-      holdTimer = null;
-    }
-  };
-
   swatch.addEventListener("click", () => {
-    if (holdTriggered) {
-      holdTriggered = false;
-      return;
-    }
     onSelect(hex, { isCustom: true });
     updateSwatchSelection(container, hex);
   });
 
-  if (removable) {
-    swatch.addEventListener("pointerdown", () => {
-      holdTriggered = false;
-      clearHold();
-      holdTimer = setTimeout(() => {
-        holdTriggered = true;
-        openConfirmModal({
-          title: "Remove saved color?",
-          message: `Remove ${hex} from your saved colors?`,
-          confirmLabel: "Remove",
-          onConfirm: () => {
-            closeConfirmModal();
-            const nextSelection = normalizeHexColor(selectedColor) === hex
-              ? DEFAULT_ROUTINE_COLOR_ID
-              : selectedColor;
-            removeSavedColor(hex);
-            if (normalizeHexColor(selectedColor) === hex) {
-              onSelect(DEFAULT_ROUTINE_COLOR_ID, { isCustom: false });
-            }
-            buildColorSwatches(container, nextSelection, onSelect);
-          },
-        });
-      }, 550);
-    });
-
-    swatch.addEventListener("pointerup", clearHold);
-    swatch.addEventListener("pointerleave", clearHold);
-    swatch.addEventListener("pointercancel", clearHold);
+  if (!removable) {
+    return swatch;
   }
 
-  return swatch;
+  const wrap = document.createElement("div");
+  wrap.className = "color-swatch-wrap";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "color-swatch-remove";
+  removeBtn.title = "Remove saved color";
+  removeBtn.setAttribute("aria-label", `Remove saved color ${hex}`);
+  removeBtn.innerHTML = "<span aria-hidden=\"true\">×</span>";
+
+  removeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openConfirmModal({
+      title: "Remove saved color?",
+      message: `Remove ${hex} from your saved colors?`,
+      confirmLabel: "Remove",
+      onConfirm: () => {
+        closeConfirmModal();
+        const nextSelection = normalizeHexColor(selectedColor) === hex
+          ? DEFAULT_ROUTINE_COLOR_ID
+          : selectedColor;
+        removeSavedColor(hex);
+        if (normalizeHexColor(selectedColor) === hex) {
+          onSelect(DEFAULT_ROUTINE_COLOR_ID, { isCustom: false });
+        }
+        buildColorSwatches(container, nextSelection, onSelect);
+      },
+    });
+  });
+
+  wrap.append(swatch, removeBtn);
+  return wrap;
 }
 
 function createAddSwatch(selectedColor, onSelect, container) {
