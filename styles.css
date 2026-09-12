@@ -275,12 +275,12 @@ button {
 
 .routine-item {
   background: color-mix(in srgb, var(--routine-color, var(--primary)) 11%, var(--panel));
-  border-color: color-mix(in srgb, var(--routine-color, var(--primary)) 24%, var(--border));
+  border-color: transparent;
 }
 
 [data-theme="dark"] .routine-item {
   background: color-mix(in srgb, var(--routine-color, var(--primary)) 16%, var(--panel));
-  border-color: color-mix(in srgb, var(--routine-color, var(--primary)) 28%, var(--border));
+  border-color: transparent;
 }
 
 .routine-list {
@@ -321,7 +321,6 @@ button {
 
 .routine-item:hover:not(.is-dragging) {
   transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--routine-color, var(--primary)) 40%, var(--hover-border));
 }
 
 .routine-main {
