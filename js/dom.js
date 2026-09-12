@@ -17,6 +17,7 @@ export const settingsModal = document.getElementById("settingsModal");
 export const settingsClose = document.getElementById("settingsClose");
 export const darkModeToggle = document.getElementById("darkModeToggle");
 export const cumulativeToggle = document.getElementById("cumulativeToggle");
+export const completionSoundToggle = document.getElementById("completionSoundToggle");
 export const exportBackupBtn = document.getElementById("exportBackupBtn");
 export const importBackupBtn = document.getElementById("importBackupBtn");
 export const importBackupInput = document.getElementById("importBackupInput");

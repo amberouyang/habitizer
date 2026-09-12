@@ -17,6 +17,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Undo delete** — Brief undo window after deleting a routine or activity
 - **Recently deleted** — Deleted routines are kept in settings for 30 days and can be restored
 - **Dark mode** — Toggle in settings
+- **Completion sound** — Optional chime when you finish a routine
 - **Export / import** — Back up and restore routines, settings, and recently deleted items as JSON
 - **Auto-save** — Everything persists in your browser via localStorage
 
@@ -107,6 +108,7 @@ Open **⋯** from the home screen:
 
 - **Dark mode** — Switch between light and dark themes
 - **Cumulative Habit Tracker** — When on, activity times accumulate across runs; when off, times reset each session
+- **Completion sound** — Play a short chime when you finish a routine (on by default)
 - **Backup** — Export or import a JSON file with your routines, settings, and recently deleted items
   - **Export** — Download a `habitizer-backup-YYYY-MM-DD.json` file
   - **Import** — Replace current data from a backup (confirmation required)
@@ -127,7 +129,7 @@ Open **⋯** from the home screen:
 | Key | Purpose |
 |-----|---------|
 | `habitizer-routines-v1` | Active routines and activities |
-| `habitizer-settings-v1` | Dark mode and cumulative timer preference |
+| `habitizer-settings-v1` | Dark mode, cumulative timer, completion sound, and saved colors |
 | `habitizer-deleted-routines-v1` | Recently deleted routines (30-day retention) |
 | `habitizer-timer-v1` | In-progress timer session (cleared when the run ends; max 24h) |
 
@@ -139,6 +141,7 @@ habitizer/
 ├── js/             # ES module application code
 │   ├── main.js     # Entry point and initialization
 │   ├── backup.js   # JSON export/import
+│   ├── audio.js    # Completion chime
 │   ├── persistence.js
 │   └── ...         # state, views, timer, modals, etc.
 ├── app.js          # Legacy re-export to js/main.js (optional)

@@ -22,6 +22,7 @@ import {
 } from "./models.js";
 import { saveRoutines, saveTimerSession, clearTimerSession, loadTimerSession } from "./persistence.js";
 import { openConfirmModal, closeConfirmModal } from "./modals.js";
+import { playCompletionSound } from "./audio.js";
 import { setView, render } from "./views.js";
 
 export function updateTimerDisplay() {
@@ -332,6 +333,7 @@ export function endRoutine() {
 
   clearTimerSession();
   saveRoutines();
+  playCompletionSound();
   setView("complete");
 }
 

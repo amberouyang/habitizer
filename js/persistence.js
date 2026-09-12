@@ -8,7 +8,7 @@ import {
   SAVED_COLORS_LIMIT,
 } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
-import { darkModeToggle, cumulativeToggle } from "./dom.js";
+import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
 
 function emptyTimerState() {
   return {
@@ -161,6 +161,9 @@ export function loadSettings() {
   settings.cumulativeMode = settings.cumulativeMode !== undefined
     ? Boolean(settings.cumulativeMode)
     : true;
+  settings.completionSound = settings.completionSound !== undefined
+    ? Boolean(settings.completionSound)
+    : true;
   settings.savedColors = Array.isArray(settings.savedColors)
     ? settings.savedColors
         .filter((color) => typeof color === "string" && /^#[0-9A-Fa-f]{6}$/.test(color))
@@ -171,6 +174,7 @@ export function loadSettings() {
   applyTheme();
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
+  if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
 }
 
 export function seedData() {

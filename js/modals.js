@@ -26,6 +26,7 @@ import {
   settingsClose,
   darkModeToggle,
   cumulativeToggle,
+  completionSoundToggle,
   deletedRoutinesList,
   confirmModal,
   confirmTitle,
@@ -665,6 +666,7 @@ export function closeCalendarModal() {
 export function openSettings() {
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
+  completionSoundToggle.checked = settings.completionSound;
   renderDeletedRoutinesList();
   settingsModal.classList.remove("hidden");
   settingsModal.setAttribute("aria-hidden", "false");
@@ -675,6 +677,7 @@ export function closeSettings() {
   settingsModal.setAttribute("aria-hidden", "true");
   settings.darkMode = darkModeToggle.checked;
   settings.cumulativeMode = cumulativeToggle.checked;
+  settings.completionSound = completionSoundToggle.checked;
   applyTheme();
   saveSettings();
 }

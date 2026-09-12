@@ -19,6 +19,7 @@ import {
   calendarModalClose,
   darkModeToggle,
   cumulativeToggle,
+  completionSoundToggle,
   exportBackupBtn,
   importBackupBtn,
   importBackupInput,
@@ -36,6 +37,7 @@ import {
   openSettings,
   openConfirmModal,
 } from "./modals.js";
+import { playCompletionSound } from "./audio.js";
 import {
   addRoutine,
   submitRoutineCreation,
@@ -244,6 +246,14 @@ export function wireEvents() {
   cumulativeToggle.addEventListener("change", () => {
     settings.cumulativeMode = cumulativeToggle.checked;
     saveSettings();
+  });
+
+  completionSoundToggle.addEventListener("change", () => {
+    settings.completionSound = completionSoundToggle.checked;
+    saveSettings();
+    if (settings.completionSound) {
+      playCompletionSound({ force: true });
+    }
   });
 
   exportBackupBtn.addEventListener("click", () => {

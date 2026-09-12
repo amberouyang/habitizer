@@ -9,7 +9,7 @@ import {
   pruneExpiredDeletedRoutines,
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
-import { darkModeToggle, cumulativeToggle } from "./dom.js";
+import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
 
 const BACKUP_APP = "habitizer";
 const BACKUP_VERSION = 1;
@@ -113,6 +113,7 @@ function sanitizeSettings(raw) {
     return {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
+      completionSound: Boolean(settings.completionSound),
       savedColors: [...(settings.savedColors || [])],
     };
   }
@@ -130,6 +131,9 @@ function sanitizeSettings(raw) {
     cumulativeMode: raw.cumulativeMode !== undefined
       ? Boolean(raw.cumulativeMode)
       : Boolean(settings.cumulativeMode),
+    completionSound: raw.completionSound !== undefined
+      ? Boolean(raw.completionSound)
+      : Boolean(settings.completionSound),
     savedColors,
   };
 }
@@ -143,6 +147,7 @@ export function buildBackupPayload() {
     settings: {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
+      completionSound: Boolean(settings.completionSound),
       savedColors: [...(settings.savedColors || [])],
     },
     deletedRoutines: deletedRoutines,
@@ -222,6 +227,7 @@ export function applyBackup(parsed) {
 
   if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
   if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;
+  if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
 }
 
 export async function readBackupFile(file) {
