@@ -80,6 +80,90 @@ export function formatLastCompletedLabel(routine) {
   return `Last completed ${formatRelativeCompletedDay(dateKey)}`;
 }
 
+function parseDateKey(dateKey) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/** Monday-start week keys for the local calendar week containing `timestamp`. */
+export function getWeekDateKeys(timestamp = Date.now()) {
+  const date = new Date(timestamp);
+  const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = local.getDay(); // 0 = Sunday
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  local.setDate(local.getDate() + mondayOffset);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const dayDate = new Date(local);
+    dayDate.setDate(local.getDate() + index);
+    return getLocalDateKey(dayDate.getTime());
+  });
+}
+
+export function formatWeekRangeLabel(startKey, endKey) {
+  const start = parseDateKey(startKey);
+  const end = parseDateKey(endKey);
+  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+  const startLabel = start.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const endLabel = end.toLocaleDateString(
+    undefined,
+    sameMonth ? { day: "numeric" } : { month: "short", day: "numeric" }
+  );
+  return `${startLabel}–${endLabel}`;
+}
+
+export function getWeekdayShortLabel(dateKey) {
+  return parseDateKey(dateKey).toLocaleDateString(undefined, { weekday: "narrow" });
+}
+
+function getRunDateKey(run) {
+  if (typeof run?.dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(run.dateKey)) {
+    return run.dateKey;
+  }
+  if (Number.isFinite(Number(run?.completedAt))) {
+    return getLocalDateKey(Number(run.completedAt));
+  }
+  return null;
+}
+
+export function getWeeklyStats(routines, timestamp = Date.now()) {
+  const weekKeys = getWeekDateKeys(timestamp);
+  const weekSet = new Set(weekKeys);
+  const dayCompletions = weekKeys.map(() => 0);
+  const activeDays = new Set();
+  let completions = 0;
+  let runs = 0;
+  let totalTimeMs = 0;
+
+  (routines || []).forEach((routine) => {
+    getRoutineCompletionDates(routine).forEach((dateKey) => {
+      if (!weekSet.has(dateKey)) return;
+      completions += 1;
+      activeDays.add(dateKey);
+      const index = weekKeys.indexOf(dateKey);
+      if (index >= 0) dayCompletions[index] += 1;
+    });
+
+    getRoutineRunHistory(routine).forEach((run) => {
+      const dateKey = getRunDateKey(run);
+      if (!dateKey || !weekSet.has(dateKey)) return;
+      runs += 1;
+      totalTimeMs += Math.max(0, Number(run.totalMs) || 0);
+    });
+  });
+
+  return {
+    weekKeys,
+    weekLabel: formatWeekRangeLabel(weekKeys[0], weekKeys[6]),
+    completions,
+    activeDays: activeDays.size,
+    runs,
+    totalTimeMs,
+    dayCompletions,
+    todayKey: getLocalDateKey(timestamp),
+  };
+}
+
 export function formatRunCompletedAt(timestamp) {
   return new Date(timestamp).toLocaleString(undefined, {
     month: "short",

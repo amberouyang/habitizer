@@ -16,6 +16,8 @@ import {
   formatLastCompletedLabel,
   getCompletionEstimateMessage,
   getRoutineStreak,
+  getWeeklyStats,
+  getWeekdayShortLabel,
 } from "./utils.js";
 import {
   getRoutineById,
@@ -108,6 +110,10 @@ export function setView(view, routineId = null) {
 }
 
 export function renderHomeView() {
+  const home = document.createElement("div");
+  home.className = "home-view";
+  home.appendChild(renderWeeklyStats());
+
   const list = document.createElement("section");
   list.className = "routine-list";
 
@@ -237,7 +243,107 @@ export function renderHomeView() {
   addRoutineButton.addEventListener("click", addRoutine);
   list.appendChild(addRoutineButton);
 
-  return list;
+  home.appendChild(list);
+  return home;
+}
+
+function renderWeeklyStats() {
+  const stats = getWeeklyStats(state.routines);
+  const maxDay = Math.max(1, ...stats.dayCompletions);
+
+  const section = document.createElement("section");
+  section.className = "weekly-stats";
+  section.setAttribute("aria-label", `This week ${stats.weekLabel}`);
+
+  const header = document.createElement("div");
+  header.className = "weekly-stats-header";
+
+  const title = document.createElement("h2");
+  title.className = "weekly-stats-title";
+  title.textContent = "This week";
+
+  const range = document.createElement("p");
+  range.className = "weekly-stats-range";
+  range.textContent = stats.weekLabel;
+
+  header.append(title, range);
+
+  const metrics = document.createElement("div");
+  metrics.className = "weekly-stats-metrics";
+
+  const metricDefs = [
+    {
+      label: "Completions",
+      value: String(stats.completions),
+      detail: stats.completions === 1 ? "routine day" : "routine days",
+    },
+    {
+      label: "Active days",
+      value: `${stats.activeDays}/7`,
+      detail: stats.activeDays === 1 ? "day with a run" : "days with a run",
+    },
+    {
+      label: "Time",
+      value: formatDurationLabel(stats.totalTimeMs),
+      detail: stats.runs === 1 ? "1 run logged" : `${stats.runs} runs logged`,
+    },
+  ];
+
+  metricDefs.forEach((metric) => {
+    const item = document.createElement("div");
+    item.className = "weekly-stat";
+
+    const label = document.createElement("span");
+    label.className = "weekly-stat-label";
+    label.textContent = metric.label;
+
+    const value = document.createElement("span");
+    value.className = "weekly-stat-value";
+    value.textContent = metric.value;
+
+    const detail = document.createElement("span");
+    detail.className = "weekly-stat-detail";
+    detail.textContent = metric.detail;
+
+    item.append(label, value, detail);
+    metrics.appendChild(item);
+  });
+
+  const chart = document.createElement("div");
+  chart.className = "weekly-stats-chart";
+  chart.setAttribute("role", "img");
+  chart.setAttribute(
+    "aria-label",
+    `Daily completions: ${stats.dayCompletions.join(", ")}`
+  );
+
+  stats.weekKeys.forEach((dateKey, index) => {
+    const count = stats.dayCompletions[index];
+    const day = document.createElement("div");
+    day.className = "weekly-stats-day";
+    if (dateKey === stats.todayKey) day.classList.add("is-today");
+    if (count > 0) day.classList.add("has-completions");
+
+    const barWrap = document.createElement("div");
+    barWrap.className = "weekly-stats-bar-wrap";
+
+    const bar = document.createElement("div");
+    bar.className = "weekly-stats-bar";
+    bar.style.height = `${Math.max(count > 0 ? 18 : 6, Math.round((count / maxDay) * 100))}%`;
+    bar.title = `${count} completion${count === 1 ? "" : "s"}`;
+
+    barWrap.appendChild(bar);
+
+    const weekday = document.createElement("span");
+    weekday.className = "weekly-stats-weekday";
+    weekday.textContent = getWeekdayShortLabel(dateKey);
+
+    day.append(barWrap, weekday);
+    chart.appendChild(day);
+  });
+
+  section.append(header, metrics, chart);
+  return section;
 }
 
 export function renderRoutineView() {
