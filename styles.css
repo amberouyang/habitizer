@@ -393,10 +393,23 @@ button {
 .home-widgets-settings {
   display: flex;
   flex-direction: column;
+  gap: 0;
+  margin-top: 16px;
 }
 
 .home-widgets-settings .settings-row + .settings-row {
-  margin-top: 0;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.home-widgets-settings .settings-copy {
+  gap: 6px;
+}
+
+.settings-widgets-section .settings-section-desc {
+  margin: 6px 0 0;
+  line-height: 1.5;
 }
 
 .home-widget[data-widget-id="weekly"] .weekly-stats {
