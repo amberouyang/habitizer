@@ -12,7 +12,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Completion screen** — See your results, streak, and personal best after finishing
 - **Streaks** — Daily completion tracking with calendar history and streak badges
 - **Weekly stats** — Home summary of this week’s completions, active days, and total time
-- **Home widgets** — Show, hide, and drag home sections (This week, Routines)
+- **Home widgets** — Collapse, show/hide, and drag home sections (This week, Routines)
 - **Run history** — Past run durations per routine (best time + recent runs, up to 50)
 - **Drag to reorder** — Reorder routines on the home screen and activities within a routine
 - **Duplicate routines** — Copy a routine with all activities and settings
@@ -48,7 +48,7 @@ python3 -m http.server 8000
 
 - **This week** — Completions, active days, total time, and a Mon–Sun activity strip
 - **Reorder home widgets** — Drag the **⋮⋮** handle on a widget card (This week / Routines)
-- **Hide home widgets** — Tap **Hide** on a widget, or toggle them under **Home widgets** in Settings
+- **Collapse home widgets** — Tap **Hide** to collapse a section (tap **Show** to expand); turn off in Settings to remove it from home
 - **Add routine** — Tap the **Add routine** button below your routine list
 - **Open a routine** — Tap a routine card
 - **Reorder** — Drag the **⋮⋮** handle on the left (when you have 2+ routines)
@@ -114,7 +114,7 @@ Open **⋯** from the home screen:
 - **Dark mode** — Switch between light and dark themes
 - **Cumulative Habit Tracker** — When on, activity times accumulate across runs; when off, times reset each session
 - **Completion sound** — Play a short chime when you finish a routine (on by default)
-- **Home widgets** — Show or hide This week and Routines (at least one must stay visible)
+- **Home widgets** — Collapse sections on home, or turn them off fully here (at least one must stay on)
 - **Backup** — Export or import a JSON file with your routines, settings, and recently deleted items
   - **Export** — Download a `habitizer-backup-YYYY-MM-DD.json` file
   - **Import** — Replace current data from a backup (confirmation required)

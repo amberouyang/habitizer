@@ -9,6 +9,7 @@ import {
   pruneExpiredDeletedRoutines,
   sanitizeHomeWidgets,
   sanitizeHiddenHomeWidgets,
+  sanitizeCollapsedHomeWidgets,
   reconcileHomeWidgets,
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
@@ -120,6 +121,7 @@ function sanitizeSettings(raw) {
       savedColors: [...(settings.savedColors || [])],
       homeWidgets: [...(settings.homeWidgets || [])],
       hiddenHomeWidgets: [...(settings.hiddenHomeWidgets || [])],
+      collapsedHomeWidgets: [...(settings.collapsedHomeWidgets || [])],
     };
   }
 
@@ -142,6 +144,7 @@ function sanitizeSettings(raw) {
     savedColors,
     homeWidgets: sanitizeHomeWidgets(raw.homeWidgets ?? settings.homeWidgets),
     hiddenHomeWidgets: sanitizeHiddenHomeWidgets(raw.hiddenHomeWidgets ?? settings.hiddenHomeWidgets),
+    collapsedHomeWidgets: [],
   };
 
   // Reconcile using a temporary assign pattern without mutating live settings mid-sanitize.
@@ -153,9 +156,14 @@ function sanitizeSettings(raw) {
   if (visible.length === 0) {
     next.homeWidgets = [...DEFAULT_HOME_WIDGETS];
     next.hiddenHomeWidgets = [];
+    next.collapsedHomeWidgets = [];
   } else {
     next.homeWidgets = visible;
     next.hiddenHomeWidgets = hidden;
+    next.collapsedHomeWidgets = sanitizeCollapsedHomeWidgets(
+      raw.collapsedHomeWidgets ?? settings.collapsedHomeWidgets,
+      visible
+    );
   }
 
   return next;
@@ -174,6 +182,10 @@ export function buildBackupPayload() {
       savedColors: [...(settings.savedColors || [])],
       homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
       hiddenHomeWidgets: sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets),
+      collapsedHomeWidgets: sanitizeCollapsedHomeWidgets(
+        settings.collapsedHomeWidgets,
+        settings.homeWidgets
+      ),
     },
     deletedRoutines: deletedRoutines,
   };

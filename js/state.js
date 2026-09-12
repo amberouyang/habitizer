@@ -25,6 +25,7 @@ export const settings = {
   savedColors: [],
   homeWidgets: [...DEFAULT_HOME_WIDGETS],
   hiddenHomeWidgets: [],
+  collapsedHomeWidgets: [],
 };
 
 export let deletedRoutines = [];

@@ -353,6 +353,10 @@ button {
   white-space: nowrap;
 }
 
+.home-widget.is-collapsed .home-widget-header {
+  margin-bottom: 0;
+}
+
 .home-widget-hide {
   flex: 0 0 auto;
   margin-top: 1px;

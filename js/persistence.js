@@ -42,6 +42,27 @@ export function sanitizeHiddenHomeWidgets(raw) {
   return hidden;
 }
 
+export function sanitizeCollapsedHomeWidgets(raw, visibleWidgets = []) {
+  const visible = new Set(visibleWidgets);
+  const known = new Set(HOME_WIDGET_IDS);
+  const collapsed = [];
+
+  if (Array.isArray(raw)) {
+    raw.forEach((id) => {
+      if (
+        typeof id === "string"
+        && known.has(id)
+        && visible.has(id)
+        && !collapsed.includes(id)
+      ) {
+        collapsed.push(id);
+      }
+    });
+  }
+
+  return collapsed;
+}
+
 /** Ensure every known widget is either visible or hidden, and at least one stays visible. */
 export function reconcileHomeWidgets() {
   let visible = sanitizeHomeWidgets(settings.homeWidgets);
@@ -62,6 +83,10 @@ export function reconcileHomeWidgets() {
 
   settings.homeWidgets = visible;
   settings.hiddenHomeWidgets = hidden;
+  settings.collapsedHomeWidgets = sanitizeCollapsedHomeWidgets(
+    settings.collapsedHomeWidgets,
+    visible
+  );
   return visible;
 }
 
@@ -87,8 +112,32 @@ export function setHomeWidgetVisibility(widgetId, isVisible) {
   if (!settings.hiddenHomeWidgets.includes(widgetId)) {
     settings.hiddenHomeWidgets.push(widgetId);
   }
+  settings.collapsedHomeWidgets = settings.collapsedHomeWidgets.filter((id) => id !== widgetId);
   saveSettings();
   return true;
+}
+
+export function setHomeWidgetCollapsed(widgetId, isCollapsed) {
+  if (!HOME_WIDGET_IDS.includes(widgetId)) return false;
+
+  reconcileHomeWidgets();
+  if (!settings.homeWidgets.includes(widgetId)) return false;
+
+  if (isCollapsed) {
+    if (!settings.collapsedHomeWidgets.includes(widgetId)) {
+      settings.collapsedHomeWidgets.push(widgetId);
+    }
+  } else {
+    settings.collapsedHomeWidgets = settings.collapsedHomeWidgets.filter((id) => id !== widgetId);
+  }
+
+  saveSettings();
+  return true;
+}
+
+export function isHomeWidgetCollapsed(widgetId) {
+  return Array.isArray(settings.collapsedHomeWidgets)
+    && settings.collapsedHomeWidgets.includes(widgetId);
 }
 
 function emptyTimerState() {
@@ -247,6 +296,9 @@ export function loadSettings() {
     : true;
   settings.homeWidgets = sanitizeHomeWidgets(settings.homeWidgets);
   settings.hiddenHomeWidgets = sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets);
+  settings.collapsedHomeWidgets = Array.isArray(settings.collapsedHomeWidgets)
+    ? settings.collapsedHomeWidgets
+    : [];
   reconcileHomeWidgets();
   settings.savedColors = Array.isArray(settings.savedColors)
     ? settings.savedColors

@@ -59,7 +59,7 @@ import {
   requestEndRoutine,
 } from "./timer.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
-import { reconcileHomeWidgets, setHomeWidgetVisibility } from "./persistence.js";
+import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed } from "./persistence.js";
 
 export function setView(view, routineId = null) {
   state.currentView = view;
@@ -117,11 +117,11 @@ export function renderHomeView() {
   const order = reconcileHomeWidgets();
   order.forEach((widgetId) => {
     if (widgetId === "weekly") {
-      home.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent(), order.length > 1));
+      home.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent()));
       return;
     }
     if (widgetId === "routines") {
-      home.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent(), order.length > 1));
+      home.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent()));
     }
   });
 
@@ -132,11 +132,16 @@ export function renderHomeView() {
   return home;
 }
 
-function createHomeWidget(widgetId, bodyContent, canHide = false) {
+function createHomeWidget(widgetId, bodyContent) {
   const widget = document.createElement("section");
   widget.className = "home-widget";
   widget.dataset.widgetId = widgetId;
   widget.setAttribute("aria-label", HOME_WIDGET_LABELS[widgetId] || widgetId);
+
+  const collapsed = isHomeWidgetCollapsed(widgetId);
+  if (collapsed) {
+    widget.classList.add("is-collapsed");
+  }
 
   const header = document.createElement("div");
   header.className = "home-widget-header";
@@ -156,7 +161,7 @@ function createHomeWidget(widgetId, bodyContent, canHide = false) {
 
   titleWrap.appendChild(title);
 
-  if (widgetId === "weekly" && bodyContent.dataset.weekLabel) {
+  if (widgetId === "weekly" && bodyContent.dataset.weekLabel && !collapsed) {
     const range = document.createElement("p");
     range.className = "home-widget-subtitle";
     range.textContent = bodyContent.dataset.weekLabel;
@@ -165,26 +170,36 @@ function createHomeWidget(widgetId, bodyContent, canHide = false) {
 
   header.append(handle, titleWrap);
 
-  if (canHide) {
-    const hideBtn = document.createElement("button");
-    hideBtn.type = "button";
-    hideBtn.className = "home-widget-hide";
-    hideBtn.textContent = "Hide";
-    hideBtn.title = `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"}`;
-    hideBtn.setAttribute("aria-label", `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"}`);
-    hideBtn.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (setHomeWidgetVisibility(widgetId, false)) {
-        render();
-      }
-    });
-    header.appendChild(hideBtn);
-  }
+  const collapseBtn = document.createElement("button");
+  collapseBtn.type = "button";
+  collapseBtn.className = "home-widget-hide";
+  collapseBtn.textContent = collapsed ? "Show" : "Hide";
+  collapseBtn.title = collapsed
+    ? `Show ${HOME_WIDGET_LABELS[widgetId] || "widget"}`
+    : `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"} content`;
+  collapseBtn.setAttribute(
+    "aria-label",
+    collapsed
+      ? `Show ${HOME_WIDGET_LABELS[widgetId] || "widget"}`
+      : `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"} content`
+  );
+  collapseBtn.setAttribute("aria-expanded", String(!collapsed));
+  collapseBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (setHomeWidgetCollapsed(widgetId, !collapsed)) {
+      render();
+    }
+  });
+  header.appendChild(collapseBtn);
 
   const body = document.createElement("div");
   body.className = "home-widget-body";
-  body.appendChild(bodyContent);
+  if (collapsed) {
+    body.hidden = true;
+  } else {
+    body.appendChild(bodyContent);
+  }
 
   widget.append(header, body);
   return widget;

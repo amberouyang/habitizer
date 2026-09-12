@@ -711,8 +711,8 @@ function renderHomeWidgetSettings() {
     const desc = document.createElement("p");
     desc.className = "settings-desc";
     desc.textContent = isVisible
-      ? "Shown on the home screen"
-      : "Hidden from the home screen";
+      ? "On the home screen (Hide there only collapses it)"
+      : "Removed from the home screen";
 
     copy.append(title, desc);
 
