@@ -1,4 +1,4 @@
-import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT, SAVED_COLORS_LIMIT } from "./constants.js";
+import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS, DEFAULT_HOME_WIDGETS } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import {
   saveRoutines,
@@ -8,6 +8,8 @@ import {
   applyTheme,
   pruneExpiredDeletedRoutines,
   sanitizeHomeWidgets,
+  sanitizeHiddenHomeWidgets,
+  reconcileHomeWidgets,
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
@@ -116,7 +118,8 @@ function sanitizeSettings(raw) {
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
       savedColors: [...(settings.savedColors || [])],
-      homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
+      homeWidgets: [...(settings.homeWidgets || [])],
+      hiddenHomeWidgets: [...(settings.hiddenHomeWidgets || [])],
     };
   }
 
@@ -128,7 +131,7 @@ function sanitizeSettings(raw) {
         .slice(0, SAVED_COLORS_LIMIT)
     : [...(settings.savedColors || [])];
 
-  return {
+  const next = {
     darkMode: Boolean(raw.darkMode),
     cumulativeMode: raw.cumulativeMode !== undefined
       ? Boolean(raw.cumulativeMode)
@@ -138,7 +141,24 @@ function sanitizeSettings(raw) {
       : Boolean(settings.completionSound),
     savedColors,
     homeWidgets: sanitizeHomeWidgets(raw.homeWidgets ?? settings.homeWidgets),
+    hiddenHomeWidgets: sanitizeHiddenHomeWidgets(raw.hiddenHomeWidgets ?? settings.hiddenHomeWidgets),
   };
+
+  // Reconcile using a temporary assign pattern without mutating live settings mid-sanitize.
+  const visible = [...next.homeWidgets];
+  let hidden = next.hiddenHomeWidgets.filter((id) => !visible.includes(id));
+  HOME_WIDGET_IDS.forEach((id) => {
+    if (!visible.includes(id) && !hidden.includes(id)) visible.push(id);
+  });
+  if (visible.length === 0) {
+    next.homeWidgets = [...DEFAULT_HOME_WIDGETS];
+    next.hiddenHomeWidgets = [];
+  } else {
+    next.homeWidgets = visible;
+    next.hiddenHomeWidgets = hidden;
+  }
+
+  return next;
 }
 
 export function buildBackupPayload() {
@@ -153,6 +173,7 @@ export function buildBackupPayload() {
       completionSound: Boolean(settings.completionSound),
       savedColors: [...(settings.savedColors || [])],
       homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
+      hiddenHomeWidgets: sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets),
     },
     deletedRoutines: deletedRoutines,
   };
@@ -206,6 +227,7 @@ export function exportBackup() {
 export function applyBackup(parsed) {
   state.routines = parsed.routines;
   Object.assign(settings, parsed.settings);
+  reconcileHomeWidgets();
   setDeletedRoutines(parsed.deletedRoutines);
 
   state.timer = {

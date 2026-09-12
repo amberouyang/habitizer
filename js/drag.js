@@ -1,5 +1,5 @@
 import { state, settings, activityDragState, routineDragState, widgetDragState } from "./state.js";
-import { saveRoutines, saveSettings, sanitizeHomeWidgets } from "./persistence.js";
+import { saveRoutines, saveSettings, sanitizeHomeWidgets, reconcileHomeWidgets } from "./persistence.js";
 import { getRoutineById } from "./models.js";
 
 function getActivityItemAtPointer(listEl, pointerY, dragActivityId) {
@@ -278,6 +278,7 @@ function reorderHomeWidgets(fromIndex, toIndex) {
   const [moved] = order.splice(fromIndex, 1);
   order.splice(toIndex, 0, moved);
   settings.homeWidgets = order;
+  reconcileHomeWidgets();
   saveSettings();
   return true;
 }

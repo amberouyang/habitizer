@@ -353,6 +353,30 @@ button {
   white-space: nowrap;
 }
 
+.home-widget-hide {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.home-widget-hide:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.home-widget-hide:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .home-widget-body {
   min-width: 0;
 }
@@ -360,6 +384,15 @@ button {
 .home-widget .home-widget-handle {
   flex: 0 0 auto;
   margin-top: 1px;
+}
+
+.home-widgets-settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-widgets-settings .settings-row + .settings-row {
+  margin-top: 0;
 }
 
 .home-widget[data-widget-id="weekly"] .weekly-stats {
@@ -1412,6 +1445,12 @@ button {
   font-size: 0.72rem;
   color: var(--muted);
   line-height: 1.4;
+}
+
+.settings-widgets-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
 }
 
 .settings-deleted-section {

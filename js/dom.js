@@ -22,6 +22,7 @@ export const exportBackupBtn = document.getElementById("exportBackupBtn");
 export const importBackupBtn = document.getElementById("importBackupBtn");
 export const importBackupInput = document.getElementById("importBackupInput");
 export const deletedRoutinesList = document.getElementById("deletedRoutinesList");
+export const homeWidgetsSettings = document.getElementById("homeWidgetsSettings");
 export const confirmModal = document.getElementById("confirmModal");
 export const confirmTitle = document.getElementById("confirmTitle");
 export const confirmMessage = document.getElementById("confirmMessage");

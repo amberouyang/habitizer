@@ -24,11 +24,71 @@ export function sanitizeHomeWidgets(raw) {
     });
   }
 
+  return ordered;
+}
+
+export function sanitizeHiddenHomeWidgets(raw) {
+  const known = new Set(HOME_WIDGET_IDS);
+  const hidden = [];
+
+  if (Array.isArray(raw)) {
+    raw.forEach((id) => {
+      if (typeof id === "string" && known.has(id) && !hidden.includes(id)) {
+        hidden.push(id);
+      }
+    });
+  }
+
+  return hidden;
+}
+
+/** Ensure every known widget is either visible or hidden, and at least one stays visible. */
+export function reconcileHomeWidgets() {
+  let visible = sanitizeHomeWidgets(settings.homeWidgets);
+  let hidden = sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets).filter(
+    (id) => !visible.includes(id)
+  );
+
   HOME_WIDGET_IDS.forEach((id) => {
-    if (!ordered.includes(id)) ordered.push(id);
+    if (!visible.includes(id) && !hidden.includes(id)) {
+      visible.push(id);
+    }
   });
 
-  return ordered.length > 0 ? ordered : [...DEFAULT_HOME_WIDGETS];
+  if (visible.length === 0) {
+    visible = [...DEFAULT_HOME_WIDGETS];
+    hidden = [];
+  }
+
+  settings.homeWidgets = visible;
+  settings.hiddenHomeWidgets = hidden;
+  return visible;
+}
+
+export function setHomeWidgetVisibility(widgetId, isVisible) {
+  if (!HOME_WIDGET_IDS.includes(widgetId)) return false;
+
+  reconcileHomeWidgets();
+
+  if (isVisible) {
+    settings.hiddenHomeWidgets = settings.hiddenHomeWidgets.filter((id) => id !== widgetId);
+    if (!settings.homeWidgets.includes(widgetId)) {
+      settings.homeWidgets.push(widgetId);
+    }
+    saveSettings();
+    return true;
+  }
+
+  if (settings.homeWidgets.length <= 1 && settings.homeWidgets.includes(widgetId)) {
+    return false;
+  }
+
+  settings.homeWidgets = settings.homeWidgets.filter((id) => id !== widgetId);
+  if (!settings.hiddenHomeWidgets.includes(widgetId)) {
+    settings.hiddenHomeWidgets.push(widgetId);
+  }
+  saveSettings();
+  return true;
 }
 
 function emptyTimerState() {
@@ -186,6 +246,8 @@ export function loadSettings() {
     ? Boolean(settings.completionSound)
     : true;
   settings.homeWidgets = sanitizeHomeWidgets(settings.homeWidgets);
+  settings.hiddenHomeWidgets = sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets);
+  reconcileHomeWidgets();
   settings.savedColors = Array.isArray(settings.savedColors)
     ? settings.savedColors
         .filter((color) => typeof color === "string" && /^#[0-9A-Fa-f]{6}$/.test(color))

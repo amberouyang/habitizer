@@ -1,4 +1,4 @@
-import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, DEFAULT_CUSTOM_COLOR, STREAK_DISPLAY_MIN, SAVED_COLORS_LIMIT } from "./constants.js";
+import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, DEFAULT_CUSTOM_COLOR, STREAK_DISPLAY_MIN, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS, HOME_WIDGET_LABELS } from "./constants.js";
 import {
   state,
   settings,
@@ -28,6 +28,7 @@ import {
   cumulativeToggle,
   completionSoundToggle,
   deletedRoutinesList,
+  homeWidgetsSettings,
   confirmModal,
   confirmTitle,
   confirmMessage,
@@ -72,6 +73,8 @@ import {
   saveSettings,
   applyTheme,
   pruneExpiredDeletedRoutines,
+  reconcileHomeWidgets,
+  setHomeWidgetVisibility,
 } from "./persistence.js";
 import { render } from "./views.js";
 
@@ -667,6 +670,7 @@ export function openSettings() {
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
   completionSoundToggle.checked = settings.completionSound;
+  renderHomeWidgetSettings();
   renderDeletedRoutinesList();
   settingsModal.classList.remove("hidden");
   settingsModal.setAttribute("aria-hidden", "false");
@@ -680,6 +684,61 @@ export function closeSettings() {
   settings.completionSound = completionSoundToggle.checked;
   applyTheme();
   saveSettings();
+  render();
+}
+
+function renderHomeWidgetSettings() {
+  if (!homeWidgetsSettings) return;
+
+  reconcileHomeWidgets();
+  homeWidgetsSettings.replaceChildren();
+
+  const visibleCount = settings.homeWidgets.length;
+
+  HOME_WIDGET_IDS.forEach((widgetId) => {
+    const isVisible = settings.homeWidgets.includes(widgetId);
+    const row = document.createElement("label");
+    row.className = "settings-row home-widget-setting-row";
+    row.htmlFor = `homeWidgetToggle-${widgetId}`;
+
+    const copy = document.createElement("span");
+    copy.className = "settings-copy";
+
+    const title = document.createElement("span");
+    title.className = "settings-title";
+    title.textContent = HOME_WIDGET_LABELS[widgetId] || widgetId;
+
+    const desc = document.createElement("p");
+    desc.className = "settings-desc";
+    desc.textContent = isVisible
+      ? "Shown on the home screen"
+      : "Hidden from the home screen";
+
+    copy.append(title, desc);
+
+    const toggle = document.createElement("input");
+    toggle.id = `homeWidgetToggle-${widgetId}`;
+    toggle.className = "toggle-input";
+    toggle.type = "checkbox";
+    toggle.setAttribute("role", "switch");
+    toggle.setAttribute("aria-label", `Show ${HOME_WIDGET_LABELS[widgetId] || widgetId}`);
+    toggle.checked = isVisible;
+    toggle.disabled = isVisible && visibleCount <= 1;
+
+    toggle.addEventListener("change", () => {
+      const ok = setHomeWidgetVisibility(widgetId, toggle.checked);
+      if (!ok) {
+        toggle.checked = true;
+      }
+      renderHomeWidgetSettings();
+      if (state.currentView === "home") {
+        render();
+      }
+    });
+
+    row.append(copy, toggle);
+    homeWidgetsSettings.appendChild(row);
+  });
 }
 
 export function openConfirmModal({ title, message, confirmLabel, onConfirm }) {

@@ -1,5 +1,5 @@
 import { STREAK_DISPLAY_MIN, HOME_WIDGET_LABELS } from "./constants.js";
-import { state, settings } from "./state.js";
+import { state } from "./state.js";
 import {
   appEl,
   pageTitleEl,
@@ -59,7 +59,7 @@ import {
   requestEndRoutine,
 } from "./timer.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
-import { sanitizeHomeWidgets } from "./persistence.js";
+import { reconcileHomeWidgets, setHomeWidgetVisibility } from "./persistence.js";
 
 export function setView(view, routineId = null) {
   state.currentView = view;
@@ -114,14 +114,14 @@ export function renderHomeView() {
   const home = document.createElement("div");
   home.className = "home-view";
 
-  const order = sanitizeHomeWidgets(settings.homeWidgets);
+  const order = reconcileHomeWidgets();
   order.forEach((widgetId) => {
     if (widgetId === "weekly") {
-      home.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent()));
+      home.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent(), order.length > 1));
       return;
     }
     if (widgetId === "routines") {
-      home.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent()));
+      home.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent(), order.length > 1));
     }
   });
 
@@ -132,7 +132,7 @@ export function renderHomeView() {
   return home;
 }
 
-function createHomeWidget(widgetId, bodyContent) {
+function createHomeWidget(widgetId, bodyContent, canHide = false) {
   const widget = document.createElement("section");
   widget.className = "home-widget";
   widget.dataset.widgetId = widgetId;
@@ -164,6 +164,23 @@ function createHomeWidget(widgetId, bodyContent) {
   }
 
   header.append(handle, titleWrap);
+
+  if (canHide) {
+    const hideBtn = document.createElement("button");
+    hideBtn.type = "button";
+    hideBtn.className = "home-widget-hide";
+    hideBtn.textContent = "Hide";
+    hideBtn.title = `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"}`;
+    hideBtn.setAttribute("aria-label", `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"}`);
+    hideBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (setHomeWidgetVisibility(widgetId, false)) {
+        render();
+      }
+    });
+    header.appendChild(hideBtn);
+  }
 
   const body = document.createElement("div");
   body.className = "home-widget-body";

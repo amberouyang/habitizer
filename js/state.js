@@ -24,6 +24,7 @@ export const settings = {
   completionSound: true,
   savedColors: [],
   homeWidgets: [...DEFAULT_HOME_WIDGETS],
+  hiddenHomeWidgets: [],
 };
 
 export let deletedRoutines = [];
