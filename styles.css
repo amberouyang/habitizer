@@ -273,6 +273,16 @@ button {
   box-shadow: 0 8px 18px var(--card-shadow);
 }
 
+.routine-item {
+  background: color-mix(in srgb, var(--routine-color, var(--primary)) 11%, var(--panel));
+  border-color: color-mix(in srgb, var(--routine-color, var(--primary)) 24%, var(--border));
+}
+
+[data-theme="dark"] .routine-item {
+  background: color-mix(in srgb, var(--routine-color, var(--primary)) 16%, var(--panel));
+  border-color: color-mix(in srgb, var(--routine-color, var(--primary)) 28%, var(--border));
+}
+
 .routine-list {
   display: flex;
   flex-direction: column;
@@ -307,6 +317,11 @@ button {
 .routine-item.drop-target {
   border-color: var(--primary);
   background: var(--accent);
+}
+
+.routine-item:hover:not(.is-dragging) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--routine-color, var(--primary)) 40%, var(--hover-border));
 }
 
 .routine-main {
@@ -348,11 +363,6 @@ button {
   width: 4px;
   background: var(--routine-color, var(--primary));
   border-radius: 18px 0 0 18px;
-}
-
-.routine-item:hover:not(.is-dragging) {
-  transform: translateY(-1px);
-  border-color: var(--hover-border);
 }
 
 .routine-info {
