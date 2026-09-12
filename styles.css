@@ -292,39 +292,39 @@ button {
 .home-view {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
 }
 
 .home-widget {
   position: relative;
-  padding: 14px;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--primary) 8%, var(--panel));
-  box-shadow: 0 8px 18px var(--card-shadow);
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
   transform: none;
   will-change: transform;
-  transition: transform 0.12s ease, box-shadow 180ms ease, background-color 180ms ease;
-}
-
-[data-theme="dark"] .home-widget {
-  background: color-mix(in srgb, var(--primary) 12%, var(--panel));
+  transition: transform 0.12s ease, opacity 180ms ease;
 }
 
 .home-widget.is-dragging {
-  opacity: 0.94;
+  opacity: 0.92;
   z-index: 6;
 }
 
-.home-widget.drop-target {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+.home-widget.drop-target .home-widget-header {
+  color: var(--primary);
+}
+
+.home-widget.drop-target .home-widget-title {
+  color: var(--primary);
 }
 
 .home-widget-header {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  padding: 0 2px;
 }
 
 .home-widget-title-wrap {
@@ -339,14 +339,15 @@ button {
 
 .home-widget-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  color: var(--text);
+  letter-spacing: 0.01em;
+  color: var(--muted);
 }
 
 .home-widget-subtitle {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
@@ -359,6 +360,24 @@ button {
 .home-widget .home-widget-handle {
   flex: 0 0 auto;
   margin-top: 1px;
+}
+
+.home-widget[data-widget-id="weekly"] .weekly-stats {
+  padding: 14px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+}
+
+[data-theme="dark"] .home-widget[data-widget-id="weekly"] .weekly-stats {
+  background: color-mix(in srgb, var(--primary) 11%, transparent);
+}
+
+.home-widget[data-widget-id="routines"] .home-widget-body {
+  padding: 0;
+}
+
+.home-widget[data-widget-id="routines"] .empty-state {
+  background: transparent;
 }
 
 .weekly-stats {
