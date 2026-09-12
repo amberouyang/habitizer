@@ -7,7 +7,7 @@ export const TIMER_SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const UNDO_DELETE_MS = 5000;
 
 export const ROUTINE_COLORS = [
-  { id: "sage", label: "Sage", value: "#0e7490" },
+  { id: "sage", label: "Cyan", value: "#0e7490" },
   { id: "ocean", label: "Ocean", value: "#2563eb" },
   { id: "lavender", label: "Lavender", value: "#6366f1" },
   { id: "coral", label: "Coral", value: "#e11d48" },
