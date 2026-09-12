@@ -1,5 +1,5 @@
-import { STREAK_DISPLAY_MIN } from "./constants.js";
-import { state } from "./state.js";
+import { STREAK_DISPLAY_MIN, HOME_WIDGET_LABELS } from "./constants.js";
+import { state, settings } from "./state.js";
 import {
   appEl,
   pageTitleEl,
@@ -58,7 +58,8 @@ import {
   hasRoutineClockStarted,
   requestEndRoutine,
 } from "./timer.js";
-import { setupActivityDragAndDrop, setupRoutineDragAndDrop } from "./drag.js";
+import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
+import { sanitizeHomeWidgets } from "./persistence.js";
 
 export function setView(view, routineId = null) {
   state.currentView = view;
@@ -112,8 +113,67 @@ export function setView(view, routineId = null) {
 export function renderHomeView() {
   const home = document.createElement("div");
   home.className = "home-view";
-  home.appendChild(renderWeeklyStats());
 
+  const order = sanitizeHomeWidgets(settings.homeWidgets);
+  order.forEach((widgetId) => {
+    if (widgetId === "weekly") {
+      home.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent()));
+      return;
+    }
+    if (widgetId === "routines") {
+      home.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent()));
+    }
+  });
+
+  if (order.length > 1) {
+    setupHomeWidgetDragAndDrop(home);
+  }
+
+  return home;
+}
+
+function createHomeWidget(widgetId, bodyContent) {
+  const widget = document.createElement("section");
+  widget.className = "home-widget";
+  widget.dataset.widgetId = widgetId;
+  widget.setAttribute("aria-label", HOME_WIDGET_LABELS[widgetId] || widgetId);
+
+  const header = document.createElement("div");
+  header.className = "home-widget-header";
+
+  const handle = document.createElement("button");
+  handle.type = "button";
+  handle.className = "drag-handle home-widget-handle";
+  handle.setAttribute("aria-label", `Drag to move ${HOME_WIDGET_LABELS[widgetId] || "widget"}`);
+  handle.title = "Drag to reorder home widgets";
+
+  const titleWrap = document.createElement("div");
+  titleWrap.className = "home-widget-title-wrap";
+
+  const title = document.createElement("h2");
+  title.className = "home-widget-title";
+  title.textContent = HOME_WIDGET_LABELS[widgetId] || widgetId;
+
+  titleWrap.appendChild(title);
+
+  if (widgetId === "weekly" && bodyContent.dataset.weekLabel) {
+    const range = document.createElement("p");
+    range.className = "home-widget-subtitle";
+    range.textContent = bodyContent.dataset.weekLabel;
+    titleWrap.appendChild(range);
+  }
+
+  header.append(handle, titleWrap);
+
+  const body = document.createElement("div");
+  body.className = "home-widget-body";
+  body.appendChild(bodyContent);
+
+  widget.append(header, body);
+  return widget;
+}
+
+function renderRoutinesWidgetContent() {
   const list = document.createElement("section");
   list.className = "routine-list";
 
@@ -243,30 +303,17 @@ export function renderHomeView() {
   addRoutineButton.addEventListener("click", addRoutine);
   list.appendChild(addRoutineButton);
 
-  home.appendChild(list);
-  return home;
+  return list;
 }
 
-function renderWeeklyStats() {
+function renderWeeklyStatsContent() {
   const stats = getWeeklyStats(state.routines);
   const maxDay = Math.max(1, ...stats.dayCompletions);
 
-  const section = document.createElement("section");
+  const section = document.createElement("div");
   section.className = "weekly-stats";
+  section.dataset.weekLabel = stats.weekLabel;
   section.setAttribute("aria-label", `This week ${stats.weekLabel}`);
-
-  const header = document.createElement("div");
-  header.className = "weekly-stats-header";
-
-  const title = document.createElement("h2");
-  title.className = "weekly-stats-title";
-  title.textContent = "This week";
-
-  const range = document.createElement("p");
-  range.className = "weekly-stats-range";
-  range.textContent = stats.weekLabel;
-
-  header.append(title, range);
 
   const metrics = document.createElement("div");
   metrics.className = "weekly-stats-metrics";
@@ -342,7 +389,7 @@ function renderWeeklyStats() {
     chart.appendChild(day);
   });
 
-  section.append(header, metrics, chart);
+  section.append(metrics, chart);
   return section;
 }
 

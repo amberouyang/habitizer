@@ -1,4 +1,4 @@
-import { DEFAULT_ROUTINE_COLOR_ID } from "./constants.js";
+import { DEFAULT_ROUTINE_COLOR_ID, DEFAULT_HOME_WIDGETS } from "./constants.js";
 
 export const state = {
   routines: [],
@@ -23,6 +23,7 @@ export const settings = {
   darkMode: false,
   completionSound: true,
   savedColors: [],
+  homeWidgets: [...DEFAULT_HOME_WIDGETS],
 };
 
 export let deletedRoutines = [];
@@ -60,6 +61,14 @@ export const activityDragState = {
 
 export const routineDragState = {
   routineId: null,
+  pointerId: null,
+  item: null,
+  list: null,
+  startY: 0,
+};
+
+export const widgetDragState = {
+  widgetId: null,
   pointerId: null,
   item: null,
   list: null,

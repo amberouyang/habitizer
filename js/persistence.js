@@ -6,9 +6,30 @@ import {
   DELETED_ROUTINE_RETENTION_MS,
   TIMER_SESSION_MAX_AGE_MS,
   SAVED_COLORS_LIMIT,
+  HOME_WIDGET_IDS,
+  DEFAULT_HOME_WIDGETS,
 } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
+
+export function sanitizeHomeWidgets(raw) {
+  const known = new Set(HOME_WIDGET_IDS);
+  const ordered = [];
+
+  if (Array.isArray(raw)) {
+    raw.forEach((id) => {
+      if (typeof id === "string" && known.has(id) && !ordered.includes(id)) {
+        ordered.push(id);
+      }
+    });
+  }
+
+  HOME_WIDGET_IDS.forEach((id) => {
+    if (!ordered.includes(id)) ordered.push(id);
+  });
+
+  return ordered.length > 0 ? ordered : [...DEFAULT_HOME_WIDGETS];
+}
 
 function emptyTimerState() {
   return {
@@ -164,6 +185,7 @@ export function loadSettings() {
   settings.completionSound = settings.completionSound !== undefined
     ? Boolean(settings.completionSound)
     : true;
+  settings.homeWidgets = sanitizeHomeWidgets(settings.homeWidgets);
   settings.savedColors = Array.isArray(settings.savedColors)
     ? settings.savedColors
         .filter((color) => typeof color === "string" && /^#[0-9A-Fa-f]{6}$/.test(color))

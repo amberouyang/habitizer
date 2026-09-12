@@ -12,6 +12,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Completion screen** — See your results, streak, and personal best after finishing
 - **Streaks** — Daily completion tracking with calendar history and streak badges
 - **Weekly stats** — Home summary of this week’s completions, active days, and total time
+- **Home widgets** — Drag home sections (This week, Routines) to change their order
 - **Run history** — Past run durations per routine (best time + recent runs, up to 50)
 - **Drag to reorder** — Reorder routines on the home screen and activities within a routine
 - **Duplicate routines** — Copy a routine with all activities and settings
@@ -46,6 +47,7 @@ python3 -m http.server 8000
 ### Home screen
 
 - **This week** — Completions, active days, total time, and a Mon–Sun activity strip
+- **Reorder home widgets** — Drag the **⋮⋮** handle on a widget card (This week / Routines)
 - **Add routine** — Tap the **Add routine** button below your routine list
 - **Open a routine** — Tap a routine card
 - **Reorder** — Drag the **⋮⋮** handle on the left (when you have 2+ routines)
@@ -131,7 +133,7 @@ Open **⋯** from the home screen:
 | Key | Purpose |
 |-----|---------|
 | `habitizer-routines-v1` | Active routines and activities |
-| `habitizer-settings-v1` | Dark mode, cumulative timer, completion sound, and saved colors |
+| `habitizer-settings-v1` | Dark mode, cumulative timer, completion sound, saved colors, and home widget order |
 | `habitizer-deleted-routines-v1` | Recently deleted routines (30-day retention) |
 | `habitizer-timer-v1` | In-progress timer session (cleared when the run ends; max 24h) |
 

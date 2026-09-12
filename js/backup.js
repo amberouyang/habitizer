@@ -7,6 +7,7 @@ import {
   clearTimerSession,
   applyTheme,
   pruneExpiredDeletedRoutines,
+  sanitizeHomeWidgets,
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
@@ -115,6 +116,7 @@ function sanitizeSettings(raw) {
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
       savedColors: [...(settings.savedColors || [])],
+      homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
     };
   }
 
@@ -135,6 +137,7 @@ function sanitizeSettings(raw) {
       ? Boolean(raw.completionSound)
       : Boolean(settings.completionSound),
     savedColors,
+    homeWidgets: sanitizeHomeWidgets(raw.homeWidgets ?? settings.homeWidgets),
   };
 }
 
@@ -149,6 +152,7 @@ export function buildBackupPayload() {
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
       savedColors: [...(settings.savedColors || [])],
+      homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
     },
     deletedRoutines: deletedRoutines,
   };

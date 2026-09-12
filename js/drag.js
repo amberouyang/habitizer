@@ -1,5 +1,5 @@
-import { state, activityDragState, routineDragState } from "./state.js";
-import { saveRoutines } from "./persistence.js";
+import { state, settings, activityDragState, routineDragState, widgetDragState } from "./state.js";
+import { saveRoutines, saveSettings, sanitizeHomeWidgets } from "./persistence.js";
 import { getRoutineById } from "./models.js";
 
 function getActivityItemAtPointer(listEl, pointerY, dragActivityId) {
@@ -265,6 +265,139 @@ export function setupRoutineDragAndDrop(listEl) {
       window.addEventListener("pointermove", handleRoutinePointerMove);
       window.addEventListener("pointerup", handleRoutinePointerUp);
       window.addEventListener("pointercancel", handleRoutinePointerUp);
+    });
+  });
+}
+
+function reorderHomeWidgets(fromIndex, toIndex) {
+  const order = sanitizeHomeWidgets(settings.homeWidgets);
+  if (fromIndex === toIndex) return false;
+  if (fromIndex < 0 || toIndex < 0) return false;
+  if (fromIndex >= order.length || toIndex >= order.length) return false;
+
+  const [moved] = order.splice(fromIndex, 1);
+  order.splice(toIndex, 0, moved);
+  settings.homeWidgets = order;
+  saveSettings();
+  return true;
+}
+
+function getWidgetDropIndex(listEl, pointerY, dragWidgetId) {
+  const items = [...listEl.querySelectorAll(".home-widget")];
+  const fromIndex = items.findIndex((item) => item.dataset.widgetId === dragWidgetId);
+  if (fromIndex === -1) return fromIndex;
+
+  let insertBeforeIndex = items.length;
+  for (let i = 0; i < items.length; i += 1) {
+    const rect = items[i].getBoundingClientRect();
+    if (pointerY < rect.top + rect.height / 2) {
+      insertBeforeIndex = i;
+      break;
+    }
+  }
+
+  let toIndex = insertBeforeIndex;
+  if (toIndex > fromIndex) {
+    toIndex -= 1;
+  }
+
+  return toIndex;
+}
+
+function getWidgetItemAtPointer(listEl, pointerY, dragWidgetId) {
+  const items = [...listEl.querySelectorAll(".home-widget")];
+  return items.find((item) => {
+    if (item.dataset.widgetId === dragWidgetId) return false;
+    const rect = item.getBoundingClientRect();
+    return pointerY >= rect.top && pointerY <= rect.bottom;
+  }) || null;
+}
+
+function clearWidgetDragState() {
+  if (widgetDragState.item) {
+    widgetDragState.item.classList.remove("is-dragging");
+    widgetDragState.item.style.transform = "";
+    widgetDragState.item.style.zIndex = "";
+    widgetDragState.item.style.boxShadow = "";
+  }
+
+  widgetDragState.list?.querySelectorAll(".home-widget").forEach((item) => {
+    item.classList.remove("drop-target");
+  });
+
+  widgetDragState.widgetId = null;
+  widgetDragState.pointerId = null;
+  widgetDragState.item = null;
+  widgetDragState.list = null;
+  widgetDragState.startY = 0;
+
+  window.removeEventListener("pointermove", handleWidgetPointerMove);
+  window.removeEventListener("pointerup", handleWidgetPointerUp);
+  window.removeEventListener("pointercancel", handleWidgetPointerUp);
+}
+
+function handleWidgetPointerMove(event) {
+  if (event.pointerId !== widgetDragState.pointerId || !widgetDragState.item) return;
+
+  const deltaY = event.clientY - widgetDragState.startY;
+  widgetDragState.item.style.transform = `translateY(${deltaY}px)`;
+  widgetDragState.item.style.zIndex = "6";
+  widgetDragState.item.style.boxShadow = "0 14px 28px var(--card-shadow)";
+
+  const { list, widgetId } = widgetDragState;
+  list.querySelectorAll(".home-widget").forEach((item) => {
+    item.classList.remove("drop-target");
+  });
+
+  const target = getWidgetItemAtPointer(list, event.clientY, widgetId);
+  if (target) {
+    target.classList.add("drop-target");
+  }
+}
+
+function handleWidgetPointerUp(event) {
+  if (event.pointerId !== widgetDragState.pointerId) return;
+
+  const { widgetId, list, item } = widgetDragState;
+  const order = sanitizeHomeWidgets(settings.homeWidgets);
+
+  if (list && item) {
+    const fromIndex = order.indexOf(widgetId);
+    const toIndex = getWidgetDropIndex(list, event.clientY, widgetId);
+
+    if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+      reorderHomeWidgets(fromIndex, toIndex);
+      sanitizeHomeWidgets(settings.homeWidgets).forEach((id) => {
+        const node = list.querySelector(`.home-widget[data-widget-id="${id}"]`);
+        if (node) list.appendChild(node);
+      });
+    }
+  }
+
+  clearWidgetDragState();
+}
+
+export function setupHomeWidgetDragAndDrop(listEl) {
+  listEl.querySelectorAll(".home-widget-handle").forEach((handle) => {
+    handle.addEventListener("pointerdown", (event) => {
+      const item = handle.closest(".home-widget");
+      if (!item) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      widgetDragState.widgetId = item.dataset.widgetId;
+      widgetDragState.pointerId = event.pointerId;
+      widgetDragState.item = item;
+      widgetDragState.list = listEl;
+      widgetDragState.startY = event.clientY;
+
+      item.classList.add("is-dragging");
+      handle.setPointerCapture(event.pointerId);
+
+      window.addEventListener("pointermove", handleWidgetPointerMove);
+      window.addEventListener("pointerup", handleWidgetPointerUp);
+      window.addEventListener("pointercancel", handleWidgetPointerUp);
     });
   });
 }

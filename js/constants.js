@@ -22,3 +22,10 @@ export const DEFAULT_CUSTOM_COLOR = "#5b7cfa";
 export const STREAK_DISPLAY_MIN = 2;
 export const RUN_HISTORY_LIMIT = 50;
 export const SAVED_COLORS_LIMIT = 12;
+
+export const HOME_WIDGET_IDS = ["weekly", "routines"];
+export const HOME_WIDGET_LABELS = {
+  weekly: "This week",
+  routines: "Routines",
+};
+export const DEFAULT_HOME_WIDGETS = [...HOME_WIDGET_IDS];
