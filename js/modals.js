@@ -430,11 +430,127 @@ export function closeColorModal() {
   colorModalSwatches.innerHTML = "";
 }
 
+let selectedCalendarDateKey = null;
+
 function changeRoutineCalendarMonth(delta) {
   state.routineCalendarOffset += delta;
+  selectedCalendarDateKey = null;
   if (!calendarModal.classList.contains("hidden")) {
     refreshCalendarModalContent();
   }
+}
+
+function getRunDateKey(run) {
+  if (typeof run?.dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(run.dateKey)) {
+    return run.dateKey;
+  }
+  if (Number.isFinite(Number(run?.completedAt))) {
+    return getLocalDateKey(Number(run.completedAt));
+  }
+  return null;
+}
+
+function getRunsForDateKey(routine, dateKey) {
+  return getRoutineRunHistory(routine).filter((run) => getRunDateKey(run) === dateKey);
+}
+
+function formatCalendarDayLabel(dateKey) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function buildRunDetailItem(run, { fastestMs = null } = {}) {
+  const item = document.createElement("div");
+  item.className = "run-history-item";
+
+  const top = document.createElement("div");
+  top.className = "run-history-item-top";
+
+  const when = document.createElement("span");
+  when.className = "run-history-when";
+  when.textContent = formatRunCompletedAt(run.completedAt);
+
+  const duration = document.createElement("strong");
+  duration.className = "run-history-duration";
+  duration.textContent = formatDuration(run.totalMs);
+
+  top.append(when, duration);
+
+  const meta = document.createElement("div");
+  meta.className = "run-history-meta";
+
+  const parts = [];
+  if (run.activitiesTotal > 0) {
+    parts.push(`${run.activitiesCompleted} of ${run.activitiesTotal} activities`);
+  }
+  if (run.estimatedMs > 0) {
+    const estimateMessage = getCompletionEstimateMessage(run.totalMs, run.estimatedMs);
+    if (estimateMessage) {
+      parts.push(`${formatDurationLabel(run.estimatedMs)} estimate · ${estimateMessage}`);
+    }
+  }
+  meta.textContent = parts.join(" · ");
+
+  if (fastestMs != null && Number(run.totalMs) === fastestMs) {
+    item.classList.add("is-best");
+  }
+
+  item.append(top, meta);
+  return item;
+}
+
+function buildCalendarDayDetailContent(routine, dateKey) {
+  const section = document.createElement("section");
+  section.className = "calendar-day-detail";
+  section.setAttribute("aria-label", `Details for ${formatCalendarDayLabel(dateKey)}`);
+
+  const header = document.createElement("div");
+  header.className = "calendar-day-detail-header";
+
+  const title = document.createElement("h3");
+  title.className = "calendar-day-detail-title";
+  title.textContent = formatCalendarDayLabel(dateKey);
+
+  const clearBtn = document.createElement("button");
+  clearBtn.type = "button";
+  clearBtn.className = "calendar-day-detail-clear";
+  clearBtn.textContent = "Clear";
+  clearBtn.setAttribute("aria-label", "Clear selected day");
+  clearBtn.addEventListener("click", () => {
+    selectedCalendarDateKey = null;
+    refreshCalendarModalContent();
+  });
+
+  header.append(title, clearBtn);
+  section.appendChild(header);
+
+  const isComplete = getRoutineCompletionDates(routine).includes(dateKey);
+  const runs = getRunsForDateKey(routine, dateKey);
+  const fastestMs = getFastestRunMs(routine);
+
+  if (runs.length > 0) {
+    const list = document.createElement("div");
+    list.className = "run-history-list";
+    runs.forEach((run) => {
+      list.appendChild(buildRunDetailItem(run, { fastestMs }));
+    });
+    section.appendChild(list);
+    return section;
+  }
+
+  const empty = document.createElement("p");
+  empty.className = "calendar-day-detail-empty";
+  empty.textContent = isComplete
+    ? "Marked complete, but detailed run data isn’t available for this day."
+    : "No completion on this day.";
+  section.appendChild(empty);
+  return section;
 }
 
 function buildStreakCalendarContent(routine) {
@@ -496,27 +612,43 @@ function buildStreakCalendarContent(routine) {
 
   weeks.forEach((week) => {
     week.forEach((day) => {
-      const cell = document.createElement("div");
-      cell.className = "streak-calendar-day";
-
       if (day === null) {
-        cell.classList.add("is-empty");
-        grid.appendChild(cell);
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "streak-calendar-day is-empty";
+        grid.appendChild(emptyCell);
         return;
       }
 
       const dateKey = getDateKeyForDay(year, month, day);
       const isComplete = completionDates.has(dateKey);
       const isToday = dateKey === today;
+      const isSelected = selectedCalendarDateKey === dateKey;
 
-      if (isComplete) {
-        cell.classList.add("is-complete");
-      }
-      if (isToday) {
-        cell.classList.add("is-today");
-      }
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "streak-calendar-day";
+      cell.dataset.dateKey = dateKey;
+
+      if (isComplete) cell.classList.add("is-complete");
+      if (isToday) cell.classList.add("is-today");
+      if (isSelected) cell.classList.add("is-selected");
 
       cell.title = isComplete ? `Completed on ${dateKey}` : dateKey;
+      cell.setAttribute(
+        "aria-label",
+        isComplete
+          ? `Completed ${formatCalendarDayLabel(dateKey)}. Show run details.`
+          : `${formatCalendarDayLabel(dateKey)}. Show day details.`
+      );
+      cell.setAttribute("aria-pressed", String(isSelected));
+
+      cell.addEventListener("click", () => {
+        selectedCalendarDateKey = isSelected ? null : dateKey;
+        refreshCalendarModalContent();
+        calendarModalBody
+          .querySelector(".calendar-day-detail")
+          ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      });
 
       const dot = document.createElement("span");
       dot.className = "streak-calendar-dot";
@@ -530,7 +662,7 @@ function buildStreakCalendarContent(routine) {
 
   const legend = document.createElement("div");
   legend.className = "streak-calendar-legend";
-  legend.innerHTML = '<span class="streak-calendar-dot"></span><span>Completed</span>';
+  legend.innerHTML = '<span class="streak-calendar-dot"></span><span>Completed · tap a day for details</span>';
 
   calendar.append(calendarHeader, weekdayRow, grid, legend);
   return calendar;
@@ -573,43 +705,7 @@ function buildRunHistoryContent(routine) {
   list.className = "run-history-list";
 
   runs.forEach((run) => {
-    const item = document.createElement("div");
-    item.className = "run-history-item";
-
-    const top = document.createElement("div");
-    top.className = "run-history-item-top";
-
-    const when = document.createElement("span");
-    when.className = "run-history-when";
-    when.textContent = formatRunCompletedAt(run.completedAt);
-
-    const duration = document.createElement("strong");
-    duration.className = "run-history-duration";
-    duration.textContent = formatDuration(run.totalMs);
-
-    top.append(when, duration);
-
-    const meta = document.createElement("div");
-    meta.className = "run-history-meta";
-
-    const parts = [];
-    if (run.activitiesTotal > 0) {
-      parts.push(`${run.activitiesCompleted} of ${run.activitiesTotal} activities`);
-    }
-    if (run.estimatedMs > 0) {
-      const estimateMessage = getCompletionEstimateMessage(run.totalMs, run.estimatedMs);
-      if (estimateMessage) {
-        parts.push(`${formatDurationLabel(run.estimatedMs)} estimate · ${estimateMessage}`);
-      }
-    }
-    meta.textContent = parts.join(" · ");
-
-    if (fastestMs != null && Number(run.totalMs) === fastestMs) {
-      item.classList.add("is-best");
-    }
-
-    item.append(top, meta);
-    list.appendChild(item);
+    list.appendChild(buildRunDetailItem(run, { fastestMs }));
   });
 
   section.appendChild(list);
@@ -629,10 +725,12 @@ function updateCalendarModal(routine) {
     calendarModalSubtitle.classList.add("hidden");
   }
 
-  calendarModalBody.replaceChildren(
-    buildStreakCalendarContent(routine),
-    buildRunHistoryContent(routine)
-  );
+  const children = [buildStreakCalendarContent(routine)];
+  if (selectedCalendarDateKey) {
+    children.push(buildCalendarDayDetailContent(routine, selectedCalendarDateKey));
+  }
+  children.push(buildRunHistoryContent(routine));
+  calendarModalBody.replaceChildren(...children);
 }
 
 function refreshCalendarModalContent() {
@@ -650,6 +748,7 @@ export function openCalendarModal(routineId) {
     state.calendarRoutineId = routineId;
   }
 
+  selectedCalendarDateKey = null;
   setCalendarModalRoutineId(routineId);
   updateCalendarModal(routine);
   calendarModal.classList.remove("hidden");
@@ -661,6 +760,7 @@ export function closeCalendarModal() {
   calendarModal.classList.add("hidden");
   calendarModal.setAttribute("aria-hidden", "true");
   setCalendarModalRoutineId(null);
+  selectedCalendarDateKey = null;
   calendarModalBody.replaceChildren();
   calendarModalSubtitle.textContent = "";
   calendarModalSubtitle.classList.add("hidden");

@@ -965,6 +965,26 @@ button {
   display: grid;
   place-items: center;
   border-radius: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.streak-calendar-day.is-empty {
+  cursor: default;
+  pointer-events: none;
+}
+
+.streak-calendar-day:hover:not(.is-empty) {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.streak-calendar-day:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .streak-calendar-day.is-today {
@@ -972,11 +992,17 @@ button {
   outline-offset: 1px;
 }
 
+.streak-calendar-day.is-selected {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+
 .streak-calendar-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: var(--primary);
+  pointer-events: none;
 }
 
 .streak-calendar-dot.is-muted {
@@ -996,6 +1022,64 @@ button {
   margin-top: 12px;
   font-size: 0.72rem;
   color: var(--muted);
+}
+
+.calendar-day-detail {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+}
+
+[data-theme="dark"] .calendar-day-detail {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.calendar-day-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.calendar-day-detail-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.calendar-day-detail-clear {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.calendar-day-detail-clear:hover {
+  color: var(--text);
+}
+
+.calendar-day-detail-clear:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.calendar-day-detail-empty {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.calendar-day-detail .run-history-list {
+  max-height: none;
 }
 
 .run-history {

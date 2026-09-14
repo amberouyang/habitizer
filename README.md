@@ -10,7 +10,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Routine colors** — Pick a preset, tap **+** to pick a custom color then **Add** to save it, or tap **×** on a saved swatch to remove it (soft-tinted home cards, stripe, and timer progress bar)
 - **Live timer** — Track total time and per-activity time vs estimates while you run a routine (survives page refresh)
 - **Completion screen** — See your results, streak, and personal best after finishing
-- **Streaks** — Daily completion tracking with calendar history and streak badges
+- **Streaks** — Daily completion tracking with calendar history (tap a day for run details) and streak badges
 - **Weekly stats** — Home summary of this week’s completions, active days, and total time
 - **Home widgets** — Collapse, show/hide, and drag home sections (This week, Routines)
 - **Run history** — Past run durations per routine (best time + recent runs, up to 50)
@@ -88,7 +88,7 @@ The routine total estimate updates from the sum of activity estimates.
 - **Start routine** — Tap **Start Routine** (or tap any activity)
 - **Header actions:**
   - **⎘** — Duplicate routine
-  - **📅** — Completion history calendar and recent run durations (green dot if completed today)
+  - **📅** — Completion history calendar and recent run durations (tap a day for that run’s details; green dot if completed today)
   - **🎨** — Change color
   - **⏱** — Edit estimated time (overridden when activities have estimates)
 - **Rename routine** — Tap the routine name in the top bar
