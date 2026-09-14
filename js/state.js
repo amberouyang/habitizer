@@ -4,6 +4,7 @@ export const state = {
   routines: [],
   currentRoutineId: null,
   currentView: "home",
+  returnView: "home",
   lastCompletion: null,
   routineCalendarOffset: 0,
   calendarRoutineId: null,

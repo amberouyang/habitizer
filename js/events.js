@@ -8,8 +8,6 @@ import {
   modalMinutesInput,
   modalConfirm,
   modalCancel,
-  settingsModal,
-  settingsClose,
   confirmModal,
   confirmCancel,
   confirmAction,
@@ -27,7 +25,7 @@ import {
   undoToastAction,
   backButton,
   addButton,
-  menuButton,
+  tabBar,
 } from "./dom.js";
 import {
   closeNameModal,
@@ -35,7 +33,7 @@ import {
   closeConfirmModal,
   closeColorModal,
   closeCalendarModal,
-  openSettings,
+  syncSettingsView,
   openConfirmModal,
 } from "./modals.js";
 import { playCompletionSound } from "./audio.js";
@@ -53,7 +51,9 @@ import { setView, render } from "./views.js";
 export function wireEvents() {
   backButton.addEventListener("click", () => {
     if (state.currentView === "routine") {
-      setView("home");
+      const target = state.returnView === "history" ? "history" : "home";
+      state.returnView = "home";
+      setView(target);
     }
   });
 
@@ -65,7 +65,13 @@ export function wireEvents() {
     }
   });
 
-  menuButton.addEventListener("click", openSettings);
+  tabBar?.addEventListener("click", (event) => {
+    const button = event.target.closest(".tab-btn");
+    if (!button || !tabBar.contains(button)) return;
+    const tab = button.dataset.tab;
+    if (!tab || tab === state.currentView) return;
+    setView(tab);
+  });
 
   modalConfirm.addEventListener("click", () => {
     if (modalState.mode === "routine") {
@@ -178,14 +184,6 @@ export function wireEvents() {
     }
   });
 
-  settingsClose.addEventListener("click", closeSettings);
-
-  settingsModal.addEventListener("click", (event) => {
-    if (event.target === settingsModal) {
-      closeSettings();
-    }
-  });
-
   confirmCancel.addEventListener("click", closeConfirmModal);
 
   confirmAction.addEventListener("click", () => {
@@ -231,11 +229,6 @@ export function wireEvents() {
 
     if (!calendarModal.classList.contains("hidden")) {
       closeCalendarModal();
-      return;
-    }
-
-    if (!settingsModal.classList.contains("hidden")) {
-      closeSettings();
     }
   });
 
@@ -263,8 +256,8 @@ export function wireEvents() {
     saveSettings();
     applyDocumentLanguage();
     render();
-    if (!settingsModal.classList.contains("hidden")) {
-      openSettings();
+    if (state.currentView === "settings") {
+      syncSettingsView();
     }
   });
 

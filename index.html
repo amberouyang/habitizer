@@ -16,7 +16,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=i18n1" />
+    <link rel="stylesheet" href="styles.css?v=tabbar1" />
   </head>
   <body>
     <div class="app-shell">
@@ -29,35 +29,8 @@
 
       <main id="app" class="app-content" aria-live="polite"></main>
 
-      <div id="undoToast" class="undo-toast hidden" role="status" aria-live="polite">
-        <span id="undoToastMessage" class="undo-toast-message"></span>
-        <button id="undoToastAction" type="button" class="undo-toast-btn" data-i18n="app.undo">Undo</button>
-      </div>
-    </div>
-
-    <div id="nameModal" class="modal-overlay hidden" aria-hidden="true">
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <h2 id="modalTitle">New routine</h2>
-        <label id="modalLabel" class="modal-label" for="modalInput" data-i18n="modal.name">Name</label>
-        <input id="modalInput" class="modal-input" type="text" maxlength="40" autocomplete="off" />
-        <div id="modalMinutesGroup" class="modal-field-group hidden">
-          <label id="modalMinutesLabel" class="modal-label" for="modalMinutesInput" data-i18n="modal.estimatedMinutes">Estimated time (minutes)</label>
-          <input id="modalMinutesInput" class="modal-input" type="number" min="0" step="1" placeholder="15" autocomplete="off" />
-        </div>
-        <div id="modalColorGroup" class="modal-field-group hidden">
-          <span id="modalColorLabel" class="modal-label" data-i18n="modal.color">Color</span>
-          <div id="modalColorSwatches" class="modal-color-swatches" role="radiogroup" data-i18n-aria="modal.routineColor" aria-label="Routine color"></div>
-        </div>
-        <div class="modal-actions">
-          <button id="modalCancel" type="button" class="secondary-btn" data-i18n="app.cancel">Cancel</button>
-          <button id="modalConfirm" type="button" class="primary-btn">Create</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="settingsModal" class="modal-overlay hidden" aria-hidden="true">
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <h2 id="settingsTitle" data-i18n="settings.title">Settings</h2>
+      <section id="settingsView" class="app-content settings-view hidden" aria-labelledby="settingsTitle" hidden>
+        <h2 id="settingsTitle" class="visually-hidden" data-i18n="settings.title">Settings</h2>
         <div class="settings-content">
           <label class="settings-row" for="darkModeToggle">
             <span class="settings-copy">
@@ -80,7 +53,7 @@
             </span>
             <input id="completionSoundToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.sound" aria-label="Completion sound" />
           </label>
-          <label class="settings-row settings-row-select" for="languageSelect">
+          <label class="settings-row" for="languageSelect">
             <span class="settings-copy">
               <span class="settings-title" data-i18n="settings.language">Language</span>
               <p class="settings-desc" data-i18n="settings.languageDesc">Choose the language used across Habitizer.</p>
@@ -107,8 +80,53 @@
           <p class="settings-section-desc" data-i18n="settings.deletedDesc">Routines stay here for 30 days.</p>
           <div id="deletedRoutinesList" class="deleted-routines-list"></div>
         </section>
+      </section>
+
+      <nav id="tabBar" class="tab-bar" data-i18n-aria="nav.aria" aria-label="Main navigation">
+        <button type="button" class="tab-btn is-active" data-tab="home" aria-current="page">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.5 10.5 12 4.5l7.5 6V19a1.5 1.5 0 0 1-1.5 1.5h-3.75v-5.25h-4.5V20.5H6A1.5 1.5 0 0 1 4.5 19z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+          <span class="tab-label" data-i18n="nav.home">Home</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="history">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="4.5" y="5.5" width="15" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+            <path d="M8 3.5v4M16 3.5v4M4.5 10h15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <span class="tab-label" data-i18n="nav.history">History</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="settings">
+          <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="3.25" fill="none" stroke="currentColor" stroke-width="1.8" />
+            <path d="M12 3.5v2.2M12 18.3v2.2M4.9 7.2l1.9 1.1M17.2 15.7l1.9 1.1M3.5 12h2.2M18.3 12h2.2M4.9 16.8l1.9-1.1M17.2 8.3l1.9-1.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <span class="tab-label" data-i18n="nav.settings">Settings</span>
+        </button>
+      </nav>
+
+      <div id="undoToast" class="undo-toast hidden" role="status" aria-live="polite">
+        <span id="undoToastMessage" class="undo-toast-message"></span>
+        <button id="undoToastAction" type="button" class="undo-toast-btn" data-i18n="app.undo">Undo</button>
+      </div>
+    </div>
+
+    <div id="nameModal" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h2 id="modalTitle">New routine</h2>
+        <label id="modalLabel" class="modal-label" for="modalInput" data-i18n="modal.name">Name</label>
+        <input id="modalInput" class="modal-input" type="text" maxlength="40" autocomplete="off" />
+        <div id="modalMinutesGroup" class="modal-field-group hidden">
+          <label id="modalMinutesLabel" class="modal-label" for="modalMinutesInput" data-i18n="modal.estimatedMinutes">Estimated time (minutes)</label>
+          <input id="modalMinutesInput" class="modal-input" type="number" min="0" step="1" placeholder="15" autocomplete="off" />
+        </div>
+        <div id="modalColorGroup" class="modal-field-group hidden">
+          <span id="modalColorLabel" class="modal-label" data-i18n="modal.color">Color</span>
+          <div id="modalColorSwatches" class="modal-color-swatches" role="radiogroup" data-i18n-aria="modal.routineColor" aria-label="Routine color"></div>
+        </div>
         <div class="modal-actions">
-          <button id="settingsClose" type="button" class="primary-btn" data-i18n="app.done">Done</button>
+          <button id="modalCancel" type="button" class="secondary-btn" data-i18n="app.cancel">Cancel</button>
+          <button id="modalConfirm" type="button" class="primary-btn">Create</button>
         </div>
       </div>
     </div>

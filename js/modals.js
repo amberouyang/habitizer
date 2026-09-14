@@ -23,8 +23,6 @@ import {
   modalColorGroup,
   modalColorSwatches,
   modalConfirm,
-  settingsModal,
-  settingsClose,
   darkModeToggle,
   cumulativeToggle,
   completionSoundToggle,
@@ -768,7 +766,7 @@ export function closeCalendarModal() {
   calendarModalSubtitle.classList.add("hidden");
 }
 
-export function openSettings() {
+export function syncSettingsView() {
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
   completionSoundToggle.checked = settings.completionSound;
@@ -776,8 +774,6 @@ export function openSettings() {
   applyDocumentLanguage();
   renderHomeWidgetSettings();
   renderDeletedRoutinesList();
-  settingsModal.classList.remove("hidden");
-  settingsModal.setAttribute("aria-hidden", "false");
 }
 
 function populateLanguageSelect() {
@@ -792,15 +788,16 @@ function populateLanguageSelect() {
   languageSelect.value = getLanguage();
 }
 
+export function openSettings() {
+  syncSettingsView();
+}
+
 export function closeSettings() {
-  settingsModal.classList.add("hidden");
-  settingsModal.setAttribute("aria-hidden", "true");
   settings.darkMode = darkModeToggle.checked;
   settings.cumulativeMode = cumulativeToggle.checked;
   settings.completionSound = completionSoundToggle.checked;
   applyTheme();
   saveSettings();
-  render();
 }
 
 function renderHomeWidgetSettings() {

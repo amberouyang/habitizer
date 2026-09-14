@@ -35,6 +35,15 @@ const messages = {
     "view.complete": "Routine complete",
     "view.renameHint": "Click to rename",
 
+    "nav.aria": "Main navigation",
+    "nav.home": "Home",
+    "nav.history": "History",
+    "nav.settings": "Settings",
+
+    "history.emptyTitle": "No completions yet",
+    "history.emptyHint": "Finish a routine and your runs will show up here.",
+    "history.openRoutine": "Open {name}",
+
     "home.emptyTitle": "No routines yet",
     "home.emptyHint": "Create a morning routine to get started.",
     "home.dragRoutine": "Drag to reorder {name}",
@@ -205,6 +214,15 @@ const messages = {
     "view.complete": "Rutina completada",
     "view.renameHint": "Toca para renombrar",
 
+    "nav.aria": "Navegación principal",
+    "nav.home": "Inicio",
+    "nav.history": "Historial",
+    "nav.settings": "Ajustes",
+
+    "history.emptyTitle": "Aún no hay completados",
+    "history.emptyHint": "Termina una rutina y aquí verás tus sesiones.",
+    "history.openRoutine": "Abrir {name}",
+
     "home.emptyTitle": "Aún no hay rutinas",
     "home.emptyHint": "Crea una rutina matutina para empezar.",
     "home.dragRoutine": "Arrastra para reordenar {name}",
@@ -374,6 +392,15 @@ const messages = {
     "view.liveRoutine": "进行中",
     "view.complete": "例行完成",
     "view.renameHint": "点击重命名",
+
+    "nav.aria": "主导航",
+    "nav.home": "主页",
+    "nav.history": "历史",
+    "nav.settings": "设置",
+
+    "history.emptyTitle": "还没有完成记录",
+    "history.emptyHint": "完成例行后，运行记录会显示在这里。",
+    "history.openRoutine": "打开 {name}",
 
     "home.emptyTitle": "还没有例行",
     "home.emptyHint": "创建一个晨间例行开始吧。",

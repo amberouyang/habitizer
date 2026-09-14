@@ -7,6 +7,8 @@ import {
   backButton,
   menuButton,
   addButton,
+  tabBar,
+  settingsView,
 } from "./dom.js";
 import {
   formatDuration,
@@ -19,6 +21,8 @@ import {
   getRoutineStreak,
   getWeeklyStats,
   getWeekdayShortLabel,
+  getRoutineRunHistory,
+  formatRunCompletedAt,
 } from "./utils.js";
 import {
   getRoutineById,
@@ -48,6 +52,7 @@ import {
 import {
   openColorModal,
   openCalendarModal,
+  syncSettingsView,
 } from "./modals.js";
 import {
   startRoutine,
@@ -62,21 +67,60 @@ import {
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
 import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed } from "./persistence.js";
 
+const TAB_VIEWS = new Set(["home", "history", "settings"]);
+
+function updateChrome(view) {
+  const showTabs = TAB_VIEWS.has(view);
+  tabBar?.classList.toggle("hidden", !showTabs);
+  document.querySelector(".app-shell")?.classList.toggle("tab-bar-hidden", !showTabs);
+
+  tabBar?.querySelectorAll(".tab-btn").forEach((btn) => {
+    const isActive = btn.dataset.tab === view;
+    btn.classList.toggle("is-active", isActive);
+    if (isActive) {
+      btn.setAttribute("aria-current", "page");
+    } else {
+      btn.removeAttribute("aria-current");
+    }
+  });
+
+  if (settingsView) {
+    const showSettings = view === "settings";
+    settingsView.classList.toggle("hidden", !showSettings);
+    settingsView.hidden = !showSettings;
+  }
+
+  if (appEl) {
+    appEl.classList.toggle("hidden", view === "settings");
+    appEl.hidden = view === "settings";
+  }
+}
+
 export function setView(view, routineId = null) {
   state.currentView = view;
   state.currentRoutineId = routineId;
 
   pageTitleEl.onclick = null;
   pageTitleEl.style.cursor = "default";
+  menuButton.classList.add("hidden");
 
   if (view === "home") {
     pageTitleEl.textContent = t("app.name");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
-    menuButton.classList.remove("hidden");
     addButton.classList.add("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", t("app.addRoutine"));
+  } else if (view === "history") {
+    pageTitleEl.textContent = t("nav.history");
+    pageTitleEl.title = "";
+    backButton.classList.add("hidden");
+    addButton.classList.add("hidden");
+  } else if (view === "settings") {
+    pageTitleEl.textContent = t("settings.title");
+    pageTitleEl.title = "";
+    backButton.classList.add("hidden");
+    addButton.classList.add("hidden");
   } else if (view === "routine") {
     if (routineId !== state.calendarRoutineId) {
       state.routineCalendarOffset = 0;
@@ -90,7 +134,6 @@ export function setView(view, routineId = null) {
     pageTitleEl.onclick = () => renameRoutine(routineId);
     pageTitleEl.title = t("view.renameHint");
     backButton.classList.remove("hidden");
-    menuButton.classList.remove("hidden");
     addButton.classList.add("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", t("app.addActivity"));
@@ -98,16 +141,15 @@ export function setView(view, routineId = null) {
     pageTitleEl.textContent = t("view.liveRoutine");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
-    menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
   } else if (view === "complete") {
     pageTitleEl.textContent = t("view.complete");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
-    menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
   }
 
+  updateChrome(view);
   render();
 }
 
@@ -131,6 +173,89 @@ export function renderHomeView() {
   }
 
   return home;
+}
+
+function getRecentHistoryItems(limit = 60) {
+  const items = [];
+  state.routines.forEach((routine) => {
+    getRoutineRunHistory(routine).forEach((run) => {
+      const completedAt = Number(run.completedAt) || 0;
+      if (!completedAt) return;
+      items.push({ routine, run, completedAt });
+    });
+  });
+  items.sort((a, b) => b.completedAt - a.completedAt);
+  return items.slice(0, limit);
+}
+
+export function renderHistoryView() {
+  const view = document.createElement("div");
+  view.className = "history-view";
+
+  const items = getRecentHistoryItems();
+  if (items.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "history-empty";
+
+    const title = document.createElement("h2");
+    title.className = "history-empty-title";
+    title.textContent = t("history.emptyTitle");
+
+    const hint = document.createElement("p");
+    hint.className = "history-empty-hint";
+    hint.textContent = t("history.emptyHint");
+
+    empty.append(title, hint);
+    view.appendChild(empty);
+    return view;
+  }
+
+  const list = document.createElement("div");
+  list.className = "history-list";
+  list.setAttribute("role", "list");
+
+  items.forEach(({ routine, run, completedAt }) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "history-item";
+    item.setAttribute("role", "listitem");
+    item.setAttribute(
+      "aria-label",
+      t("history.openRoutine", { name: routine.name })
+    );
+    applyRoutineColorStyle(item, routine);
+
+    const swatch = document.createElement("span");
+    swatch.className = "history-item-swatch";
+    swatch.setAttribute("aria-hidden", "true");
+
+    const copy = document.createElement("span");
+    copy.className = "history-item-copy";
+
+    const name = document.createElement("span");
+    name.className = "history-item-name";
+    name.textContent = routine.name;
+
+    const when = document.createElement("span");
+    when.className = "history-item-when";
+    when.textContent = formatRunCompletedAt(completedAt);
+
+    copy.append(name, when);
+
+    const duration = document.createElement("span");
+    duration.className = "history-item-duration";
+    duration.textContent = formatDuration(Number(run.totalMs) || 0);
+
+    item.append(swatch, copy, duration);
+    item.addEventListener("click", () => {
+      state.returnView = "history";
+      setView("routine", routine.id);
+    });
+    list.appendChild(item);
+  });
+
+  view.appendChild(list);
+  return view;
 }
 
 function createHomeWidget(widgetId, bodyContent) {
@@ -250,7 +375,10 @@ function renderRoutinesWidgetContent() {
     openBtn.type = "button";
     openBtn.className = "routine-open";
     openBtn.title = t("home.openRoutine", { name: routine.name });
-    openBtn.addEventListener("click", () => setView("routine", routine.id));
+    openBtn.addEventListener("click", () => {
+      state.returnView = "home";
+      setView("routine", routine.id);
+    });
 
     const info = document.createElement("div");
     info.className = "routine-info";
@@ -809,9 +937,21 @@ export function renderTimerView() {
 }
 
 export function render() {
+  if (state.currentView === "settings") {
+    appEl.innerHTML = "";
+    syncSettingsView();
+    return;
+  }
+
   if (state.currentView === "home") {
     appEl.innerHTML = "";
     appEl.appendChild(renderHomeView());
+    return;
+  }
+
+  if (state.currentView === "history") {
+    appEl.innerHTML = "";
+    appEl.appendChild(renderHistoryView());
     return;
   }
 
