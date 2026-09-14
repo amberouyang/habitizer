@@ -23,6 +23,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Completion sound** — Optional chime when you finish a routine
 - **Export / import** — Back up and restore routines, settings, and recently deleted items as JSON
 - **Auto-save** — Everything persists in your browser via localStorage
+- **Installable (PWA)** — Add Habitizer to your phone home screen for an app-like experience
 
 ## Installation
 
@@ -42,6 +43,33 @@ python3 -m http.server 8000
 3. Open `http://localhost:8000` in your browser
 
 > **Note:** Serve from the inner `habitizer/` folder that contains `index.html`, not the parent directory.
+
+## Test on your phone (PWA)
+
+A **PWA** (Progressive Web App) is still the same website — install just means “Add to Home Screen.” You get an icon and it opens fullscreen like an app. No App Store needed.
+
+### iPhone (Safari) — easiest on local Wi‑Fi
+
+1. On your Mac, start the server from the `habitizer/` folder (see above)
+2. Put phone and computer on the **same Wi‑Fi**
+3. Find your Mac’s IP (System Settings → Network / Wi‑Fi → Details). Example: `192.168.1.20`
+4. On iPhone Safari open `http://192.168.1.20:8000`
+5. Tap **Share** → **Add to Home Screen** → Add
+6. Open Habitizer from the home screen
+
+### Android (Chrome)
+
+Chrome’s install prompt usually needs **HTTPS** (local `http://192.168…` often won’t show Install). Options:
+
+- **Quick:** open the same local URL in Chrome and use the menu **Install app** / **Add to Home screen** if offered
+- **Reliable:** deploy to GitHub Pages (or any HTTPS host), then Install from Chrome
+
+Desktop Chrome at `http://localhost:8000` can also install for a quick smoke test.
+
+### What install does / doesn’t do
+
+- **Does:** home-screen icon, fullscreen/standalone window, basic offline shell caching
+- **Doesn’t:** put you on the App Store, or replace a true native `.ipa`/`.apk` build
 
 ## Usage
 
