@@ -224,9 +224,13 @@ button {
   padding-bottom: 28px;
 }
 
+#app[hidden] {
+  display: none !important;
+}
+
 .settings-view.hidden,
 .settings-view[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .tab-bar {

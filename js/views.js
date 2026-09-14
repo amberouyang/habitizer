@@ -88,13 +88,17 @@ function updateChrome(view) {
 
   if (settingsView) {
     const showSettings = view === "settings";
-    settingsView.classList.toggle("hidden", !showSettings);
     settingsView.hidden = !showSettings;
+    settingsView.classList.toggle("hidden", !showSettings);
   }
 
   if (appEl) {
-    appEl.classList.toggle("hidden", view === "settings");
-    appEl.hidden = view === "settings";
+    // Use the HTML hidden attribute (display:none). Do NOT use the shared
+    // `.hidden` class here — that only sets visibility:hidden for topbar slots
+    // and can leave Home looking blank while content is still in the DOM.
+    const showApp = view !== "settings";
+    appEl.hidden = !showApp;
+    appEl.classList.remove("hidden");
   }
 }
 
@@ -110,7 +114,7 @@ export function setView(view, routineId = null) {
     pageTitleEl.textContent = t("app.name");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
-    addButton.classList.add("hidden");
+    addButton.classList.remove("hidden");
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", t("app.addRoutine"));
   } else if (view === "history") {
