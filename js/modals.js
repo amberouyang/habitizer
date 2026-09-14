@@ -1,4 +1,5 @@
-import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, DEFAULT_CUSTOM_COLOR, STREAK_DISPLAY_MIN, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS, HOME_WIDGET_LABELS } from "./constants.js";
+import { ROUTINE_COLORS, DEFAULT_ROUTINE_COLOR_ID, DEFAULT_CUSTOM_COLOR, STREAK_DISPLAY_MIN, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS } from "./constants.js";
+import { t, getHomeWidgetLabel, SUPPORTED_LANGUAGES, applyDocumentLanguage, getLanguage, getLocale } from "./i18n.js";
 import {
   state,
   settings,
@@ -27,6 +28,7 @@ import {
   darkModeToggle,
   cumulativeToggle,
   completionSoundToggle,
+  languageSelect,
   deletedRoutinesList,
   homeWidgetsSettings,
   confirmModal,
@@ -151,7 +153,7 @@ function createHexSwatch(hex, selectedColor, onSelect, container, { removable = 
   swatch.style.setProperty("--swatch-color", hex);
   swatch.title = hex;
   swatch.setAttribute("role", "radio");
-  swatch.setAttribute("aria-label", removable ? `Saved color ${hex}` : `Custom color ${hex}`);
+  swatch.setAttribute("aria-label", removable ? t("modal.savedColor", { hex }) : t("modal.customColor", { hex }));
   swatch.setAttribute("aria-checked", String(normalizeHexColor(selectedColor) === hex));
 
   swatch.addEventListener("click", () => {
@@ -169,8 +171,8 @@ function createHexSwatch(hex, selectedColor, onSelect, container, { removable = 
   const removeBtn = document.createElement("button");
   removeBtn.type = "button";
   removeBtn.className = "color-swatch-remove";
-  removeBtn.title = "Remove saved color";
-  removeBtn.setAttribute("aria-label", `Remove saved color ${hex}`);
+  removeBtn.title = t("modal.remove");
+  removeBtn.setAttribute("aria-label", t("modal.removeSavedColor", { hex }));
   removeBtn.innerHTML = "<span aria-hidden=\"true\">×</span>";
 
   removeBtn.addEventListener("click", (event) => {
@@ -202,7 +204,7 @@ function createAddColorControl(selectedColor, onSelect, container) {
   const addSwatch = document.createElement("label");
   addSwatch.className = "color-swatch color-swatch-add";
   addSwatch.title = "Pick a color";
-  addSwatch.setAttribute("aria-label", "Pick a color");
+  addSwatch.setAttribute("aria-label", t("modal.pickColor"));
 
   const plus = document.createElement("span");
   plus.className = "color-swatch-add-icon";
@@ -213,7 +215,7 @@ function createAddColorControl(selectedColor, onSelect, container) {
   colorInput.type = "color";
   colorInput.className = "color-swatch-input";
   colorInput.value = normalizeHexColor(selectedColor) || DEFAULT_CUSTOM_COLOR;
-  colorInput.setAttribute("aria-label", "Pick a color");
+  colorInput.setAttribute("aria-label", t("modal.pickColor"));
 
   const pendingRow = document.createElement("div");
   pendingRow.className = "color-add-pending hidden";
@@ -224,7 +226,7 @@ function createAddColorControl(selectedColor, onSelect, container) {
 
   const pendingLabel = document.createElement("span");
   pendingLabel.className = "color-add-pending-label";
-  pendingLabel.textContent = "New color";
+  pendingLabel.textContent = t("modal.newColor");
 
   const actions = document.createElement("div");
   actions.className = "color-add-pending-actions";
@@ -232,12 +234,12 @@ function createAddColorControl(selectedColor, onSelect, container) {
   const cancelBtn = document.createElement("button");
   cancelBtn.type = "button";
   cancelBtn.className = "color-add-cancel";
-  cancelBtn.textContent = "Cancel";
+  cancelBtn.textContent = t("app.cancel");
 
   const confirmBtn = document.createElement("button");
   confirmBtn.type = "button";
   confirmBtn.className = "color-add-confirm";
-  confirmBtn.textContent = "Add";
+  confirmBtn.textContent = t("app.addAction");
 
   let pendingHex = null;
 
@@ -457,7 +459,7 @@ function getRunsForDateKey(routine, dateKey) {
 function formatCalendarDayLabel(dateKey) {
   const [year, month, day] = dateKey.split("-").map(Number);
   const date = new Date(year, month - 1, day);
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(getLocale(), {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -487,12 +489,12 @@ function buildRunDetailItem(run, { fastestMs = null } = {}) {
 
   const parts = [];
   if (run.activitiesTotal > 0) {
-    parts.push(`${run.activitiesCompleted} of ${run.activitiesTotal} activities`);
+    parts.push(t("calendar.activitiesProgress", { done: run.activitiesCompleted, total: run.activitiesTotal }));
   }
   if (run.estimatedMs > 0) {
     const estimateMessage = getCompletionEstimateMessage(run.totalMs, run.estimatedMs);
     if (estimateMessage) {
-      parts.push(`${formatDurationLabel(run.estimatedMs)} estimate · ${estimateMessage}`);
+      parts.push(t("calendar.estimateMeta", { estimate: formatDurationLabel(run.estimatedMs), message: estimateMessage }));
     }
   }
   meta.textContent = parts.join(" · ");
@@ -508,7 +510,7 @@ function buildRunDetailItem(run, { fastestMs = null } = {}) {
 function buildCalendarDayDetailContent(routine, dateKey) {
   const section = document.createElement("section");
   section.className = "calendar-day-detail";
-  section.setAttribute("aria-label", `Details for ${formatCalendarDayLabel(dateKey)}`);
+  section.setAttribute("aria-label", t("calendar.dayDetails", { date: formatCalendarDayLabel(dateKey) }));
 
   const header = document.createElement("div");
   header.className = "calendar-day-detail-header";
@@ -520,8 +522,8 @@ function buildCalendarDayDetailContent(routine, dateKey) {
   const clearBtn = document.createElement("button");
   clearBtn.type = "button";
   clearBtn.className = "calendar-day-detail-clear";
-  clearBtn.textContent = "Clear";
-  clearBtn.setAttribute("aria-label", "Clear selected day");
+  clearBtn.textContent = t("app.clear");
+  clearBtn.setAttribute("aria-label", t("calendar.clearDay"));
   clearBtn.addEventListener("click", () => {
     selectedCalendarDateKey = null;
     refreshCalendarModalContent();
@@ -547,8 +549,8 @@ function buildCalendarDayDetailContent(routine, dateKey) {
   const empty = document.createElement("p");
   empty.className = "calendar-day-detail-empty";
   empty.textContent = isComplete
-    ? "Marked complete, but detailed run data isn’t available for this day."
-    : "No completion on this day.";
+    ? t("calendar.markedNoDetail")
+    : t("calendar.noDetail");
   section.appendChild(empty);
   return section;
 }
@@ -564,7 +566,7 @@ function buildStreakCalendarContent(routine) {
 
   const calendar = document.createElement("div");
   calendar.className = "streak-calendar";
-  calendar.setAttribute("aria-label", "Routine completion calendar");
+  calendar.setAttribute("aria-label", t("calendar.aria"));
 
   const calendarHeader = document.createElement("div");
   calendarHeader.className = "streak-calendar-header";
@@ -574,7 +576,7 @@ function buildStreakCalendarContent(routine) {
   prevBtn.className = "small-btn calendar-nav-btn";
   prevBtn.textContent = "‹";
   prevBtn.title = "Previous month";
-  prevBtn.setAttribute("aria-label", "Previous month");
+  prevBtn.setAttribute("aria-label", t("calendar.prevMonth"));
   prevBtn.addEventListener("click", (event) => {
     event.stopPropagation();
     changeRoutineCalendarMonth(-1);
@@ -589,7 +591,7 @@ function buildStreakCalendarContent(routine) {
   nextBtn.className = "small-btn calendar-nav-btn";
   nextBtn.textContent = "›";
   nextBtn.title = "Next month";
-  nextBtn.setAttribute("aria-label", "Next month");
+  nextBtn.setAttribute("aria-label", t("calendar.nextMonth"));
   nextBtn.disabled = state.routineCalendarOffset >= 0;
   nextBtn.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -637,8 +639,8 @@ function buildStreakCalendarContent(routine) {
       cell.setAttribute(
         "aria-label",
         isComplete
-          ? `Completed ${formatCalendarDayLabel(dateKey)}. Show run details.`
-          : `${formatCalendarDayLabel(dateKey)}. Show day details.`
+          ? t("calendar.completedAria", { date: formatCalendarDayLabel(dateKey) })
+          : t("calendar.dayAria", { date: formatCalendarDayLabel(dateKey) })
       );
       cell.setAttribute("aria-pressed", String(isSelected));
 
@@ -662,7 +664,7 @@ function buildStreakCalendarContent(routine) {
 
   const legend = document.createElement("div");
   legend.className = "streak-calendar-legend";
-  legend.innerHTML = '<span class="streak-calendar-dot"></span><span>Completed · tap a day for details</span>';
+  legend.innerHTML = `<span class="streak-calendar-dot"></span><span>${t("calendar.legend")}</span>`;
 
   calendar.append(calendarHeader, weekdayRow, grid, legend);
   return calendar;
@@ -671,14 +673,14 @@ function buildStreakCalendarContent(routine) {
 function buildRunHistoryContent(routine) {
   const section = document.createElement("section");
   section.className = "run-history";
-  section.setAttribute("aria-label", "Recent runs");
+  section.setAttribute("aria-label", t("calendar.recentRuns"));
 
   const header = document.createElement("div");
   header.className = "run-history-header";
 
   const title = document.createElement("h3");
   title.className = "run-history-title";
-  title.textContent = "Recent runs";
+  title.textContent = t("calendar.recentRuns");
 
   header.appendChild(title);
 
@@ -686,7 +688,7 @@ function buildRunHistoryContent(routine) {
   if (fastestMs != null) {
     const best = document.createElement("p");
     best.className = "run-history-best";
-    best.textContent = `Best time: ${formatDuration(fastestMs)}`;
+    best.textContent = t("calendar.bestTime", { time: formatDuration(fastestMs) });
     header.appendChild(best);
   }
 
@@ -696,7 +698,7 @@ function buildRunHistoryContent(routine) {
   if (runs.length === 0) {
     const empty = document.createElement("p");
     empty.className = "run-history-empty";
-    empty.textContent = "No runs yet. Finish a routine to see durations here.";
+    empty.textContent = t("calendar.noRuns");
     section.appendChild(empty);
     return section;
   }
@@ -716,7 +718,7 @@ function updateCalendarModal(routine) {
   const streak = getRoutineStreak(routine);
   const streakLabel = formatStreakLabel(streak);
 
-  calendarModalTitle.textContent = "Completion history";
+  calendarModalTitle.textContent = t("calendar.title");
   if (streakLabel && streak >= STREAK_DISPLAY_MIN) {
     calendarModalSubtitle.textContent = streakLabel;
     calendarModalSubtitle.classList.remove("hidden");
@@ -770,10 +772,24 @@ export function openSettings() {
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
   completionSoundToggle.checked = settings.completionSound;
+  populateLanguageSelect();
+  applyDocumentLanguage();
   renderHomeWidgetSettings();
   renderDeletedRoutinesList();
   settingsModal.classList.remove("hidden");
   settingsModal.setAttribute("aria-hidden", "false");
+}
+
+function populateLanguageSelect() {
+  if (!languageSelect) return;
+  languageSelect.replaceChildren();
+  SUPPORTED_LANGUAGES.forEach((lang) => {
+    const option = document.createElement("option");
+    option.value = lang.id;
+    option.textContent = lang.label;
+    languageSelect.appendChild(option);
+  });
+  languageSelect.value = getLanguage();
 }
 
 export function closeSettings() {
@@ -806,13 +822,13 @@ function renderHomeWidgetSettings() {
 
     const title = document.createElement("span");
     title.className = "settings-title";
-    title.textContent = HOME_WIDGET_LABELS[widgetId] || widgetId;
+    title.textContent = getHomeWidgetLabel(widgetId);
 
     const desc = document.createElement("p");
     desc.className = "settings-desc";
     desc.textContent = isVisible
-      ? "On the home screen (Hide there only collapses it)"
-      : "Removed from the home screen";
+      ? t("settings.widgetOn")
+      : t("settings.widgetOff");
 
     copy.append(title, desc);
 
@@ -821,7 +837,7 @@ function renderHomeWidgetSettings() {
     toggle.className = "toggle-input";
     toggle.type = "checkbox";
     toggle.setAttribute("role", "switch");
-    toggle.setAttribute("aria-label", `Show ${HOME_WIDGET_LABELS[widgetId] || widgetId}`);
+    toggle.setAttribute("aria-label", t("settings.showWidget", { name: getHomeWidgetLabel(widgetId) }));
     toggle.checked = isVisible;
     toggle.disabled = isVisible && visibleCount <= 1;
 
@@ -876,9 +892,9 @@ export function requestPermanentDeleteArchivedRoutine(entryId) {
   if (!entry) return;
 
   openConfirmModal({
-    title: "Delete forever?",
-    message: `Permanently delete "${entry.routine.name}"? This cannot be undone.`,
-    confirmLabel: "Delete forever",
+    title: t("modal.permanentDeleteTitle"),
+    message: t("modal.permanentDeleteMessage", { name: entry.routine.name }),
+    confirmLabel: t("modal.permanentDeleteConfirm"),
     onConfirm: () => permanentlyDeleteArchivedRoutine(entryId),
   });
 }

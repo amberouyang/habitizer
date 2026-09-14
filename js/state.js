@@ -22,6 +22,7 @@ export const settings = {
   cumulativeMode: true,
   darkMode: false,
   completionSound: true,
+  language: "en",
   savedColors: [],
   homeWidgets: [...DEFAULT_HOME_WIDGETS],
   hiddenHomeWidgets: [],

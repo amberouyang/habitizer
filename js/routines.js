@@ -11,6 +11,7 @@ import {
   syncRoutineEstimatedMinutes,
 } from "./models.js";
 import { saveRoutines } from "./persistence.js";
+import { t } from "./i18n.js";
 import {
   openNameModal,
   closeNameModal,
@@ -21,9 +22,9 @@ import { setView, render } from "./views.js";
 
 export function addRoutine() {
   openNameModal({
-    title: "New routine",
-    placeholder: "Morning routine",
-    confirmLabel: "Create",
+    title: t("modal.newRoutine"),
+    placeholder: t("modal.morningPlaceholder"),
+    confirmLabel: t("app.create"),
     mode: "routine",
     showEstimatedMinutes: true,
     estimatedMinutesDefault: "10",
@@ -67,9 +68,9 @@ export function renameRoutine(routineId) {
   if (!routine) return;
 
   openNameModal({
-    title: "Rename routine",
-    placeholder: "Routine name",
-    confirmLabel: "Rename",
+    title: t("modal.renameRoutine"),
+    placeholder: t("modal.routineNamePlaceholder"),
+    confirmLabel: t("app.rename"),
     mode: "rename",
     routineId,
     initialValue: routine.name,
@@ -81,10 +82,10 @@ export function editRoutineTime(routineId) {
   if (!routine) return;
 
   openNameModal({
-    title: "Estimated time",
+    title: t("modal.estimatedTime"),
     label: "Minutes",
     placeholder: "15",
-    confirmLabel: "Save",
+    confirmLabel: t("app.save"),
     mode: "time",
     routineId,
     initialValue: String(routine.estimatedMinutes ?? 0),
@@ -114,9 +115,9 @@ export function deleteRoutine(routineId) {
   if (!routine) return;
 
   openConfirmModal({
-    title: "Delete routine?",
-    message: `Delete "${routine.name}"? You can undo this briefly after confirming.`,
-    confirmLabel: "Delete",
+    title: t("modal.deleteRoutineTitle"),
+    message: t("modal.deleteRoutineMessage", { name: routine.name }),
+    confirmLabel: t("app.delete"),
     onConfirm: () => performDeleteRoutine(routineId),
   });
 }
@@ -162,9 +163,9 @@ export function duplicateRoutine(routineId) {
 
 export function openAddActivityModal(routineId) {
   openNameModal({
-    title: "New activity",
-    placeholder: "Stretch",
-    confirmLabel: "Add",
+    title: t("modal.newActivity"),
+    placeholder: t("modal.activityPlaceholder"),
+    confirmLabel: t("app.addAction"),
     mode: "activity",
     routineId,
     showEstimatedMinutes: true,
@@ -180,9 +181,9 @@ export function renameActivity(routineId, activityId) {
   if (!activity) return;
 
   openNameModal({
-    title: "Edit activity",
-    placeholder: "Activity name",
-    confirmLabel: "Save",
+    title: t("modal.editActivity"),
+    placeholder: t("modal.activityNamePlaceholder"),
+    confirmLabel: t("app.save"),
     mode: "renameActivity",
     routineId,
     activityId,
@@ -200,9 +201,9 @@ export function deleteActivity(routineId, activityId) {
   if (!activity) return;
 
   openConfirmModal({
-    title: "Delete activity?",
-    message: `Delete "${activity.name}"? You can undo this briefly after confirming.`,
-    confirmLabel: "Delete",
+    title: t("modal.deleteActivityTitle"),
+    message: t("modal.deleteActivityMessage", { name: activity.name }),
+    confirmLabel: t("app.delete"),
     onConfirm: () => performDeleteActivity(routineId, activityId),
   });
 }

@@ -1550,6 +1550,32 @@ button {
   user-select: none;
 }
 
+.settings-row-select {
+  align-items: flex-start;
+}
+
+.settings-select {
+  flex: 0 0 auto;
+  min-width: 118px;
+  max-width: 42%;
+  margin-top: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
 .settings-row + .settings-row {
   margin-top: 18px;
   padding-top: 18px;

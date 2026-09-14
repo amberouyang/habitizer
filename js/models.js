@@ -10,6 +10,7 @@ import {
   getRoutineRunHistory,
   getLocalDateKey,
 } from "./utils.js";
+import { t } from "./i18n.js";
 
 export function getRoutineById(routineId) {
   return state.routines.find((routine) => routine.id === routineId) || null;
@@ -72,8 +73,9 @@ export function applyProgressFillColor(progressFill, routine) {
 }
 
 export function getRoutineMetaText(routine) {
+  const count = routine.activities.length;
   return [
-    `${routine.activities.length} activities`,
+    count === 1 ? t("meta.activity", { count }) : t("meta.activities", { count }),
     formatDurationLabel(getRoutineTotalDurationMs(routine)),
   ].join(" • ");
 }
@@ -141,8 +143,8 @@ export function getActivityCompletionCount(routine) {
 
 export function formatActivityCompletionLabel(routine) {
   const { completed, total } = getActivityCompletionCount(routine);
-  if (total === 0) return "0 done";
-  return `${completed} of ${total} done`;
+  if (total === 0) return t("format.zeroDone");
+  return t("format.doneCount", { done: completed, total });
 }
 
 export function getTotalElapsedMs() {

@@ -1,4 +1,5 @@
-import { STREAK_DISPLAY_MIN, HOME_WIDGET_LABELS } from "./constants.js";
+import { STREAK_DISPLAY_MIN } from "./constants.js";
+import { t, getHomeWidgetLabel } from "./i18n.js";
 import { state } from "./state.js";
 import {
   appEl,
@@ -69,13 +70,13 @@ export function setView(view, routineId = null) {
   pageTitleEl.style.cursor = "default";
 
   if (view === "home") {
-    pageTitleEl.textContent = "Habitizer";
+    pageTitleEl.textContent = t("app.name");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
     menuButton.classList.remove("hidden");
     addButton.classList.add("hidden");
     addButton.textContent = "+";
-    addButton.setAttribute("aria-label", "Add routine");
+    addButton.setAttribute("aria-label", t("app.addRoutine"));
   } else if (view === "routine") {
     if (routineId !== state.calendarRoutineId) {
       state.routineCalendarOffset = 0;
@@ -83,24 +84,24 @@ export function setView(view, routineId = null) {
     }
 
     const routine = getRoutineById(routineId);
-    pageTitleEl.textContent = routine ? routine.name : "Routine";
+    pageTitleEl.textContent = routine ? routine.name : t("view.routine");
     pageTitleEl.title = routine ? routine.name : "";
     pageTitleEl.style.cursor = "pointer";
     pageTitleEl.onclick = () => renameRoutine(routineId);
-    pageTitleEl.title = "Click to rename";
+    pageTitleEl.title = t("view.renameHint");
     backButton.classList.remove("hidden");
     menuButton.classList.remove("hidden");
     addButton.classList.add("hidden");
     addButton.textContent = "+";
-    addButton.setAttribute("aria-label", "Add activity");
+    addButton.setAttribute("aria-label", t("app.addActivity"));
   } else if (view === "timer") {
-    pageTitleEl.textContent = "Live Routine";
+    pageTitleEl.textContent = t("view.liveRoutine");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
     menuButton.classList.add("hidden");
     addButton.classList.add("hidden");
   } else if (view === "complete") {
-    pageTitleEl.textContent = "Routine complete";
+    pageTitleEl.textContent = t("view.complete");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
     menuButton.classList.add("hidden");
@@ -136,7 +137,7 @@ function createHomeWidget(widgetId, bodyContent) {
   const widget = document.createElement("section");
   widget.className = "home-widget";
   widget.dataset.widgetId = widgetId;
-  widget.setAttribute("aria-label", HOME_WIDGET_LABELS[widgetId] || widgetId);
+  widget.setAttribute("aria-label", getHomeWidgetLabel(widgetId));
 
   const collapsed = isHomeWidgetCollapsed(widgetId);
   if (collapsed) {
@@ -149,15 +150,15 @@ function createHomeWidget(widgetId, bodyContent) {
   const handle = document.createElement("button");
   handle.type = "button";
   handle.className = "drag-handle home-widget-handle";
-  handle.setAttribute("aria-label", `Drag to move ${HOME_WIDGET_LABELS[widgetId] || "widget"}`);
-  handle.title = "Drag to reorder home widgets";
+  handle.setAttribute("aria-label", t("home.widgetMove", { name: getHomeWidgetLabel(widgetId) }));
+  handle.title = t("home.widgetDrag");
 
   const titleWrap = document.createElement("div");
   titleWrap.className = "home-widget-title-wrap";
 
   const title = document.createElement("h2");
   title.className = "home-widget-title";
-  title.textContent = HOME_WIDGET_LABELS[widgetId] || widgetId;
+  title.textContent = getHomeWidgetLabel(widgetId);
 
   titleWrap.appendChild(title);
 
@@ -173,15 +174,15 @@ function createHomeWidget(widgetId, bodyContent) {
   const collapseBtn = document.createElement("button");
   collapseBtn.type = "button";
   collapseBtn.className = "home-widget-hide";
-  collapseBtn.textContent = collapsed ? "Show" : "Hide";
+  collapseBtn.textContent = collapsed ? t("app.show") : t("app.hide");
   collapseBtn.title = collapsed
-    ? `Show ${HOME_WIDGET_LABELS[widgetId] || "widget"}`
-    : `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"} content`;
+    ? t("home.widgetShow", { name: getHomeWidgetLabel(widgetId) })
+    : t("home.widgetHide", { name: getHomeWidgetLabel(widgetId) });
   collapseBtn.setAttribute(
     "aria-label",
     collapsed
-      ? `Show ${HOME_WIDGET_LABELS[widgetId] || "widget"}`
-      : `Hide ${HOME_WIDGET_LABELS[widgetId] || "widget"} content`
+      ? t("home.widgetShow", { name: getHomeWidgetLabel(widgetId) })
+      : t("home.widgetHide", { name: getHomeWidgetLabel(widgetId) })
   );
   collapseBtn.setAttribute("aria-expanded", String(!collapsed));
   collapseBtn.addEventListener("click", (event) => {
@@ -215,11 +216,11 @@ function renderRoutinesWidgetContent() {
 
     const title = document.createElement("p");
     title.className = "empty-state-title";
-    title.textContent = "No routines yet";
+    title.textContent = t("home.emptyTitle");
 
     const hint = document.createElement("p");
     hint.className = "empty-state-hint";
-    hint.textContent = "Create a morning routine to get started.";
+    hint.textContent = t("home.emptyHint");
 
     empty.append(title, hint);
     list.appendChild(empty);
@@ -240,15 +241,15 @@ function renderRoutinesWidgetContent() {
       const dragHandle = document.createElement("button");
       dragHandle.type = "button";
       dragHandle.className = "drag-handle";
-      dragHandle.setAttribute("aria-label", `Drag to reorder ${routine.name}`);
-      dragHandle.title = "Drag to reorder";
+      dragHandle.setAttribute("aria-label", t("home.dragRoutine", { name: routine.name }));
+      dragHandle.title = t("home.dragHint");
       main.appendChild(dragHandle);
     }
 
     const openBtn = document.createElement("button");
     openBtn.type = "button";
     openBtn.className = "routine-open";
-    openBtn.title = `Open ${routine.name}`;
+    openBtn.title = t("home.openRoutine", { name: routine.name });
     openBtn.addEventListener("click", () => setView("routine", routine.id));
 
     const info = document.createElement("div");
@@ -291,7 +292,7 @@ function renderRoutinesWidgetContent() {
     duplicateBtn.type = "button";
     duplicateBtn.className = "small-btn";
     duplicateBtn.textContent = "⎘";
-    duplicateBtn.title = "Duplicate routine";
+    duplicateBtn.title = t("home.duplicate");
     duplicateBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       duplicateRoutine(routine.id);
@@ -301,7 +302,7 @@ function renderRoutinesWidgetContent() {
     renameBtn.type = "button";
     renameBtn.className = "small-btn";
     renameBtn.textContent = "✎";
-    renameBtn.title = "Rename routine";
+    renameBtn.title = t("home.rename");
     renameBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       renameRoutine(routine.id);
@@ -311,7 +312,7 @@ function renderRoutinesWidgetContent() {
     deleteBtn.type = "button";
     deleteBtn.className = "small-btn delete-btn";
     deleteBtn.textContent = "🗑";
-    deleteBtn.title = "Delete routine";
+    deleteBtn.title = t("home.delete");
     deleteBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       deleteRoutine(routine.id);
@@ -330,8 +331,8 @@ function renderRoutinesWidgetContent() {
   const addRoutineButton = document.createElement("button");
   addRoutineButton.type = "button";
   addRoutineButton.className = "primary-btn home-add-button";
-  addRoutineButton.textContent = "Add routine";
-  addRoutineButton.setAttribute("aria-label", "Add routine");
+  addRoutineButton.textContent = t("app.addRoutine");
+  addRoutineButton.setAttribute("aria-label", t("app.addRoutine"));
   addRoutineButton.addEventListener("click", addRoutine);
   list.appendChild(addRoutineButton);
 
@@ -352,19 +353,19 @@ function renderWeeklyStatsContent() {
 
   const metricDefs = [
     {
-      label: "Completions",
+      label: t("home.statCompletions"),
       value: String(stats.completions),
-      detail: stats.completions === 1 ? "routine day" : "routine days",
+      detail: stats.completions === 1 ? t("home.statRoutineDay") : t("home.statRoutineDays"),
     },
     {
-      label: "Active days",
+      label: t("home.statActiveDays"),
       value: `${stats.activeDays}/7`,
-      detail: stats.activeDays === 1 ? "day with a run" : "days with a run",
+      detail: stats.activeDays === 1 ? t("home.statDayWithRun") : t("home.statDaysWithRun"),
     },
     {
-      label: "Time",
+      label: t("home.statTime"),
       value: formatDurationLabel(stats.totalTimeMs),
-      detail: stats.runs === 1 ? "1 run logged" : `${stats.runs} runs logged`,
+      detail: stats.runs === 1 ? t("home.statOneRun") : t("home.statRunsLogged", { count: stats.runs }),
     },
   ];
 
@@ -409,7 +410,9 @@ function renderWeeklyStatsContent() {
     const bar = document.createElement("div");
     bar.className = "weekly-stats-bar";
     bar.style.height = `${Math.max(count > 0 ? 18 : 6, Math.round((count / maxDay) * 100))}%`;
-    bar.title = `${count} completion${count === 1 ? "" : "s"}`;
+    bar.title = count === 1
+      ? t("home.completionsTitle", { count })
+      : t("home.completionsTitlePlural", { count });
 
     barWrap.appendChild(bar);
 
@@ -438,7 +441,7 @@ export function renderRoutineView() {
   header.className = "section-header";
 
   const title = document.createElement("h2");
-  title.textContent = "Activities";
+  title.textContent = t("routine.activities");
 
   const headerActions = document.createElement("div");
   headerActions.className = "section-header-actions";
@@ -447,22 +450,22 @@ export function renderRoutineView() {
   duplicateButton.type = "button";
   duplicateButton.className = "small-btn";
   duplicateButton.textContent = "⎘";
-  duplicateButton.title = "Duplicate routine";
+  duplicateButton.title = t("home.duplicate");
   duplicateButton.addEventListener("click", () => duplicateRoutine(routine.id));
 
   const metaButton = document.createElement("button");
   metaButton.type = "button";
   metaButton.className = "small-btn";
   metaButton.textContent = "⏱";
-  metaButton.title = "Edit time estimate";
+  metaButton.title = t("routine.editTime");
   metaButton.addEventListener("click", () => editRoutineTime(routine.id));
 
   const colorButton = document.createElement("button");
   colorButton.type = "button";
   colorButton.className = "small-btn color-btn";
   colorButton.textContent = "🎨";
-  colorButton.title = "Change color";
-  colorButton.setAttribute("aria-label", "Change routine color");
+  colorButton.title = t("routine.changeColor");
+  colorButton.setAttribute("aria-label", t("routine.changeColorAria"));
   applyRoutineColorStyle(colorButton, routine);
   colorButton.addEventListener("click", () => openColorModal(routine.id));
 
@@ -470,8 +473,8 @@ export function renderRoutineView() {
   calendarButton.type = "button";
   calendarButton.className = "small-btn calendar-btn";
   calendarButton.textContent = "📅";
-  calendarButton.title = "Completion history";
-  calendarButton.setAttribute("aria-label", "Completion history");
+  calendarButton.title = t("routine.history");
+  calendarButton.setAttribute("aria-label", t("routine.history"));
   if (routineCompletedToday(routine)) {
     calendarButton.classList.add("has-today");
   }
@@ -483,7 +486,7 @@ export function renderRoutineView() {
   const infoRow = document.createElement("button");
   infoRow.type = "button";
   infoRow.className = "summary-row summary-row-button";
-  infoRow.title = "Edit estimated time";
+  infoRow.title = t("routine.editEstimated");
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
@@ -495,7 +498,7 @@ export function renderRoutineView() {
   if (routine.activities.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "No activities yet. Add one to start building this routine.";
+    empty.textContent = t("routine.emptyActivities");
     activityList.appendChild(empty);
   } else {
     routine.activities.forEach((activity) => {
@@ -509,21 +512,21 @@ export function renderRoutineView() {
       const dragHandle = document.createElement("button");
       dragHandle.type = "button";
       dragHandle.className = "drag-handle";
-      dragHandle.setAttribute("aria-label", `Drag to reorder ${activity.name}`);
-      dragHandle.title = "Drag to reorder";
+      dragHandle.setAttribute("aria-label", t("routine.dragActivity", { name: activity.name }));
+      dragHandle.title = t("home.dragHint");
 
       const label = document.createElement("button");
       label.type = "button";
       label.className = "activity-name";
       label.textContent = activity.name;
-      label.title = `Start with ${activity.name}`;
+      label.title = t("routine.startWith", { name: activity.name });
       label.addEventListener("click", () => startRoutine(routine.id, activity.id));
 
       const estimate = document.createElement("span");
       estimate.className = "activity-estimate";
       const estimateMinutes = getActivityEstimatedMinutes(activity);
       estimate.textContent = formatDurationLabel(estimateMinutes * 60 * 1000);
-      estimate.title = "Estimated time";
+      estimate.title = t("routine.estimatedTime");
 
       main.append(dragHandle, label, estimate);
 
@@ -534,15 +537,15 @@ export function renderRoutineView() {
       editBtn.type = "button";
       editBtn.className = "small-btn";
       editBtn.textContent = "✎";
-      editBtn.title = "Edit activity";
-      editBtn.setAttribute("aria-label", `Edit ${activity.name}`);
+      editBtn.title = t("routine.editActivity");
+      editBtn.setAttribute("aria-label", t("routine.editActivityAria", { name: activity.name }));
       editBtn.addEventListener("click", () => renameActivity(routine.id, activity.id));
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
       deleteBtn.className = "small-btn delete-btn";
       deleteBtn.textContent = "✕";
-      deleteBtn.title = "Delete activity";
+      deleteBtn.title = t("routine.deleteActivity");
       deleteBtn.addEventListener("click", () => deleteActivity(routine.id, activity.id));
 
       controls.append(editBtn, deleteBtn);
@@ -559,14 +562,14 @@ export function renderRoutineView() {
   const startBtn = document.createElement("button");
   startBtn.type = "button";
   startBtn.className = "primary-btn";
-  startBtn.textContent = "Start Routine";
+  startBtn.textContent = t("routine.start");
   startBtn.disabled = routine.activities.length === 0;
   startBtn.addEventListener("click", () => startRoutine(routine.id));
 
   const addActivityButton = document.createElement("button");
   addActivityButton.type = "button";
   addActivityButton.className = "secondary-btn add-activity-btn";
-  addActivityButton.textContent = "Add activity";
+  addActivityButton.textContent = t("app.addActivity");
   addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
 
   actionRow.append(startBtn, addActivityButton);
@@ -610,7 +613,7 @@ export function renderCompletionView() {
     if (data.isNewPersonalBest) {
       const badgeEl = document.createElement("div");
       badgeEl.className = "completion-streak-badge";
-      badgeEl.textContent = "New personal best!";
+      badgeEl.textContent = t("complete.personalBest");
       streakBlock.appendChild(badgeEl);
     } else if (data.longestStreak > data.streak) {
       const bestEl = document.createElement("div");
@@ -626,13 +629,16 @@ export function renderCompletionView() {
     const estimateEl = document.createElement("div");
     const isUnderOrOn = data.totalMs <= data.estimatedMs;
     estimateEl.className = `completion-estimate ${isUnderOrOn ? "under" : "over"}`;
-    estimateEl.textContent = `${formatDurationLabel(data.estimatedMs)} estimate · ${getCompletionEstimateMessage(data.totalMs, data.estimatedMs)}`;
+    estimateEl.textContent = t("complete.estimateLine", {
+      estimate: formatDurationLabel(data.estimatedMs),
+      message: getCompletionEstimateMessage(data.totalMs, data.estimatedMs),
+    });
     card.appendChild(estimateEl);
   }
 
   const breakdownTitle = document.createElement("div");
   breakdownTitle.className = "completion-section-title";
-  breakdownTitle.textContent = "Activity breakdown";
+  breakdownTitle.textContent = t("complete.breakdown");
 
   const activityList = document.createElement("div");
   activityList.className = "summary-list";
@@ -657,7 +663,7 @@ export function renderCompletionView() {
   const doneBtn = document.createElement("button");
   doneBtn.type = "button";
   doneBtn.className = "primary-btn completion-done-btn";
-  doneBtn.textContent = "Done";
+  doneBtn.textContent = t("app.done");
   doneBtn.addEventListener("click", () => {
     state.lastCompletion = null;
     setView("home");
@@ -695,7 +701,7 @@ export function renderTimerView() {
   if (!hasRoutineClockStarted()) {
     const hint = document.createElement("p");
     hint.className = "timer-start-hint";
-    hint.textContent = "Tap an activity to begin";
+    hint.textContent = t("timer.tapToBegin");
     timerCardChildren.push(hint);
   }
 
@@ -753,7 +759,7 @@ export function renderTimerView() {
 
     const statusBadge = document.createElement("span");
     statusBadge.className = "progress-status";
-    statusBadge.textContent = "In progress";
+    statusBadge.textContent = t("timer.inProgress");
     statusBadge.hidden = status !== "active";
 
     const timeText = document.createElement("span");
@@ -781,7 +787,7 @@ export function renderTimerView() {
   pauseResumeBtn.type = "button";
   pauseResumeBtn.className = "secondary-btn";
   const clockStarted = hasRoutineClockStarted();
-  pauseResumeBtn.textContent = state.timer.isRunning ? "Pause" : "Resume";
+  pauseResumeBtn.textContent = state.timer.isRunning ? t("app.pause") : t("app.resume");
   pauseResumeBtn.disabled = !clockStarted;
   pauseResumeBtn.addEventListener("click", () => {
     if (state.timer.isRunning) {
@@ -794,7 +800,7 @@ export function renderTimerView() {
   const endBtn = document.createElement("button");
   endBtn.type = "button";
   endBtn.className = "danger-btn";
-  endBtn.textContent = "End Routine";
+  endBtn.textContent = t("timer.end");
   endBtn.addEventListener("click", requestEndRoutine);
 
   controls.append(pauseResumeBtn, endBtn);

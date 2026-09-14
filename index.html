@@ -16,40 +16,40 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=calendarday2" />
+    <link rel="stylesheet" href="styles.css?v=i18n1" />
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <button id="backButton" class="icon-btn hidden" aria-label="Go back">←</button>
-        <button id="menuButton" class="icon-btn hidden" aria-label="Menu">⋯</button>
-        <h1 id="pageTitle">Habitizer</h1>
-        <button id="addButton" class="icon-btn primary" aria-label="Add">+</button>
+        <button id="backButton" class="icon-btn hidden" data-i18n-aria="app.back" aria-label="Go back">←</button>
+        <button id="menuButton" class="icon-btn hidden" data-i18n-aria="app.menu" aria-label="Menu">⋯</button>
+        <h1 id="pageTitle" data-i18n="app.name">Habitizer</h1>
+        <button id="addButton" class="icon-btn primary" data-i18n-aria="app.add" aria-label="Add">+</button>
       </header>
 
       <main id="app" class="app-content" aria-live="polite"></main>
 
       <div id="undoToast" class="undo-toast hidden" role="status" aria-live="polite">
         <span id="undoToastMessage" class="undo-toast-message"></span>
-        <button id="undoToastAction" type="button" class="undo-toast-btn">Undo</button>
+        <button id="undoToastAction" type="button" class="undo-toast-btn" data-i18n="app.undo">Undo</button>
       </div>
     </div>
 
     <div id="nameModal" class="modal-overlay hidden" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <h2 id="modalTitle">New routine</h2>
-        <label id="modalLabel" class="modal-label" for="modalInput">Name</label>
+        <label id="modalLabel" class="modal-label" for="modalInput" data-i18n="modal.name">Name</label>
         <input id="modalInput" class="modal-input" type="text" maxlength="40" autocomplete="off" />
         <div id="modalMinutesGroup" class="modal-field-group hidden">
-          <label id="modalMinutesLabel" class="modal-label" for="modalMinutesInput">Estimated time (minutes)</label>
+          <label id="modalMinutesLabel" class="modal-label" for="modalMinutesInput" data-i18n="modal.estimatedMinutes">Estimated time (minutes)</label>
           <input id="modalMinutesInput" class="modal-input" type="number" min="0" step="1" placeholder="15" autocomplete="off" />
         </div>
         <div id="modalColorGroup" class="modal-field-group hidden">
-          <span id="modalColorLabel" class="modal-label">Color</span>
-          <div id="modalColorSwatches" class="modal-color-swatches" role="radiogroup" aria-label="Routine color"></div>
+          <span id="modalColorLabel" class="modal-label" data-i18n="modal.color">Color</span>
+          <div id="modalColorSwatches" class="modal-color-swatches" role="radiogroup" data-i18n-aria="modal.routineColor" aria-label="Routine color"></div>
         </div>
         <div class="modal-actions">
-          <button id="modalCancel" type="button" class="secondary-btn">Cancel</button>
+          <button id="modalCancel" type="button" class="secondary-btn" data-i18n="app.cancel">Cancel</button>
           <button id="modalConfirm" type="button" class="primary-btn">Create</button>
         </div>
       </div>
@@ -57,72 +57,79 @@
 
     <div id="settingsModal" class="modal-overlay hidden" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <h2 id="settingsTitle">Settings</h2>
+        <h2 id="settingsTitle" data-i18n="settings.title">Settings</h2>
         <div class="settings-content">
           <label class="settings-row" for="darkModeToggle">
             <span class="settings-copy">
-              <span class="settings-title">Dark mode</span>
-              <p class="settings-desc">Use a darker theme that's easier on the eyes at night.</p>
+              <span class="settings-title" data-i18n="settings.darkMode">Dark mode</span>
+              <p class="settings-desc" data-i18n="settings.darkModeDesc">Use a darker theme that's easier on the eyes at night.</p>
             </span>
-            <input id="darkModeToggle" class="toggle-input" type="checkbox" role="switch" aria-label="Dark mode" />
+            <input id="darkModeToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.darkMode" aria-label="Dark mode" />
           </label>
           <label class="settings-row" for="cumulativeToggle">
             <span class="settings-copy">
-              <span class="settings-title">Cumulative Habit Tracker</span>
-              <p class="settings-desc">Times accumulate across multiple runs. Turn off for per-session mode.</p>
+              <span class="settings-title" data-i18n="settings.cumulative">Cumulative Habit Tracker</span>
+              <p class="settings-desc" data-i18n="settings.cumulativeDesc">Times accumulate across multiple runs. Turn off for per-session mode.</p>
             </span>
-            <input id="cumulativeToggle" class="toggle-input" type="checkbox" role="switch" aria-label="Cumulative habit tracker" />
+            <input id="cumulativeToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.cumulative" aria-label="Cumulative habit tracker" />
           </label>
           <label class="settings-row" for="completionSoundToggle">
             <span class="settings-copy">
-              <span class="settings-title">Completion sound</span>
-              <p class="settings-desc">Play a short chime when you finish a routine.</p>
+              <span class="settings-title" data-i18n="settings.sound">Completion sound</span>
+              <p class="settings-desc" data-i18n="settings.soundDesc">Play a short chime when you finish a routine.</p>
             </span>
-            <input id="completionSoundToggle" class="toggle-input" type="checkbox" role="switch" aria-label="Completion sound" />
+            <input id="completionSoundToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.sound" aria-label="Completion sound" />
+          </label>
+          <label class="settings-row settings-row-select" for="languageSelect">
+            <span class="settings-copy">
+              <span class="settings-title" data-i18n="settings.language">Language</span>
+              <p class="settings-desc" data-i18n="settings.languageDesc">Choose the language used across Habitizer.</p>
+            </span>
+            <select id="languageSelect" class="settings-select" data-i18n-aria="settings.languageAria" aria-label="Language"></select>
           </label>
         </div>
         <section class="settings-widgets-section" aria-labelledby="homeWidgetsTitle">
-          <h3 id="homeWidgetsTitle" class="settings-section-title">Home widgets</h3>
-          <p class="settings-section-desc">Turn sections on or off for the home screen. On home, Hide only collapses a section until you tap Show.</p>
+          <h3 id="homeWidgetsTitle" class="settings-section-title" data-i18n="settings.widgets">Home widgets</h3>
+          <p class="settings-section-desc" data-i18n="settings.widgetsDesc">Turn sections on or off for the home screen. On home, Hide only collapses a section until you tap Show.</p>
           <div id="homeWidgetsSettings" class="home-widgets-settings"></div>
         </section>
         <section class="settings-backup-section" aria-labelledby="backupTitle">
-          <h3 id="backupTitle" class="settings-section-title">Backup</h3>
-          <p class="settings-section-desc">Export or restore routines, settings, and recently deleted items as a JSON file.</p>
+          <h3 id="backupTitle" class="settings-section-title" data-i18n="settings.backup">Backup</h3>
+          <p class="settings-section-desc" data-i18n="settings.backupDesc">Export or restore routines, settings, and recently deleted items as a JSON file.</p>
           <div class="settings-backup-actions">
-            <button id="exportBackupBtn" type="button" class="secondary-btn">Export</button>
-            <button id="importBackupBtn" type="button" class="secondary-btn">Import</button>
+            <button id="exportBackupBtn" type="button" class="secondary-btn" data-i18n="settings.export">Export</button>
+            <button id="importBackupBtn" type="button" class="secondary-btn" data-i18n="settings.import">Import</button>
             <input id="importBackupInput" class="hidden" type="file" accept="application/json,.json" aria-hidden="true" tabindex="-1" />
           </div>
         </section>
         <section class="settings-deleted-section" aria-labelledby="deletedRoutinesTitle">
-          <h3 id="deletedRoutinesTitle" class="settings-section-title">Recently deleted</h3>
-          <p class="settings-section-desc">Routines stay here for 30 days.</p>
+          <h3 id="deletedRoutinesTitle" class="settings-section-title" data-i18n="settings.deleted">Recently deleted</h3>
+          <p class="settings-section-desc" data-i18n="settings.deletedDesc">Routines stay here for 30 days.</p>
           <div id="deletedRoutinesList" class="deleted-routines-list"></div>
         </section>
         <div class="modal-actions">
-          <button id="settingsClose" type="button" class="primary-btn">Done</button>
+          <button id="settingsClose" type="button" class="primary-btn" data-i18n="app.done">Done</button>
         </div>
       </div>
     </div>
 
     <div id="colorModal" class="modal-overlay hidden" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle">
-        <h2 id="colorModalTitle">Routine color</h2>
-        <div id="colorModalSwatches" class="color-modal-swatches" role="radiogroup" aria-label="Routine color"></div>
+        <h2 id="colorModalTitle" data-i18n="modal.colorTitle">Routine color</h2>
+        <div id="colorModalSwatches" class="color-modal-swatches" role="radiogroup" data-i18n-aria="modal.routineColor" aria-label="Routine color"></div>
         <div class="modal-actions">
-          <button id="colorModalClose" type="button" class="primary-btn">Done</button>
+          <button id="colorModalClose" type="button" class="primary-btn" data-i18n="app.done">Done</button>
         </div>
       </div>
     </div>
 
     <div id="calendarModal" class="modal-overlay hidden" aria-hidden="true">
       <div class="modal-card calendar-modal-card" role="dialog" aria-modal="true" aria-labelledby="calendarModalTitle">
-        <h2 id="calendarModalTitle">Completion history</h2>
+        <h2 id="calendarModalTitle" data-i18n="calendar.title">Completion history</h2>
         <p id="calendarModalSubtitle" class="calendar-modal-subtitle hidden"></p>
         <div id="calendarModalBody"></div>
         <div class="modal-actions">
-          <button id="calendarModalClose" type="button" class="primary-btn">Done</button>
+          <button id="calendarModalClose" type="button" class="primary-btn" data-i18n="app.done">Done</button>
         </div>
       </div>
     </div>
@@ -132,7 +139,7 @@
         <h2 id="confirmTitle">Confirm</h2>
         <p id="confirmMessage" class="confirm-message"></p>
         <div class="modal-actions">
-          <button id="confirmCancel" type="button" class="secondary-btn">Cancel</button>
+          <button id="confirmCancel" type="button" class="secondary-btn" data-i18n="app.cancel">Cancel</button>
           <button id="confirmAction" type="button" class="danger-btn">Confirm</button>
         </div>
       </div>

@@ -20,6 +20,7 @@ import {
   darkModeToggle,
   cumulativeToggle,
   completionSoundToggle,
+  languageSelect,
   exportBackupBtn,
   importBackupBtn,
   importBackupInput,
@@ -38,6 +39,7 @@ import {
   openConfirmModal,
 } from "./modals.js";
 import { playCompletionSound } from "./audio.js";
+import { t, applyDocumentLanguage, sanitizeLanguage } from "./i18n.js";
 import {
   addRoutine,
   submitRoutineCreation,
@@ -256,6 +258,16 @@ export function wireEvents() {
     }
   });
 
+  languageSelect?.addEventListener("change", () => {
+    settings.language = sanitizeLanguage(languageSelect.value);
+    saveSettings();
+    applyDocumentLanguage();
+    render();
+    if (!settingsModal.classList.contains("hidden")) {
+      openSettings();
+    }
+  });
+
   exportBackupBtn.addEventListener("click", () => {
     exportBackup();
   });
@@ -274,9 +286,9 @@ export function wireEvents() {
       const routineCount = parsed.routines.length;
 
       openConfirmModal({
-        title: "Replace all data?",
-        message: `Import ${routineCount} routine${routineCount === 1 ? "" : "s"} from this backup? This will replace your current routines, settings, and recently deleted list.`,
-        confirmLabel: "Import",
+        title: t("modal.importTitle"),
+        message: t("modal.importMessage", { count: routineCount }),
+        confirmLabel: t("modal.importConfirm"),
         onConfirm: () => {
           closeConfirmModal();
 
@@ -293,9 +305,9 @@ export function wireEvents() {
       });
     } catch (error) {
       openConfirmModal({
-        title: "Import failed",
-        message: error?.message || "Could not import that backup file.",
-        confirmLabel: "OK",
+        title: t("modal.importErrorTitle"),
+        message: error?.message || t("modal.importErrorFallback"),
+        confirmLabel: t("app.done"),
         onConfirm: closeConfirmModal,
       });
     } finally {

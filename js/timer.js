@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 import { state, settings, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
 import {
   formatDuration,
@@ -342,9 +343,9 @@ export function requestEndRoutine() {
   if (!routine) return;
 
   openConfirmModal({
-    title: "End routine?",
-    message: `Stop "${routine.name}"? Your progress will be saved, but the timer will end.`,
-    confirmLabel: "End routine",
+    title: t("timer.endTitle"),
+    message: t("timer.endMessage", { name: routine.name }),
+    confirmLabel: t("timer.endConfirm"),
     onConfirm: endRoutine,
   });
 }

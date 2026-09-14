@@ -1,3 +1,5 @@
+import { t, getLocale } from "./i18n.js";
+
 export function formatDuration(ms) {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const hours = Math.floor(totalSeconds / 3600);
@@ -13,7 +15,7 @@ export function formatDuration(ms) {
 
 export function formatDurationLabel(ms) {
   const minutes = Math.max(0, Math.round(ms / 60000));
-  return minutes === 0 ? "0 min" : `${minutes} min`;
+  return minutes === 0 ? t("format.zeroMin") : t("format.min", { count: minutes });
 }
 
 export function getLocalDateKey(timestamp = Date.now()) {
@@ -60,14 +62,14 @@ export function formatRelativeCompletedDay(dateKey) {
   if (!dateKey) return null;
 
   const today = getLocalDateKey();
-  if (dateKey === today) return "Today";
-  if (dateKey === shiftDateKey(today, -1)) return "Yesterday";
+  if (dateKey === today) return t("format.today");
+  if (dateKey === shiftDateKey(today, -1)) return t("format.yesterday");
 
   const [year, month, day] = dateKey.split("-").map(Number);
   const date = new Date(year, month - 1, day);
   const includeYear = year !== new Date().getFullYear();
 
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(getLocale(), {
     month: "short",
     day: "numeric",
     ...(includeYear ? { year: "numeric" } : {}),
@@ -76,8 +78,8 @@ export function formatRelativeCompletedDay(dateKey) {
 
 export function formatLastCompletedLabel(routine) {
   const dateKey = getLastCompletedDateKey(routine);
-  if (!dateKey) return "Not completed yet";
-  return `Last completed ${formatRelativeCompletedDay(dateKey)}`;
+  if (!dateKey) return t("format.notCompleted");
+  return t("format.lastCompleted", { when: formatRelativeCompletedDay(dateKey) });
 }
 
 function parseDateKey(dateKey) {
@@ -104,16 +106,16 @@ export function formatWeekRangeLabel(startKey, endKey) {
   const start = parseDateKey(startKey);
   const end = parseDateKey(endKey);
   const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
-  const startLabel = start.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const startLabel = start.toLocaleDateString(getLocale(), { month: "short", day: "numeric" });
   const endLabel = end.toLocaleDateString(
-    undefined,
+    getLocale(),
     sameMonth ? { day: "numeric" } : { month: "short", day: "numeric" }
   );
   return `${startLabel}–${endLabel}`;
 }
 
 export function getWeekdayShortLabel(dateKey) {
-  return parseDateKey(dateKey).toLocaleDateString(undefined, { weekday: "narrow" });
+  return parseDateKey(dateKey).toLocaleDateString(getLocale(), { weekday: "narrow" });
 }
 
 function getRunDateKey(run) {
@@ -165,7 +167,7 @@ export function getWeeklyStats(routines, timestamp = Date.now()) {
 }
 
 export function formatRunCompletedAt(timestamp) {
-  return new Date(timestamp).toLocaleString(undefined, {
+  return new Date(timestamp).toLocaleString(getLocale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -235,7 +237,7 @@ export function getRoutineLongestStreak(routine) {
 
 export function formatStreakLabel(streak) {
   if (streak <= 0) return null;
-  return streak === 1 ? "1 day streak" : `${streak} days in a row`;
+  return t("format.streak", { count: streak });
 }
 
 export function formatStreakBadgeText(streak) {
@@ -244,11 +246,11 @@ export function formatStreakBadgeText(streak) {
 
 export function formatPersonalBestLabel(longestStreak) {
   if (longestStreak <= 0) return null;
-  return longestStreak === 1 ? "Personal best: 1 day" : `Personal best: ${longestStreak} days`;
+  return t("format.streakBest", { count: longestStreak });
 }
 
 export function formatDeletedAtLabel(deletedAt) {
-  return new Date(deletedAt).toLocaleDateString(undefined, {
+  return new Date(deletedAt).toLocaleDateString(getLocale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -261,7 +263,7 @@ export function getCalendarMonthDate(offset = 0) {
 }
 
 export function formatCalendarMonthLabel(year, month) {
-  return new Date(year, month, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
+  return new Date(year, month, 1).toLocaleString(getLocale(), { month: "long", year: "numeric" });
 }
 
 export function getDateKeyForDay(year, month, day) {
@@ -311,9 +313,9 @@ export function getCompletionEstimateMessage(totalMs, estimatedMs) {
 
   if (totalMs <= estimatedMs) {
     return totalMs === estimatedMs
-      ? "Right on estimate"
-      : `${diffLabel} under estimate`;
+      ? t("format.onEstimate")
+      : t("format.underBy", { time: diffLabel });
   }
 
-  return `${diffLabel} over estimate`;
+  return t("format.overBy", { time: diffLabel });
 }

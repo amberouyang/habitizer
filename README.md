@@ -12,6 +12,7 @@ A modern web app for building, managing, and running daily routines with built-i
 - **Completion screen** — See your results, streak, and personal best after finishing
 - **Streaks** — Daily completion tracking with calendar history (tap a day for run details) and streak badges
 - **Weekly stats** — Home summary of this week’s completions, active days, and total time
+- **Languages** — Switch UI language in settings (English, Español, 中文)
 - **Home widgets** — Collapse, show/hide, and drag home sections (This week, Routines)
 - **Run history** — Past run durations per routine (best time + recent runs, up to 50)
 - **Drag to reorder** — Reorder routines on the home screen and activities within a routine
@@ -114,6 +115,7 @@ Open **⋯** from the home screen:
 - **Dark mode** — Switch between light and dark themes
 - **Cumulative Habit Tracker** — When on, activity times accumulate across runs; when off, times reset each session
 - **Completion sound** — Play a short chime when you finish a routine (on by default)
+- **Language** — English, Español, or 中文
 - **Home widgets** — Collapse sections on home, or turn them off fully here (at least one must stay on)
 - **Backup** — Export or import a JSON file with your routines, settings, and recently deleted items
   - **Export** — Download a `habitizer-backup-YYYY-MM-DD.json` file
@@ -135,7 +137,7 @@ Open **⋯** from the home screen:
 | Key | Purpose |
 |-----|---------|
 | `habitizer-routines-v1` | Active routines and activities |
-| `habitizer-settings-v1` | Dark mode, cumulative timer, completion sound, saved colors, and home widget order/visibility |
+| `habitizer-settings-v1` | Dark mode, language, cumulative timer, completion sound, saved colors, and home widget order/visibility |
 | `habitizer-deleted-routines-v1` | Recently deleted routines (30-day retention) |
 | `habitizer-timer-v1` | In-progress timer session (cleared when the run ends; max 24h) |
 
@@ -148,6 +150,7 @@ habitizer/
 │   ├── main.js     # Entry point and initialization
 │   ├── backup.js   # JSON export/import
 │   ├── audio.js    # Completion chime
+│   ├── i18n.js     # Language strings (EN / ES / ZH)
 │   ├── persistence.js
 │   └── ...         # state, views, timer, modals, etc.
 ├── app.js          # Legacy re-export to js/main.js (optional)

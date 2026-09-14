@@ -14,6 +14,7 @@ import {
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
+import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 
 const BACKUP_APP = "habitizer";
 const BACKUP_VERSION = 1;
@@ -119,6 +120,7 @@ function sanitizeSettings(raw) {
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
       savedColors: [...(settings.savedColors || [])],
+      language: sanitizeLanguage(settings.language),
       homeWidgets: [...(settings.homeWidgets || [])],
       hiddenHomeWidgets: [...(settings.hiddenHomeWidgets || [])],
       collapsedHomeWidgets: [...(settings.collapsedHomeWidgets || [])],
@@ -141,6 +143,7 @@ function sanitizeSettings(raw) {
     completionSound: raw.completionSound !== undefined
       ? Boolean(raw.completionSound)
       : Boolean(settings.completionSound),
+    language: sanitizeLanguage(raw.language ?? settings.language),
     savedColors,
     homeWidgets: sanitizeHomeWidgets(raw.homeWidgets ?? settings.homeWidgets),
     hiddenHomeWidgets: sanitizeHiddenHomeWidgets(raw.hiddenHomeWidgets ?? settings.hiddenHomeWidgets),
@@ -179,6 +182,7 @@ export function buildBackupPayload() {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
+      language: sanitizeLanguage(settings.language),
       savedColors: [...(settings.savedColors || [])],
       homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
       hiddenHomeWidgets: sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets),
@@ -262,6 +266,7 @@ export function applyBackup(parsed) {
   pruneExpiredDeletedRoutines();
   saveDeletedRoutines();
   applyTheme();
+  applyDocumentLanguage();
 
   if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
   if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;

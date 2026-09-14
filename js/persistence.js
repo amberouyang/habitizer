@@ -11,6 +11,7 @@ import {
 } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
+import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 
 export function sanitizeHomeWidgets(raw) {
   const known = new Set(HOME_WIDGET_IDS);
@@ -294,6 +295,7 @@ export function loadSettings() {
   settings.completionSound = settings.completionSound !== undefined
     ? Boolean(settings.completionSound)
     : true;
+  settings.language = sanitizeLanguage(settings.language);
   settings.homeWidgets = sanitizeHomeWidgets(settings.homeWidgets);
   settings.hiddenHomeWidgets = sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets);
   settings.collapsedHomeWidgets = Array.isArray(settings.collapsedHomeWidgets)
@@ -308,6 +310,7 @@ export function loadSettings() {
         .slice(0, SAVED_COLORS_LIMIT)
     : [];
   applyTheme();
+  applyDocumentLanguage();
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
   if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
