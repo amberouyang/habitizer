@@ -27,7 +27,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=uuidfix1" />
+    <link rel="stylesheet" href="styles.css?v=reset1" />
   </head>
   <body>
     <div class="app-shell">
@@ -88,6 +88,7 @@
           <div class="settings-backup-actions">
             <button id="exportBackupBtn" type="button" class="secondary-btn" data-i18n="settings.export">Export</button>
             <button id="importBackupBtn" type="button" class="secondary-btn" data-i18n="settings.import">Import</button>
+            <button id="resetDataBtn" type="button" class="danger-btn" data-i18n="settings.reset">Reset app data</button>
             <input id="importBackupInput" class="hidden" type="file" accept="application/json,.json" aria-hidden="true" tabindex="-1" />
           </div>
         </section>
@@ -180,7 +181,7 @@
     </div>
 
     <script type="module">
-      const APP_BUILD = "2026-09-14-uuidfix2";
+      const APP_BUILD = "2026-09-14-reset1";
 
       async function clearCaches() {
         if ("serviceWorker" in navigator) {

@@ -321,52 +321,25 @@ export function loadSettings() {
   if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
 }
 
+/** Wipe routines/settings/timer data for this browser origin, then reload. */
+export function resetLocalData() {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SETTINGS_KEY);
+  localStorage.removeItem(DELETED_ROUTINES_KEY);
+  localStorage.removeItem(TIMER_SESSION_KEY);
+  window.location.reload();
+}
+
+/** First launch: start with no sample routines. */
 export function seedData() {
   if (localStorage.getItem(STORAGE_KEY)) {
     return;
   }
 
-  const makeId = createId;
-
-  state.routines = [
-    {
-      id: makeId(),
-      name: "Morning Routine",
-      color: "sage",
-      estimatedMinutes: 15,
-      completionDates: [],
-      runHistory: [],
-      activities: [
-        { id: makeId(), name: "Drink water", estimatedMinutes: 1, timeSpentMs: 0 },
-        { id: makeId(), name: "Stretch", estimatedMinutes: 5, timeSpentMs: 0 },
-        { id: makeId(), name: "Check calendar", estimatedMinutes: 2, timeSpentMs: 0 },
-      ],
-    },
-    {
-      id: makeId(),
-      name: "Evening Routine",
-      color: "ocean",
-      estimatedMinutes: 20,
-      completionDates: [],
-      runHistory: [],
-      activities: [
-        { id: makeId(), name: "Brush teeth", estimatedMinutes: 3, timeSpentMs: 0 },
-        { id: makeId(), name: "Skincare", estimatedMinutes: 7, timeSpentMs: 0 },
-        { id: makeId(), name: "Read", estimatedMinutes: 10, timeSpentMs: 0 },
-      ],
-    },
-  ];
-
-  state.routines.forEach((routine) => {
-    routine.estimatedMinutes = routine.activities.reduce(
-      (sum, activity) => sum + Number(activity.estimatedMinutes || 0),
-      0
-    );
-  });
-
+  state.routines = [];
   try {
     saveRoutines();
   } catch (error) {
-    console.warn("Could not save seed routines:", error);
+    console.warn("Could not initialize empty routines store:", error);
   }
 }

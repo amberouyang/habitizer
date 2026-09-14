@@ -1856,12 +1856,14 @@ button {
 
 .settings-backup-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 12px;
 }
 
-.settings-backup-actions .secondary-btn {
-  flex: 1;
+.settings-backup-actions .secondary-btn,
+.settings-backup-actions .danger-btn {
+  flex: 1 1 calc(50% - 5px);
 }
 
 .settings-section-title {

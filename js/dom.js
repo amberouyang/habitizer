@@ -40,3 +40,4 @@ export const calendarModalClose = document.getElementById("calendarModalClose");
 export const undoToast = document.getElementById("undoToast");
 export const undoToastMessage = document.getElementById("undoToastMessage");
 export const undoToastAction = document.getElementById("undoToastAction");
+export const resetDataBtn = document.getElementById("resetDataBtn");

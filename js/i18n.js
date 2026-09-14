@@ -135,6 +135,10 @@ const messages = {
     "settings.backupDesc": "Export or restore routines, settings, and recently deleted items as a JSON file.",
     "settings.export": "Export",
     "settings.import": "Import",
+    "settings.reset": "Reset app data",
+    "settings.resetTitle": "Reset app data?",
+    "settings.resetMessage": "This deletes all routines, history, and settings saved in this browser. You can’t undo it.",
+    "settings.resetConfirm": "Reset",
     "settings.deleted": "Recently deleted",
     "settings.deletedDesc": "Routines stay here for 30 days.",
 
@@ -334,6 +338,10 @@ const messages = {
     "settings.backupDesc": "Exporta o restaura rutinas, ajustes y eliminados recientes en un archivo JSON.",
     "settings.export": "Exportar",
     "settings.import": "Importar",
+    "settings.reset": "Restablecer datos",
+    "settings.resetTitle": "¿Restablecer datos?",
+    "settings.resetMessage": "Esto elimina todas las rutinas, el historial y los ajustes guardados en este navegador. No se puede deshacer.",
+    "settings.resetConfirm": "Restablecer",
     "settings.deleted": "Eliminados recientes",
     "settings.deletedDesc": "Las rutinas permanecen aquí 30 días.",
 
@@ -533,6 +541,10 @@ const messages = {
     "settings.backupDesc": "以 JSON 文件导出或恢复例行、设置与最近删除项。",
     "settings.export": "导出",
     "settings.import": "导入",
+    "settings.reset": "重置应用数据",
+    "settings.resetTitle": "重置应用数据？",
+    "settings.resetMessage": "这将删除此浏览器中保存的所有例行、历史记录和设置，无法撤销。",
+    "settings.resetConfirm": "重置",
     "settings.deleted": "最近删除",
     "settings.deletedDesc": "例行会在此保留 30 天。",
 

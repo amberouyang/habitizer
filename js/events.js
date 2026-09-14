@@ -1,5 +1,5 @@
 import { state, settings, modalState, confirmCallback, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
-import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
+import { saveRoutines, saveSettings, saveTimerSession, applyTheme, resetLocalData } from "./persistence.js";
 import { getRoutineById, syncRoutineEstimatedMinutes } from "./models.js";
 import { parseEstimatedMinutes } from "./utils.js";
 import { createId } from "./id.js";
@@ -23,6 +23,7 @@ import {
   exportBackupBtn,
   importBackupBtn,
   importBackupInput,
+  resetDataBtn,
   undoToastAction,
   backButton,
   addButton,
@@ -270,6 +271,18 @@ export function wireEvents() {
     if (!importBackupInput) return;
     importBackupInput.value = "";
     importBackupInput.click();
+  });
+
+  resetDataBtn?.addEventListener("click", () => {
+    openConfirmModal({
+      title: t("settings.resetTitle"),
+      message: t("settings.resetMessage"),
+      confirmLabel: t("settings.resetConfirm"),
+      onConfirm: () => {
+        closeConfirmModal();
+        resetLocalData();
+      },
+    });
   });
 
   importBackupInput?.addEventListener("change", async () => {
