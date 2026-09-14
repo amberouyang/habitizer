@@ -4,6 +4,7 @@ import {
   modalMinutesInput,
 } from "./dom.js";
 import { parseEstimatedMinutes } from "./utils.js";
+import { createId } from "./id.js";
 import {
   getRoutineById,
   isValidRoutineColor,
@@ -48,7 +49,7 @@ export function submitRoutineCreation() {
   }
 
   const newRoutine = {
-    id: crypto.randomUUID(),
+    id: createId(),
     name,
     color: isValidRoutineColor(createModalColorId) ? createModalColorId : getNextRoutineColorId(),
     estimatedMinutes,
@@ -140,12 +141,12 @@ export function duplicateRoutine(routineId) {
   if (!routine) return;
 
   const duplicate = {
-    id: crypto.randomUUID(),
+    id: createId(),
     name: getDuplicateRoutineName(routine.name),
     color: routine.color || getNextRoutineColorId(),
     estimatedMinutes: Number(routine.estimatedMinutes || 0),
     activities: routine.activities.map((activity) => ({
-      id: crypto.randomUUID(),
+      id: createId(),
       name: activity.name,
       estimatedMinutes: Number(activity.estimatedMinutes || 0),
       timeSpentMs: 0,

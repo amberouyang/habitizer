@@ -1,17 +1,17 @@
 /* Habitizer service worker — caches the app shell for offline/install use. */
-const CACHE_VERSION = "habitizer-shell-v2";
+const CACHE_VERSION = "habitizer-shell-v4";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=empty-states2",
+  "./styles.css?v=empty-states3",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-512-maskable.png",
   "./icons/apple-touch-icon.png",
   "./js/main.js",
-  "./js/main.js?v=empty-states2",
+  "./js/main.js?v=empty-states3",
   "./js/state.js",
   "./js/dom.js",
   "./js/constants.js",
@@ -29,6 +29,7 @@ const PRECACHE_URLS = [
   "./js/backup.js",
   "./js/audio.js",
   "./js/pwa.js",
+  "./js/id.js",
 ];
 
 self.addEventListener("install", (event) => {

@@ -10,6 +10,7 @@ import {
   getRoutineRunHistory,
   getLocalDateKey,
 } from "./utils.js";
+import { createId } from "./id.js";
 import { t } from "./i18n.js";
 
 export function getRoutineById(routineId) {
@@ -190,7 +191,7 @@ export function recordRoutineRun(routine, {
 
   const history = [...getRoutineRunHistory(routine)];
   history.unshift({
-    id: crypto.randomUUID(),
+    id: createId(),
     completedAt: Date.now(),
     dateKey: getLocalDateKey(),
     totalMs: Math.max(0, Number(totalMs) || 0),

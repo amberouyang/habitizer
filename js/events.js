@@ -2,6 +2,7 @@ import { state, settings, modalState, confirmCallback, liveTimerIntervalId, setL
 import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
 import { getRoutineById, syncRoutineEstimatedMinutes } from "./models.js";
 import { parseEstimatedMinutes } from "./utils.js";
+import { createId } from "./id.js";
 import {
   modalOverlay,
   modalInput,
@@ -49,7 +50,7 @@ import { exportBackup, readBackupFile, applyBackup } from "./backup.js";
 import { setView, render } from "./views.js";
 
 export function wireEvents() {
-  backButton.addEventListener("click", () => {
+  backButton?.addEventListener("click", () => {
     if (state.currentView === "routine") {
       const target = state.returnView === "history" ? "history" : "home";
       state.returnView = "home";
@@ -57,7 +58,7 @@ export function wireEvents() {
     }
   });
 
-  addButton.addEventListener("click", () => {
+  addButton?.addEventListener("click", () => {
     if (state.currentView === "home") {
       addRoutine();
     } else if (state.currentView === "routine") {
@@ -73,7 +74,7 @@ export function wireEvents() {
     setView(tab);
   });
 
-  modalConfirm.addEventListener("click", () => {
+  modalConfirm?.addEventListener("click", () => {
     if (modalState.mode === "routine") {
       submitRoutineCreation();
       return;
@@ -123,7 +124,7 @@ export function wireEvents() {
       }
 
       routine.activities.push({
-        id: crypto.randomUUID(),
+        id: createId(),
         name,
         estimatedMinutes,
         timeSpentMs: 0,
@@ -163,11 +164,11 @@ export function wireEvents() {
     }
   });
 
-  modalCancel.addEventListener("click", closeNameModal);
+  modalCancel?.addEventListener("click", closeNameModal);
 
   function handleNameModalKeydown(event) {
     if (event.key === "Enter") {
-      modalConfirm.click();
+      modalConfirm?.click();
     }
 
     if (event.key === "Escape") {
@@ -175,40 +176,40 @@ export function wireEvents() {
     }
   }
 
-  modalInput.addEventListener("keydown", handleNameModalKeydown);
-  modalMinutesInput.addEventListener("keydown", handleNameModalKeydown);
+  modalInput?.addEventListener("keydown", handleNameModalKeydown);
+  modalMinutesInput?.addEventListener("keydown", handleNameModalKeydown);
 
-  modalOverlay.addEventListener("click", (event) => {
+  modalOverlay?.addEventListener("click", (event) => {
     if (event.target === modalOverlay) {
       closeNameModal();
     }
   });
 
-  confirmCancel.addEventListener("click", closeConfirmModal);
+  confirmCancel?.addEventListener("click", closeConfirmModal);
 
-  confirmAction.addEventListener("click", () => {
+  confirmAction?.addEventListener("click", () => {
     if (confirmCallback) {
       confirmCallback();
     }
   });
 
-  confirmModal.addEventListener("click", (event) => {
+  confirmModal?.addEventListener("click", (event) => {
     if (event.target === confirmModal) {
       closeConfirmModal();
     }
   });
 
-  colorModalClose.addEventListener("click", closeColorModal);
+  colorModalClose?.addEventListener("click", closeColorModal);
 
-  colorModal.addEventListener("click", (event) => {
+  colorModal?.addEventListener("click", (event) => {
     if (event.target === colorModal) {
       closeColorModal();
     }
   });
 
-  calendarModalClose.addEventListener("click", closeCalendarModal);
+  calendarModalClose?.addEventListener("click", closeCalendarModal);
 
-  calendarModal.addEventListener("click", (event) => {
+  calendarModal?.addEventListener("click", (event) => {
     if (event.target === calendarModal) {
       closeCalendarModal();
     }
@@ -217,33 +218,33 @@ export function wireEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
 
-    if (!confirmModal.classList.contains("hidden")) {
+    if (confirmModal && !confirmModal.classList.contains("hidden")) {
       closeConfirmModal();
       return;
     }
 
-    if (!colorModal.classList.contains("hidden")) {
+    if (colorModal && !colorModal.classList.contains("hidden")) {
       closeColorModal();
       return;
     }
 
-    if (!calendarModal.classList.contains("hidden")) {
+    if (calendarModal && !calendarModal.classList.contains("hidden")) {
       closeCalendarModal();
     }
   });
 
-  darkModeToggle.addEventListener("change", () => {
+  darkModeToggle?.addEventListener("change", () => {
     settings.darkMode = darkModeToggle.checked;
     applyTheme();
     saveSettings();
   });
 
-  cumulativeToggle.addEventListener("change", () => {
+  cumulativeToggle?.addEventListener("change", () => {
     settings.cumulativeMode = cumulativeToggle.checked;
     saveSettings();
   });
 
-  completionSoundToggle.addEventListener("change", () => {
+  completionSoundToggle?.addEventListener("change", () => {
     settings.completionSound = completionSoundToggle.checked;
     saveSettings();
     if (settings.completionSound) {
@@ -261,16 +262,17 @@ export function wireEvents() {
     }
   });
 
-  exportBackupBtn.addEventListener("click", () => {
+  exportBackupBtn?.addEventListener("click", () => {
     exportBackup();
   });
 
-  importBackupBtn.addEventListener("click", () => {
+  importBackupBtn?.addEventListener("click", () => {
+    if (!importBackupInput) return;
     importBackupInput.value = "";
     importBackupInput.click();
   });
 
-  importBackupInput.addEventListener("change", async () => {
+  importBackupInput?.addEventListener("change", async () => {
     const file = importBackupInput.files?.[0];
     if (!file) return;
 
@@ -308,7 +310,7 @@ export function wireEvents() {
     }
   });
 
-  undoToastAction.addEventListener("click", undoDelete);
+  undoToastAction?.addEventListener("click", undoDelete);
 
   window.addEventListener("pagehide", () => {
     if (state.timer.routineId) {

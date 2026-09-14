@@ -12,6 +12,7 @@ import {
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
+import { createId } from "./id.js";
 
 export function sanitizeHomeWidgets(raw) {
   const known = new Set(HOME_WIDGET_IDS);
@@ -267,7 +268,7 @@ export function archiveDeletedRoutine(routine, routineIndex) {
   pruneExpiredDeletedRoutines();
   setDeletedRoutines(deletedRoutines.filter((entry) => entry.routine.id !== routine.id));
   deletedRoutines.unshift({
-    id: crypto.randomUUID(),
+    id: createId(),
     deletedAt: Date.now(),
     routineIndex,
     routine: JSON.parse(JSON.stringify(routine)),
@@ -286,7 +287,11 @@ export function applyTheme() {
 export function loadSettings() {
   const stored = localStorage.getItem(SETTINGS_KEY);
   if (stored) {
-    Object.assign(settings, JSON.parse(stored));
+    try {
+      Object.assign(settings, JSON.parse(stored));
+    } catch (error) {
+      console.warn("Ignored corrupt settings:", error);
+    }
   }
   settings.darkMode = Boolean(settings.darkMode);
   settings.cumulativeMode = settings.cumulativeMode !== undefined
@@ -311,8 +316,8 @@ export function loadSettings() {
     : [];
   applyTheme();
   applyDocumentLanguage();
-  darkModeToggle.checked = settings.darkMode;
-  cumulativeToggle.checked = settings.cumulativeMode;
+  if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
+  if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;
   if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
 }
 
@@ -321,27 +326,33 @@ export function seedData() {
     return;
   }
 
+  const makeId = createId;
+
   state.routines = [
     {
-      id: crypto.randomUUID(),
+      id: makeId(),
       name: "Morning Routine",
       color: "sage",
       estimatedMinutes: 15,
+      completionDates: [],
+      runHistory: [],
       activities: [
-        { id: crypto.randomUUID(), name: "Drink water", estimatedMinutes: 1, timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Stretch", estimatedMinutes: 5, timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Check calendar", estimatedMinutes: 2, timeSpentMs: 0 },
+        { id: makeId(), name: "Drink water", estimatedMinutes: 1, timeSpentMs: 0 },
+        { id: makeId(), name: "Stretch", estimatedMinutes: 5, timeSpentMs: 0 },
+        { id: makeId(), name: "Check calendar", estimatedMinutes: 2, timeSpentMs: 0 },
       ],
     },
     {
-      id: crypto.randomUUID(),
+      id: makeId(),
       name: "Evening Routine",
       color: "ocean",
       estimatedMinutes: 20,
+      completionDates: [],
+      runHistory: [],
       activities: [
-        { id: crypto.randomUUID(), name: "Brush teeth", estimatedMinutes: 3, timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Skincare", estimatedMinutes: 7, timeSpentMs: 0 },
-        { id: crypto.randomUUID(), name: "Read", estimatedMinutes: 10, timeSpentMs: 0 },
+        { id: makeId(), name: "Brush teeth", estimatedMinutes: 3, timeSpentMs: 0 },
+        { id: makeId(), name: "Skincare", estimatedMinutes: 7, timeSpentMs: 0 },
+        { id: makeId(), name: "Read", estimatedMinutes: 10, timeSpentMs: 0 },
       ],
     },
   ];
@@ -353,5 +364,9 @@ export function seedData() {
     );
   });
 
-  saveRoutines();
+  try {
+    saveRoutines();
+  } catch (error) {
+    console.warn("Could not save seed routines:", error);
+  }
 }

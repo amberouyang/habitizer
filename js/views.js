@@ -108,7 +108,7 @@ export function setView(view, routineId = null) {
 
   pageTitleEl.onclick = null;
   pageTitleEl.style.cursor = "default";
-  menuButton.classList.add("hidden");
+  menuButton?.classList.add("hidden");
 
   if (view === "home") {
     pageTitleEl.textContent = t("app.name");

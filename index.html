@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta name="description" content="Build and run daily routines with timing and streak tracking." />
     <meta name="theme-color" content="#0e7490" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -24,7 +27,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=empty-states2" />
+    <link rel="stylesheet" href="styles.css?v=uuidfix1" />
   </head>
   <body>
     <div class="app-shell">
@@ -35,7 +38,12 @@
         <button id="addButton" class="icon-btn primary" data-i18n-aria="app.add" aria-label="Add">+</button>
       </header>
 
-      <main id="app" class="app-content" aria-live="polite"></main>
+      <main id="app" class="app-content" aria-live="polite">
+        <div class="empty-state home-empty-state">
+          <p class="empty-state-title">Loading Habitizer…</p>
+          <p class="empty-state-hint">If this message stays, refresh the page.</p>
+        </div>
+      </main>
 
       <section id="settingsView" class="app-content settings-view hidden" aria-labelledby="settingsTitle" hidden>
         <h2 id="settingsTitle" class="visually-hidden" data-i18n="settings.title">Settings</h2>
@@ -171,6 +179,60 @@
       </div>
     </div>
 
-    <script type="module" src="js/main.js?v=empty-states2"></script>
+    <script type="module">
+      const APP_BUILD = "2026-09-14-uuidfix2";
+
+      async function clearCaches() {
+        if ("serviceWorker" in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+      }
+
+      async function boot() {
+        try {
+          const host = window.location.hostname;
+          const isLanHttp =
+            window.location.protocol === "http:" &&
+            host !== "localhost" &&
+            host !== "127.0.0.1";
+          const seenBuild = localStorage.getItem("habitizer-build");
+
+          if (isLanHttp || seenBuild !== APP_BUILD) {
+            await clearCaches();
+            localStorage.setItem("habitizer-build", APP_BUILD);
+          }
+
+          if (seenBuild !== APP_BUILD) {
+            const url = new URL(window.location.href);
+            if (url.searchParams.get("built") !== APP_BUILD) {
+              url.searchParams.set("built", APP_BUILD);
+              window.location.replace(url.toString());
+              return;
+            }
+          }
+        } catch (error) {
+          console.warn("Cache clear failed:", error);
+        }
+
+        await import(`./js/main.js?v=${encodeURIComponent(APP_BUILD)}`);
+      }
+
+      boot().catch((error) => {
+        console.error(error);
+        const app = document.getElementById("app");
+        if (!app) return;
+        app.innerHTML = `
+          <div class="empty-state home-empty-state">
+            <p class="empty-state-title">Couldn’t load Habitizer</p>
+            <p class="empty-state-hint">${String(error?.message || error)}</p>
+          </div>
+        `;
+      });
+    </script>
   </body>
 </html>

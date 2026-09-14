@@ -15,6 +15,7 @@ import {
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
+import { createId } from "./id.js";
 
 const BACKUP_APP = "habitizer";
 const BACKUP_VERSION = 1;
@@ -28,7 +29,7 @@ function sanitizeActivity(activity) {
   const estimatedMinutes = Number(activity.estimatedMinutes);
 
   return {
-    id: typeof activity.id === "string" && activity.id ? activity.id : crypto.randomUUID(),
+    id: typeof activity.id === "string" && activity.id ? activity.id : createId(),
     name: name.slice(0, 80),
     estimatedMinutes: Number.isFinite(estimatedMinutes) && estimatedMinutes >= 0
       ? estimatedMinutes
@@ -51,7 +52,7 @@ function sanitizeRun(run) {
     : null;
 
   return {
-    id: typeof run.id === "string" && run.id ? run.id : crypto.randomUUID(),
+    id: typeof run.id === "string" && run.id ? run.id : createId(),
     completedAt,
     dateKey,
     totalMs,
@@ -84,7 +85,7 @@ function sanitizeRoutine(routine) {
     : [];
 
   return {
-    id: typeof routine.id === "string" && routine.id ? routine.id : crypto.randomUUID(),
+    id: typeof routine.id === "string" && routine.id ? routine.id : createId(),
     name: name.slice(0, 80),
     color,
     estimatedMinutes: Number.isFinite(estimatedMinutes) && estimatedMinutes >= 0
@@ -106,7 +107,7 @@ function sanitizeDeletedEntry(entry) {
   const routineIndex = Number(entry.routineIndex);
 
   return {
-    id: typeof entry.id === "string" && entry.id ? entry.id : crypto.randomUUID(),
+    id: typeof entry.id === "string" && entry.id ? entry.id : createId(),
     deletedAt: Number.isFinite(deletedAt) ? deletedAt : Date.now(),
     routineIndex: Number.isFinite(routineIndex) && routineIndex >= 0 ? routineIndex : 0,
     routine,

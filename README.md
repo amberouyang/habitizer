@@ -42,7 +42,17 @@ python3 -m http.server 8000
 
 3. Open `http://localhost:8000` in your browser
 
+Or use the no-cache LAN server (recommended for phone testing):
+
+```bash
+python3 serve.py --port 8000
+```
+
+Then open `http://YOUR_MAC_IP:8000` on your phone (same Wi‑Fi). This disables browser caching so you always see the latest code.
+
 > **Note:** Serve from the inner `habitizer/` folder that contains `index.html`, not the parent directory.
+>
+> **Data note:** Progress is stored in the browser (localStorage), per address. `localhost` on your Mac and `http://YOUR_IP:8000` on your phone are separate. Use **Settings → Export** on the copy that still has your routines, then **Import** on the other.
 
 ## Test on your phone (PWA)
 
