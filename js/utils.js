@@ -118,7 +118,7 @@ export function getWeekdayShortLabel(dateKey) {
   return parseDateKey(dateKey).toLocaleDateString(getLocale(), { weekday: "narrow" });
 }
 
-function getRunDateKey(run) {
+export function getRunDateKey(run) {
   if (typeof run?.dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(run.dateKey)) {
     return run.dateKey;
   }
@@ -233,6 +233,125 @@ export function getLongestStreakFromDates(completionDates) {
 
 export function getRoutineLongestStreak(routine) {
   return getLongestStreakFromDates(getRoutineCompletionDates(routine));
+}
+
+export function getRoutineDayCounts(routine) {
+  const counts = new Map();
+
+  getRoutineRunHistory(routine).forEach((run) => {
+    const dateKey = getRunDateKey(run);
+    if (!dateKey) return;
+    counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
+  });
+
+  getRoutineCompletionDates(routine).forEach((dateKey) => {
+    if (!counts.has(dateKey)) {
+      counts.set(dateKey, 1);
+    }
+  });
+
+  return counts;
+}
+
+function getContributionLevel(count, maxCount) {
+  if (count <= 0) return 0;
+  if (maxCount <= 1) return 3;
+  const ratio = count / maxCount;
+  if (ratio <= 0.25) return 1;
+  if (ratio <= 0.5) return 2;
+  if (ratio <= 0.75) return 3;
+  return 4;
+}
+
+/** GitHub-style Sunday-start contribution grid for the past ~52 weeks. */
+export function getRoutineYearlyContributions(routine, timestamp = Date.now()) {
+  const todayKey = getLocalDateKey(timestamp);
+  const end = parseDateKey(todayKey);
+
+  const rangeStart = new Date(end);
+  rangeStart.setDate(end.getDate() - 364);
+  const gridStart = new Date(rangeStart);
+  gridStart.setDate(rangeStart.getDate() - rangeStart.getDay());
+
+  const rangeStartKey = getLocalDateKey(rangeStart.getTime());
+  const dayCounts = getRoutineDayCounts(routine);
+  const days = [];
+  const cursor = new Date(gridStart);
+
+  while (true) {
+    const dateKey = getLocalDateKey(cursor.getTime());
+    const isFuture = dateKey > todayKey;
+    const inRange = !isFuture && dateKey >= rangeStartKey;
+    const count = inRange ? dayCounts.get(dateKey) || 0 : 0;
+
+    days.push({
+      dateKey,
+      count,
+      inRange,
+      isFuture,
+      isToday: dateKey === todayKey,
+    });
+
+    cursor.setDate(cursor.getDate() + 1);
+
+    if (dateKey >= todayKey && days.length % 7 === 0) break;
+    if (days.length > 7 * 54) break;
+  }
+
+  let maxCount = 0;
+  let activeDays = 0;
+  days.forEach((day) => {
+    if (day.inRange && day.count > 0) {
+      activeDays += 1;
+      maxCount = Math.max(maxCount, day.count);
+    }
+  });
+
+  const weeks = [];
+  for (let i = 0; i < days.length; i += 7) {
+    const week = days.slice(i, i + 7).map((day) => ({
+      ...day,
+      level: day.inRange ? getContributionLevel(day.count, maxCount) : 0,
+    }));
+    weeks.push(week);
+  }
+
+  const months = [];
+  const seenMonths = new Set();
+  weeks.forEach((week, weekIndex) => {
+    const monthDay = week.find((day) => day.inRange && parseDateKey(day.dateKey).getDate() === 1)
+      || (weekIndex === 0 ? week.find((day) => day.inRange) : null);
+    if (!monthDay) return;
+    const date = parseDateKey(monthDay.dateKey);
+    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+    if (seenMonths.has(monthKey)) return;
+    seenMonths.add(monthKey);
+    months.push({
+      monthKey,
+      weekIndex,
+      label: date.toLocaleDateString(getLocale(), { month: "short" }),
+    });
+  });
+
+  return {
+    weeks,
+    months,
+    todayKey,
+    activeDays,
+    maxCount,
+    totalCompletions: activeDays,
+    streak: getRoutineStreak(routine),
+    longestStreak: getRoutineLongestStreak(routine),
+  };
+}
+
+export function formatContributionDayLabel(dateKey) {
+  return parseDateKey(dateKey).toLocaleDateString(getLocale(), {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export function formatStreakLabel(streak) {

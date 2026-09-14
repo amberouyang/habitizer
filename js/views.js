@@ -23,6 +23,8 @@ import {
   getWeekdayShortLabel,
   getRoutineRunHistory,
   formatRunCompletedAt,
+  getRoutineYearlyContributions,
+  formatContributionDayLabel,
 } from "./utils.js";
 import {
   getRoutineById,
@@ -556,6 +558,148 @@ function renderWeeklyStatsContent() {
   return section;
 }
 
+function renderContributionGraph(routine) {
+  const data = getRoutineYearlyContributions(routine);
+  const section = document.createElement("section");
+  section.className = "contribution-graph";
+  applyRoutineColorStyle(section, routine);
+  section.setAttribute("aria-label", t("routine.contributionAria"));
+
+  const header = document.createElement("div");
+  header.className = "contribution-graph-header";
+
+  const title = document.createElement("h3");
+  title.className = "contribution-graph-title";
+  title.textContent = t("routine.contributionTitle");
+
+  const summary = document.createElement("p");
+  summary.className = "contribution-graph-summary";
+  const parts = [
+    data.activeDays === 1
+      ? t("routine.contributionDay", { count: data.activeDays })
+      : t("routine.contributionDays", { count: data.activeDays }),
+  ];
+  if (data.streak > 0) {
+    parts.push(formatStreakLabel(data.streak));
+  }
+  summary.textContent = parts.filter(Boolean).join(" · ");
+
+  header.append(title, summary);
+
+  const scroll = document.createElement("div");
+  scroll.className = "contribution-graph-scroll";
+
+  const inner = document.createElement("div");
+  inner.className = "contribution-graph-inner";
+  inner.style.setProperty("--contribution-weeks", String(data.weeks.length));
+
+  const months = document.createElement("div");
+  months.className = "contribution-months";
+  data.months.forEach((month) => {
+    const label = document.createElement("span");
+    label.className = "contribution-month";
+    label.style.gridColumn = String(month.weekIndex + 1);
+    label.textContent = month.label;
+    months.appendChild(label);
+  });
+
+  const body = document.createElement("div");
+  body.className = "contribution-body";
+
+  const weekdays = document.createElement("div");
+  weekdays.className = "contribution-weekdays";
+  // Sunday-start rows: show Mon / Wed / Fri labels in rows 2, 4, 6
+  ["", t("routine.contributionWeekdayMon"), "", t("routine.contributionWeekdayWed"), "", t("routine.contributionWeekdayFri"), ""].forEach((label) => {
+    const day = document.createElement("span");
+    day.className = "contribution-weekday";
+    day.textContent = label;
+    weekdays.appendChild(day);
+  });
+
+  const weeksEl = document.createElement("div");
+  weeksEl.className = "contribution-weeks";
+
+  data.weeks.forEach((week) => {
+    const weekCol = document.createElement("div");
+    weekCol.className = "contribution-week";
+
+    week.forEach((day) => {
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "contribution-cell";
+      cell.dataset.level = String(day.level);
+      if (day.isToday) cell.classList.add("is-today");
+      if (!day.inRange) {
+        cell.classList.add("is-outside");
+        cell.disabled = true;
+        cell.tabIndex = -1;
+      }
+
+      const dayLabel = formatContributionDayLabel(day.dateKey);
+      if (day.count > 0) {
+        cell.title = t("routine.contributionCellDone", {
+          date: dayLabel,
+          count: day.count,
+        });
+        cell.setAttribute(
+          "aria-label",
+          t("routine.contributionCellDone", { date: dayLabel, count: day.count })
+        );
+      } else if (day.inRange) {
+        cell.title = t("routine.contributionCellEmpty", { date: dayLabel });
+        cell.setAttribute(
+          "aria-label",
+          t("routine.contributionCellEmpty", { date: dayLabel })
+        );
+      } else {
+        cell.setAttribute("aria-hidden", "true");
+      }
+
+      if (day.inRange) {
+        cell.addEventListener("click", () => {
+          openCalendarModal(routine.id, { dateKey: day.dateKey });
+        });
+      }
+
+      weekCol.appendChild(cell);
+    });
+
+    weeksEl.appendChild(weekCol);
+  });
+
+  body.append(weekdays, weeksEl);
+  inner.append(months, body);
+  scroll.appendChild(inner);
+
+  const legend = document.createElement("div");
+  legend.className = "contribution-legend";
+  legend.setAttribute("aria-hidden", "true");
+
+  const less = document.createElement("span");
+  less.textContent = t("routine.contributionLess");
+
+  const swatches = document.createElement("span");
+  swatches.className = "contribution-legend-swatches";
+  for (let level = 0; level <= 4; level += 1) {
+    const swatch = document.createElement("span");
+    swatch.className = "contribution-cell";
+    swatch.dataset.level = String(level);
+    swatches.appendChild(swatch);
+  }
+
+  const more = document.createElement("span");
+  more.textContent = t("routine.contributionMore");
+
+  legend.append(less, swatches, more);
+  section.append(header, scroll, legend);
+
+  requestAnimationFrame(() => {
+    scroll.scrollLeft = scroll.scrollWidth;
+  });
+
+  return section;
+}
+
 export function renderRoutineView() {
   const routine = getRoutineById(state.currentRoutineId);
   if (!routine) {
@@ -618,7 +762,7 @@ export function renderRoutineView() {
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
-  wrapper.append(header, infoRow);
+  wrapper.append(header, infoRow, renderContributionGraph(routine));
 
   const activityList = document.createElement("div");
   activityList.className = "activity-list";

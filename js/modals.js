@@ -739,16 +739,30 @@ function refreshCalendarModalContent() {
   updateCalendarModal(routine);
 }
 
-export function openCalendarModal(routineId) {
+export function openCalendarModal(routineId, options = {}) {
   const routine = getRoutineById(routineId);
   if (!routine) return;
 
-  if (routineId !== state.calendarRoutineId) {
-    state.routineCalendarOffset = 0;
+  const focusDateKey =
+    typeof options.dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(options.dateKey)
+      ? options.dateKey
+      : null;
+
+  if (focusDateKey) {
+    const [year, month] = focusDateKey.split("-").map(Number);
+    const now = new Date();
+    state.routineCalendarOffset =
+      (year - now.getFullYear()) * 12 + ((month - 1) - now.getMonth());
     state.calendarRoutineId = routineId;
+    selectedCalendarDateKey = focusDateKey;
+  } else {
+    if (routineId !== state.calendarRoutineId) {
+      state.routineCalendarOffset = 0;
+      state.calendarRoutineId = routineId;
+    }
+    selectedCalendarDateKey = null;
   }
 
-  selectedCalendarDateKey = null;
   setCalendarModalRoutineId(routineId);
   updateCalendarModal(routine);
   calendarModal.classList.remove("hidden");
