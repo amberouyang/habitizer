@@ -67,7 +67,7 @@ import {
   requestEndRoutine,
 } from "./timer.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
-import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed } from "./persistence.js";
+import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed, setHomeWidgetVisibility } from "./persistence.js";
 
 const TAB_VIEWS = new Set(["home", "history", "settings"]);
 
@@ -160,6 +160,8 @@ export function renderHomeView() {
   home.className = "home-view";
 
   const order = reconcileHomeWidgets();
+  const routinesVisible = order.includes("routines");
+
   order.forEach((widgetId) => {
     if (widgetId === "weekly") {
       home.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent()));
@@ -170,11 +172,68 @@ export function renderHomeView() {
     }
   });
 
+  if (!routinesVisible) {
+    home.appendChild(
+      createHomeEmptyState({
+        title: t("home.routinesHiddenTitle"),
+        hint: t("home.routinesHiddenHint"),
+        actions: [
+          {
+            label: t("home.showRoutines"),
+            primary: true,
+            onClick: () => {
+              if (setHomeWidgetVisibility("routines", true)) {
+                render();
+              }
+            },
+          },
+          {
+            label: t("home.openSettings"),
+            onClick: () => setView("settings"),
+          },
+        ],
+      })
+    );
+  }
+
   if (order.length > 1) {
     setupHomeWidgetDragAndDrop(home);
   }
 
   return home;
+}
+
+function createHomeEmptyState({ title, hint, actions = [] }) {
+  const empty = document.createElement("div");
+  empty.className = "empty-state home-empty-state";
+
+  const titleEl = document.createElement("p");
+  titleEl.className = "empty-state-title";
+  titleEl.textContent = title;
+
+  const hintEl = document.createElement("p");
+  hintEl.className = "empty-state-hint";
+  hintEl.textContent = hint;
+
+  empty.append(titleEl, hintEl);
+
+  if (actions.length > 0) {
+    const actionsEl = document.createElement("div");
+    actionsEl.className = "empty-state-actions";
+
+    actions.forEach((action) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = action.primary ? "primary-btn" : "secondary-btn";
+      button.textContent = action.label;
+      button.addEventListener("click", action.onClick);
+      actionsEl.appendChild(button);
+    });
+
+    empty.appendChild(actionsEl);
+  }
+
+  return empty;
 }
 
 function getRecentHistoryItems(limit = 60) {
@@ -338,19 +397,20 @@ function renderRoutinesWidgetContent() {
   list.className = "routine-list";
 
   if (state.routines.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "empty-state";
-
-    const title = document.createElement("p");
-    title.className = "empty-state-title";
-    title.textContent = t("home.emptyTitle");
-
-    const hint = document.createElement("p");
-    hint.className = "empty-state-hint";
-    hint.textContent = t("home.emptyHint");
-
-    empty.append(title, hint);
-    list.appendChild(empty);
+    list.appendChild(
+      createHomeEmptyState({
+        title: t("home.emptyTitle"),
+        hint: t("home.emptyHint"),
+        actions: [
+          {
+            label: t("app.addRoutine"),
+            primary: true,
+            onClick: addRoutine,
+          },
+        ],
+      })
+    );
+    return list;
   }
 
   const canReorderRoutines = state.routines.length > 1;
@@ -472,55 +532,73 @@ function renderRoutinesWidgetContent() {
 function renderWeeklyStatsContent() {
   const stats = getWeeklyStats(state.routines);
   const maxDay = Math.max(1, ...stats.dayCompletions);
+  const hasActivity = stats.completions > 0 || stats.runs > 0;
 
   const section = document.createElement("div");
   section.className = "weekly-stats";
   section.dataset.weekLabel = stats.weekLabel;
   section.setAttribute("aria-label", `This week ${stats.weekLabel}`);
 
-  const metrics = document.createElement("div");
-  metrics.className = "weekly-stats-metrics";
+  if (!hasActivity) {
+    const empty = createHomeEmptyState({
+      title: t("home.weeklyEmptyTitle"),
+      hint:
+        state.routines.length === 0
+          ? t("home.weeklyEmptyHintNoRoutines")
+          : t("home.weeklyEmptyHint"),
+    });
+    empty.classList.add("weekly-empty-state");
+    section.appendChild(empty);
+  } else {
+    const metrics = document.createElement("div");
+    metrics.className = "weekly-stats-metrics";
 
-  const metricDefs = [
-    {
-      label: t("home.statCompletions"),
-      value: String(stats.completions),
-      detail: stats.completions === 1 ? t("home.statRoutineDay") : t("home.statRoutineDays"),
-    },
-    {
-      label: t("home.statActiveDays"),
-      value: `${stats.activeDays}/7`,
-      detail: stats.activeDays === 1 ? t("home.statDayWithRun") : t("home.statDaysWithRun"),
-    },
-    {
-      label: t("home.statTime"),
-      value: formatDurationLabel(stats.totalTimeMs),
-      detail: stats.runs === 1 ? t("home.statOneRun") : t("home.statRunsLogged", { count: stats.runs }),
-    },
-  ];
+    const metricDefs = [
+      {
+        label: t("home.statCompletions"),
+        value: String(stats.completions),
+        detail: stats.completions === 1 ? t("home.statRoutineDay") : t("home.statRoutineDays"),
+      },
+      {
+        label: t("home.statActiveDays"),
+        value: `${stats.activeDays}/7`,
+        detail: stats.activeDays === 1 ? t("home.statDayWithRun") : t("home.statDaysWithRun"),
+      },
+      {
+        label: t("home.statTime"),
+        value: formatDurationLabel(stats.totalTimeMs),
+        detail: stats.runs === 1 ? t("home.statOneRun") : t("home.statRunsLogged", { count: stats.runs }),
+      },
+    ];
 
-  metricDefs.forEach((metric) => {
-    const item = document.createElement("div");
-    item.className = "weekly-stat";
+    metricDefs.forEach((metric) => {
+      const item = document.createElement("div");
+      item.className = "weekly-stat";
 
-    const label = document.createElement("span");
-    label.className = "weekly-stat-label";
-    label.textContent = metric.label;
+      const label = document.createElement("span");
+      label.className = "weekly-stat-label";
+      label.textContent = metric.label;
 
-    const value = document.createElement("span");
-    value.className = "weekly-stat-value";
-    value.textContent = metric.value;
+      const value = document.createElement("span");
+      value.className = "weekly-stat-value";
+      value.textContent = metric.value;
 
-    const detail = document.createElement("span");
-    detail.className = "weekly-stat-detail";
-    detail.textContent = metric.detail;
+      const detail = document.createElement("span");
+      detail.className = "weekly-stat-detail";
+      detail.textContent = metric.detail;
 
-    item.append(label, value, detail);
-    metrics.appendChild(item);
-  });
+      item.append(label, value, detail);
+      metrics.appendChild(item);
+    });
+
+    section.appendChild(metrics);
+  }
 
   const chart = document.createElement("div");
   chart.className = "weekly-stats-chart";
+  if (!hasActivity) {
+    chart.classList.add("is-quiet");
+  }
   chart.setAttribute("role", "img");
   chart.setAttribute(
     "aria-label",
@@ -554,7 +632,7 @@ function renderWeeklyStatsContent() {
     chart.appendChild(day);
   });
 
-  section.append(metrics, chart);
+  section.appendChild(chart);
   return section;
 }
 

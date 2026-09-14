@@ -627,6 +627,7 @@ button {
 
 .home-widget[data-widget-id="routines"] .empty-state {
   background: transparent;
+  margin-bottom: 4px;
 }
 
 .weekly-stats {
@@ -1617,6 +1618,34 @@ button {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.45;
+}
+
+.empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.empty-state-actions .primary-btn,
+.empty-state-actions .secondary-btn {
+  min-width: min(100%, 160px);
+}
+
+.home-view > .home-empty-state {
+  margin-top: 8px;
+}
+
+.weekly-empty-state {
+  margin-bottom: 14px;
+  padding: 18px 14px;
+  background: transparent;
+  border-style: dashed;
+}
+
+.weekly-stats-chart.is-quiet {
+  opacity: 0.55;
 }
 
 .hidden {
