@@ -27,7 +27,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=reset1" />
+    <link rel="stylesheet" href="styles.css?v=no-reload-loop" />
   </head>
   <body>
     <div class="app-shell">
@@ -180,44 +180,87 @@
       </div>
     </div>
 
+    <script>
+      // Must run as a classic script before any module loads so imports share one build stamp.
+      window.__HABITIZER_BUILD__ = "2026-09-14-no-reload-loop";
+      (function installModuleImportMap() {
+        const build = window.__HABITIZER_BUILD__;
+        const modules = [
+          "audio",
+          "backup",
+          "constants",
+          "delete",
+          "dom",
+          "drag",
+          "events",
+          "i18n",
+          "id",
+          "main",
+          "models",
+          "modals",
+          "persistence",
+          "pwa",
+          "routines",
+          "state",
+          "timer",
+          "utils",
+          "views",
+        ];
+        const imports = {};
+        const base = new URL("./js/", window.location.href);
+        modules.forEach((name) => {
+          const plain = new URL(name + ".js", base).href;
+          const versioned = new URL(name + ".js?v=" + encodeURIComponent(build), base).href;
+          imports[plain] = versioned;
+        });
+        const map = document.createElement("script");
+        map.type = "importmap";
+        map.textContent = JSON.stringify({ imports: imports });
+        document.currentScript.after(map);
+      })();
+    </script>
     <script type="module">
-      const APP_BUILD = "2026-09-14-reset1";
+      const APP_BUILD = window.__HABITIZER_BUILD__;
 
       async function clearCaches() {
+        const tasks = [];
         if ("serviceWorker" in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map((registration) => registration.unregister()));
+          tasks.push(
+            navigator.serviceWorker.getRegistrations().then((registrations) =>
+              Promise.all(registrations.map((registration) => registration.unregister()))
+            )
+          );
         }
         if ("caches" in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key)));
+          tasks.push(
+            caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+          );
         }
+        if (!tasks.length) return;
+        // Don't block boot forever if SW/cache APIs hang (Cursor preview / odd browsers).
+        await Promise.race([
+          Promise.all(tasks),
+          new Promise((resolve) => setTimeout(resolve, 1200)),
+        ]);
       }
 
       async function boot() {
         try {
-          const host = window.location.hostname;
-          const isLanHttp =
-            window.location.protocol === "http:" &&
-            host !== "localhost" &&
-            host !== "127.0.0.1";
           const seenBuild = localStorage.getItem("habitizer-build");
-
-          if (isLanHttp || seenBuild !== APP_BUILD) {
+          if (seenBuild !== APP_BUILD) {
             await clearCaches();
             localStorage.setItem("habitizer-build", APP_BUILD);
           }
 
-          if (seenBuild !== APP_BUILD) {
-            const url = new URL(window.location.href);
-            if (url.searchParams.get("built") !== APP_BUILD) {
-              url.searchParams.set("built", APP_BUILD);
-              window.location.replace(url.toString());
-              return;
-            }
+          // Drop legacy ?built= redirects without navigating (avoids Cursor URL flicker).
+          const url = new URL(window.location.href);
+          if (url.searchParams.has("built")) {
+            url.searchParams.delete("built");
+            const clean = `${url.pathname}${url.search}${url.hash}`;
+            window.history.replaceState(null, "", clean);
           }
         } catch (error) {
-          console.warn("Cache clear failed:", error);
+          console.warn("Cache prepare failed:", error);
         }
 
         await import(`./js/main.js?v=${encodeURIComponent(APP_BUILD)}`);

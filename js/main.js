@@ -1,4 +1,4 @@
-import { loadRoutines, loadDeletedRoutines, loadSettings, seedData } from "./persistence.js";
+import { loadRoutines, loadDeletedRoutines, loadSettings, seedData, clearLegacyDemoRoutines } from "./persistence.js";
 import { setView } from "./views.js";
 import { wireEvents } from "./events.js";
 import { restoreTimerSession } from "./timer.js";
@@ -41,6 +41,7 @@ export function init() {
     loadDeletedRoutines();
     loadSettings();
     seedData();
+    clearLegacyDemoRoutines();
     wireEvents();
     registerServiceWorker();
 

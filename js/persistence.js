@@ -3,6 +3,7 @@ import {
   SETTINGS_KEY,
   DELETED_ROUTINES_KEY,
   TIMER_SESSION_KEY,
+  DEMO_CLEAR_KEY,
   DELETED_ROUTINE_RETENTION_MS,
   TIMER_SESSION_MAX_AGE_MS,
   SAVED_COLORS_LIMIT,
@@ -328,6 +329,48 @@ export function resetLocalData() {
   localStorage.removeItem(DELETED_ROUTINES_KEY);
   localStorage.removeItem(TIMER_SESSION_KEY);
   window.location.reload();
+}
+
+const DEMO_ROUTINE_NAMES = new Set(["Morning Routine", "Evening Routine"]);
+
+function isLegacyDemoRoutine(routine) {
+  return Boolean(routine && DEMO_ROUTINE_NAMES.has(routine.name));
+}
+
+/**
+ * One-time cleanup: remove the old built-in Morning/Evening samples that were
+ * seeded before empty first-launch. Keeps any other routines the user created.
+ * Runs only once per browser origin.
+ */
+export function clearLegacyDemoRoutines() {
+  if (localStorage.getItem(DEMO_CLEAR_KEY) === "1") {
+    return false;
+  }
+
+  const beforeCount = state.routines.length;
+  state.routines = state.routines.filter((routine) => !isLegacyDemoRoutine(routine));
+  const removedRoutines = beforeCount !== state.routines.length;
+
+  const beforeDeleted = deletedRoutines.length;
+  const keptDeleted = deletedRoutines.filter(
+    (entry) => !isLegacyDemoRoutine(entry?.routine)
+  );
+  const removedDeleted = keptDeleted.length !== beforeDeleted;
+  if (removedDeleted) {
+    setDeletedRoutines(keptDeleted);
+    saveDeletedRoutines();
+  }
+
+  if (removedRoutines) {
+    try {
+      saveRoutines();
+    } catch (error) {
+      console.warn("Could not save after clearing demo routines:", error);
+    }
+  }
+
+  localStorage.setItem(DEMO_CLEAR_KEY, "1");
+  return removedRoutines || removedDeleted;
 }
 
 /** First launch: start with no sample routines. */

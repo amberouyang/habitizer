@@ -1,4 +1,6 @@
-const APP_BUILD = "2026-09-14-uuidfix2";
+function appBuild() {
+  return window.__HABITIZER_BUILD__ || "dev";
+}
 
 function isLanHttpHost() {
   const host = window.location.hostname;
@@ -25,31 +27,27 @@ async function clearServiceWorkerCaches() {
   } catch {}
 }
 
-/** Best-effort cache refresh. Must never block app startup. */
+/** Best-effort cache refresh. Must never reload or block startup. */
 export async function prepareAppCache() {
   if (!("serviceWorker" in navigator)) return;
 
   try {
-    // Always skip SW on LAN IPs. Also force one reload when build changes
-    // so stale precached modules (like old utils.js) cannot break imports.
+    const build = appBuild();
     const seenBuild = localStorage.getItem("habitizer-build");
-    const needsRefresh = seenBuild !== APP_BUILD;
 
-    if (isLanHttpHost() || needsRefresh) {
+    // LAN IP testing: never use a service worker (stale modules break ES imports).
+    if (isLanHttpHost()) {
       await clearServiceWorkerCaches();
-    }
-
-    if (needsRefresh) {
-      localStorage.setItem("habitizer-build", APP_BUILD);
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("built") !== APP_BUILD) {
-        url.searchParams.set("built", APP_BUILD);
-        window.location.replace(url.toString());
-        return;
+      if (seenBuild !== build) {
+        localStorage.setItem("habitizer-build", build);
       }
+      return;
     }
 
-    if (isLanHttpHost()) return;
+    if (seenBuild !== build) {
+      await clearServiceWorkerCaches();
+      localStorage.setItem("habitizer-build", build);
+    }
   } catch (error) {
     console.warn("Failed to refresh app cache:", error);
   }
@@ -57,7 +55,11 @@ export async function prepareAppCache() {
 
 export function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
+  // Skip SW on LAN and in local Cursor/dev previews — avoids reload/cache fights.
   if (isLanHttpHost()) return;
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return;
+  }
 
   window.addEventListener("load", () => {
     navigator.serviceWorker

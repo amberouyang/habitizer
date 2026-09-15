@@ -1,5 +1,5 @@
 import { state, settings, modalState, confirmCallback, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
-import { saveRoutines, saveSettings, saveTimerSession, applyTheme, resetLocalData } from "./persistence.js";
+import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
 import { getRoutineById, syncRoutineEstimatedMinutes } from "./models.js";
 import { parseEstimatedMinutes } from "./utils.js";
 import { createId } from "./id.js";
@@ -23,7 +23,6 @@ import {
   exportBackupBtn,
   importBackupBtn,
   importBackupInput,
-  resetDataBtn,
   undoToastAction,
   backButton,
   addButton,
@@ -49,6 +48,20 @@ import {
 import { undoDelete } from "./delete.js";
 import { exportBackup, readBackupFile, applyBackup } from "./backup.js";
 import { setView, render } from "./views.js";
+import {
+  STORAGE_KEY,
+  SETTINGS_KEY,
+  DELETED_ROUTINES_KEY,
+  TIMER_SESSION_KEY,
+} from "./constants.js";
+
+function resetLocalData() {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SETTINGS_KEY);
+  localStorage.removeItem(DELETED_ROUTINES_KEY);
+  localStorage.removeItem(TIMER_SESSION_KEY);
+  window.location.reload();
+}
 
 export function wireEvents() {
   backButton?.addEventListener("click", () => {
@@ -273,7 +286,7 @@ export function wireEvents() {
     importBackupInput.click();
   });
 
-  resetDataBtn?.addEventListener("click", () => {
+  document.getElementById("resetDataBtn")?.addEventListener("click", () => {
     openConfirmModal({
       title: t("settings.resetTitle"),
       message: t("settings.resetMessage"),
