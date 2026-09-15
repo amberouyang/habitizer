@@ -118,6 +118,20 @@ export function formatDueLabel(routine) {
   return t("srs.nextDue", { date: formatDueDateLabel(status.nextDueDate) });
 }
 
+/** Short value for the routine detail “Next practice” row. */
+export function formatNextRepetitionValue(routine) {
+  const status = getDueStatus(routine);
+  if (status.kind === "off") return null;
+  if (status.kind === "due") return t("srs.dueToday");
+  if (status.kind === "overdue") {
+    const days = Math.abs(status.daysUntil || 0);
+    if (days <= 1) return t("srs.overdue");
+    return t("srs.overdueBy", { count: days });
+  }
+  if (status.daysUntil === 1) return t("srs.dueTomorrow");
+  return formatDueDateLabel(status.nextDueDate);
+}
+
 export function formatNextPracticeLabel(dateKey) {
   if (!dateKey) return null;
   return t("srs.nextPractice", { date: formatDueDateLabel(dateKey) });

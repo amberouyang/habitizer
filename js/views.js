@@ -56,6 +56,7 @@ import {
   formatDueLabel,
   getDueStatus,
   formatNextPracticeLabel,
+  formatNextRepetitionValue,
   isSpacedRepetitionEnabled,
 } from "./schedule.js";
 import {
@@ -497,6 +498,16 @@ function renderRoutinesWidgetContent() {
     lastCompleted.textContent = formatLastCompletedLabel(routine);
 
     info.append(nameRow, meta, lastCompleted);
+
+    if (dueLabel) {
+      const nextDue = document.createElement("div");
+      nextDue.className = `routine-next-due routine-next-due-${dueStatus.kind}`;
+      nextDue.textContent = t("srs.nextPractice", {
+        date: formatNextRepetitionValue(routine),
+      });
+      info.appendChild(nextDue);
+    }
+
     openBtn.appendChild(info);
 
     const actions = document.createElement("div");
@@ -878,10 +889,7 @@ export function renderRoutineView() {
 
   const scheduleDesc = document.createElement("p");
   scheduleDesc.className = "settings-desc";
-  const dueLabel = formatDueLabel(routine);
-  scheduleDesc.textContent = dueLabel
-    ? `${t("srs.desc")} ${dueLabel}`
-    : t("srs.desc");
+  scheduleDesc.textContent = t("srs.desc");
 
   scheduleCopy.append(scheduleTitle, scheduleDesc);
 
@@ -898,7 +906,28 @@ export function renderRoutineView() {
 
   scheduleRow.append(scheduleCopy, scheduleToggle);
 
-  wrapper.append(header, infoRow, scheduleRow, renderContributionGraph(routine));
+  const detailBits = [header, infoRow, scheduleRow];
+
+  if (isSpacedRepetitionEnabled(routine)) {
+    const nextRow = document.createElement("div");
+    nextRow.className = "summary-row routine-next-row";
+    const status = getDueStatus(routine);
+    if (status.kind === "due" || status.kind === "overdue") {
+      nextRow.classList.add(`is-${status.kind}`);
+    }
+
+    const nextLabel = document.createElement("span");
+    nextLabel.textContent = t("srs.nextLabel");
+
+    const nextValue = document.createElement("strong");
+    nextValue.textContent = formatNextRepetitionValue(routine);
+
+    nextRow.append(nextLabel, nextValue);
+    detailBits.push(nextRow);
+  }
+
+  detailBits.push(renderContributionGraph(routine));
+  wrapper.append(...detailBits);
 
   const activityList = document.createElement("div");
   activityList.className = "activity-list";

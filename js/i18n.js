@@ -113,6 +113,7 @@ const messages = {
     "srs.overdueBy": "Overdue by {count} days",
     "srs.nextDue": "Next · {date}",
     "srs.nextPractice": "Next practice · {date}",
+    "srs.nextLabel": "Next practice",
 
     "timer.tapToBegin": "Tap an activity to begin",
     "timer.inProgress": "In progress",
@@ -325,6 +326,7 @@ const messages = {
     "srs.overdueBy": "Atrasada {count} días",
     "srs.nextDue": "Próxima · {date}",
     "srs.nextPractice": "Próxima práctica · {date}",
+    "srs.nextLabel": "Próxima práctica",
 
     "timer.tapToBegin": "Toca una actividad para empezar",
     "timer.inProgress": "En curso",
@@ -537,6 +539,7 @@ const messages = {
     "srs.overdueBy": "已逾期 {count} 天",
     "srs.nextDue": "下次 · {date}",
     "srs.nextPractice": "下次练习 · {date}",
+    "srs.nextLabel": "下次练习",
 
     "timer.tapToBegin": "点按活动开始",
     "timer.inProgress": "进行中",

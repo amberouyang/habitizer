@@ -907,6 +907,32 @@ button {
   opacity: 0.9;
 }
 
+.routine-next-due {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary-strong);
+}
+
+.routine-next-due-overdue {
+  color: var(--danger);
+}
+
+.routine-next-due-upcoming {
+  color: var(--muted);
+}
+
+.routine-next-row {
+  margin-top: 8px;
+}
+
+.routine-next-row.is-due strong {
+  color: var(--primary-strong);
+}
+
+.routine-next-row.is-overdue strong {
+  color: var(--danger);
+}
+
 .color-modal-swatches {
   display: flex;
   flex-wrap: wrap;
