@@ -286,7 +286,7 @@ export function endRoutine() {
   const { completed, total } = getActivityCompletionCount(routine);
   const completionDatesBefore = getRoutineCompletionDates(routine);
 
-  recordRoutineCompletion(routine);
+  const nextDueDate = recordRoutineCompletion(routine);
   recordRoutineRun(routine, {
     totalMs,
     estimatedMs,
@@ -305,6 +305,7 @@ export function endRoutine() {
     streak,
     longestStreak,
     isNewPersonalBest: longestStreak > previousLongestStreak,
+    nextDueDate,
     activities: routine.activities.map((activity) => ({
       name: activity.name,
       timeSpentMs: Number(activity.timeSpentMs || 0),

@@ -27,7 +27,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=no-reload-loop" />
+    <link rel="stylesheet" href="styles.css?v=srs1" />
   </head>
   <body>
     <div class="app-shell">
@@ -182,7 +182,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-09-14-no-reload-loop";
+      window.__HABITIZER_BUILD__ = "2026-09-14-srs1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [
@@ -201,6 +201,7 @@
           "persistence",
           "pwa",
           "routines",
+          "schedule",
           "state",
           "timer",
           "utils",

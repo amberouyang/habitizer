@@ -13,6 +13,7 @@ import {
   reconcileHomeWidgets,
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
+import { sanitizeSpacedRepetitionFields } from "./schedule.js";
 import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 import { createId } from "./id.js";
@@ -83,6 +84,7 @@ function sanitizeRoutine(routine) {
   const runHistory = Array.isArray(routine.runHistory)
     ? routine.runHistory.map(sanitizeRun).filter(Boolean).slice(0, RUN_HISTORY_LIMIT)
     : [];
+  const schedule = sanitizeSpacedRepetitionFields(routine);
 
   return {
     id: typeof routine.id === "string" && routine.id ? routine.id : createId(),
@@ -94,6 +96,7 @@ function sanitizeRoutine(routine) {
     activities,
     completionDates,
     runHistory,
+    ...schedule,
   };
 }
 

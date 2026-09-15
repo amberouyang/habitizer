@@ -28,6 +28,7 @@ const PRECACHE_URLS = [
   "./js/audio.js",
   "./js/pwa.js",
   "./js/id.js",
+  "./js/schedule.js",
 ];
 
 self.addEventListener("install", (event) => {

@@ -20,6 +20,10 @@ import {
 } from "./modals.js";
 import { performDeleteRoutine, performDeleteActivity } from "./delete.js";
 import { setView, render } from "./views.js";
+import {
+  copySpacedRepetitionFields,
+  setSpacedRepetitionEnabled,
+} from "./schedule.js";
 
 export function addRoutine() {
   openNameModal({
@@ -56,6 +60,9 @@ export function submitRoutineCreation() {
     activities: [],
     completionDates: [],
     runHistory: [],
+    spacedRepetition: false,
+    srsLevel: 0,
+    nextDueDate: null,
   };
 
   state.routines.unshift(newRoutine);
@@ -153,13 +160,26 @@ export function duplicateRoutine(routineId) {
     })),
     completionDates: [],
     runHistory: [],
+    spacedRepetition: false,
+    srsLevel: 0,
+    nextDueDate: null,
   };
+  copySpacedRepetitionFields(routine, duplicate);
 
   const sourceIndex = state.routines.findIndex((item) => item.id === routineId);
   state.routines.splice(sourceIndex + 1, 0, duplicate);
   syncRoutineEstimatedMinutes(duplicate);
   saveRoutines();
   setView("routine", duplicate.id);
+}
+
+export function toggleRoutineSpacedRepetition(routineId, enabled) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+
+  setSpacedRepetitionEnabled(routine, enabled);
+  saveRoutines();
+  render();
 }
 
 export function openAddActivityModal(routineId) {

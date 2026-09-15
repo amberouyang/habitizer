@@ -105,6 +105,15 @@ const messages = {
     "routine.contributionCellDone": "{date}: {count} completion(s)",
     "routine.contributionCellEmpty": "{date}: no completion",
 
+    "srs.title": "Spaced practice",
+    "srs.desc": "Schedules the next run with growing gaps so the habit sticks.",
+    "srs.dueToday": "Due today",
+    "srs.dueTomorrow": "Due tomorrow",
+    "srs.overdue": "Overdue",
+    "srs.overdueBy": "Overdue by {count} days",
+    "srs.nextDue": "Next · {date}",
+    "srs.nextPractice": "Next practice · {date}",
+
     "timer.tapToBegin": "Tap an activity to begin",
     "timer.inProgress": "In progress",
     "timer.end": "End Routine",
@@ -308,6 +317,15 @@ const messages = {
     "routine.contributionCellDone": "{date}: {count} completado(s)",
     "routine.contributionCellEmpty": "{date}: sin completado",
 
+    "srs.title": "Práctica espaciada",
+    "srs.desc": "Programa la siguiente sesión con intervalos crecientes para fijar el hábito.",
+    "srs.dueToday": "Para hoy",
+    "srs.dueTomorrow": "Para mañana",
+    "srs.overdue": "Atrasada",
+    "srs.overdueBy": "Atrasada {count} días",
+    "srs.nextDue": "Próxima · {date}",
+    "srs.nextPractice": "Próxima práctica · {date}",
+
     "timer.tapToBegin": "Toca una actividad para empezar",
     "timer.inProgress": "En curso",
     "timer.end": "Terminar rutina",
@@ -510,6 +528,15 @@ const messages = {
     "routine.contributionWeekdayFri": "五",
     "routine.contributionCellDone": "{date}：完成 {count} 次",
     "routine.contributionCellEmpty": "{date}：未完成",
+
+    "srs.title": "间隔练习",
+    "srs.desc": "用逐渐拉长的间隔安排下次练习，帮助巩固习惯。",
+    "srs.dueToday": "今天到期",
+    "srs.dueTomorrow": "明天到期",
+    "srs.overdue": "已逾期",
+    "srs.overdueBy": "已逾期 {count} 天",
+    "srs.nextDue": "下次 · {date}",
+    "srs.nextPractice": "下次练习 · {date}",
 
     "timer.tapToBegin": "点按活动开始",
     "timer.inProgress": "进行中",

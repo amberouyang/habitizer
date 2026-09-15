@@ -12,6 +12,7 @@ import {
 } from "./utils.js";
 import { createId } from "./id.js";
 import { t } from "./i18n.js";
+import { advanceSpacedRepetitionOnComplete } from "./schedule.js";
 
 export function getRoutineById(routineId) {
   return state.routines.find((routine) => routine.id === routineId) || null;
@@ -179,6 +180,8 @@ export function recordRoutineCompletion(routine) {
   if (!completionDates.includes(today)) {
     routine.completionDates = [...completionDates, today];
   }
+
+  return advanceSpacedRepetitionOnComplete(routine);
 }
 
 export function recordRoutineRun(routine, {

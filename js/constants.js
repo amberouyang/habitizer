@@ -7,6 +7,9 @@ export const DELETED_ROUTINE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export const TIMER_SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const UNDO_DELETE_MS = 5000;
 
+/** Days until the next practice after each successful spaced-repetition level. */
+export const SRS_INTERVAL_DAYS = [1, 2, 4, 7, 14, 30];
+
 export const ROUTINE_COLORS = [
   { id: "sage", label: "Cyan", value: "#0e7490" },
   { id: "ocean", label: "Ocean", value: "#2563eb" },

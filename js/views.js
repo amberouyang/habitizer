@@ -50,7 +50,14 @@ import {
   openAddActivityModal,
   renameActivity,
   deleteActivity,
+  toggleRoutineSpacedRepetition,
 } from "./routines.js";
+import {
+  formatDueLabel,
+  getDueStatus,
+  formatNextPracticeLabel,
+  isSpacedRepetitionEnabled,
+} from "./schedule.js";
 import {
   openColorModal,
   openCalendarModal,
@@ -425,6 +432,10 @@ function renderRoutinesWidgetContent() {
     item.dataset.routineId = routine.id;
     applyRoutineColorStyle(item, routine);
 
+    const dueStatus = getDueStatus(routine);
+    if (dueStatus.kind === "due") item.classList.add("is-due");
+    if (dueStatus.kind === "overdue") item.classList.add("is-overdue");
+
     const main = document.createElement("div");
     main.className = "routine-main";
 
@@ -466,6 +477,15 @@ function renderRoutinesWidgetContent() {
       nameRow.append(name, streakBadge);
     } else {
       nameRow.appendChild(name);
+    }
+
+    const dueLabel = formatDueLabel(routine);
+    if (dueLabel) {
+      const dueBadge = document.createElement("span");
+      dueBadge.className = `due-badge due-badge-${dueStatus.kind}`;
+      dueBadge.textContent = dueLabel;
+      dueBadge.title = dueLabel;
+      nameRow.appendChild(dueBadge);
     }
 
     const meta = document.createElement("div");
@@ -844,7 +864,41 @@ export function renderRoutineView() {
   infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
-  wrapper.append(header, infoRow, renderContributionGraph(routine));
+  const scheduleRow = document.createElement("label");
+  scheduleRow.className = "settings-row routine-schedule-row";
+  const scheduleToggleId = `srs-toggle-${routine.id}`;
+  scheduleRow.setAttribute("for", scheduleToggleId);
+
+  const scheduleCopy = document.createElement("span");
+  scheduleCopy.className = "settings-copy";
+
+  const scheduleTitle = document.createElement("span");
+  scheduleTitle.className = "settings-title";
+  scheduleTitle.textContent = t("srs.title");
+
+  const scheduleDesc = document.createElement("p");
+  scheduleDesc.className = "settings-desc";
+  const dueLabel = formatDueLabel(routine);
+  scheduleDesc.textContent = dueLabel
+    ? `${t("srs.desc")} ${dueLabel}`
+    : t("srs.desc");
+
+  scheduleCopy.append(scheduleTitle, scheduleDesc);
+
+  const scheduleToggle = document.createElement("input");
+  scheduleToggle.id = scheduleToggleId;
+  scheduleToggle.className = "toggle-input";
+  scheduleToggle.type = "checkbox";
+  scheduleToggle.setAttribute("role", "switch");
+  scheduleToggle.setAttribute("aria-label", t("srs.title"));
+  scheduleToggle.checked = isSpacedRepetitionEnabled(routine);
+  scheduleToggle.addEventListener("change", () => {
+    toggleRoutineSpacedRepetition(routine.id, scheduleToggle.checked);
+  });
+
+  scheduleRow.append(scheduleCopy, scheduleToggle);
+
+  wrapper.append(header, infoRow, scheduleRow, renderContributionGraph(routine));
 
   const activityList = document.createElement("div");
   activityList.className = "activity-list";
@@ -977,6 +1031,13 @@ export function renderCompletionView() {
     }
 
     card.appendChild(streakBlock);
+  }
+
+  if (data.nextDueDate) {
+    const nextEl = document.createElement("div");
+    nextEl.className = "completion-next-due";
+    nextEl.textContent = formatNextPracticeLabel(data.nextDueDate);
+    card.appendChild(nextEl);
   }
 
   if (data.estimatedMs > 0) {
