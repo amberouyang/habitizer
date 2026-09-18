@@ -96,6 +96,39 @@ export function getDueStatus(routine) {
   return { kind: "upcoming", nextDueDate, daysUntil: days };
 }
 
+/** Lower number = higher on Home. Overdue first, then due today, then the rest. */
+export function getDueSortPriority(routine) {
+  const kind = getDueStatus(routine).kind;
+  if (kind === "overdue") return 0;
+  if (kind === "due") return 1;
+  return 2;
+}
+
+export function hasUrgentSpacedPractice(routines) {
+  return (routines || []).some((routine) => {
+    const kind = getDueStatus(routine).kind;
+    return kind === "overdue" || kind === "due";
+  });
+}
+
+/**
+ * Home display order: overdue → due today → everything else.
+ * Stable within each group (keeps the user's saved relative order).
+ */
+export function getRoutinesForHomeDisplay(routines) {
+  if (!Array.isArray(routines) || routines.length < 2) {
+    return Array.isArray(routines) ? [...routines] : [];
+  }
+
+  return routines
+    .map((routine, index) => ({ routine, index, priority: getDueSortPriority(routine) }))
+    .sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      return a.index - b.index;
+    })
+    .map((entry) => entry.routine);
+}
+
 export function formatDueDateLabel(dateKey) {
   return formatRelativeCompletedDay(dateKey) || dateKey;
 }

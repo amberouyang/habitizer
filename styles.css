@@ -882,11 +882,25 @@ button {
 }
 
 .routine-schedule-row {
-  margin: 10px 0 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--panel);
+  cursor: pointer;
+  margin: 0;
+  user-select: none;
+}
+
+.routine-schedule-row .toggle-input-compact {
+  width: 40px;
+  height: 24px;
+}
+
+.routine-schedule-row .toggle-input-compact::before {
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+}
+
+.routine-schedule-row .toggle-input-compact:checked::before {
+  transform: translateX(16px);
 }
 
 .completion-next-due {

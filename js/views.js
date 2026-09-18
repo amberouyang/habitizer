@@ -58,6 +58,8 @@ import {
   formatNextPracticeLabel,
   formatNextRepetitionValue,
   isSpacedRepetitionEnabled,
+  getRoutinesForHomeDisplay,
+  hasUrgentSpacedPractice,
 } from "./schedule.js";
 import {
   openColorModal,
@@ -425,9 +427,12 @@ function renderRoutinesWidgetContent() {
     return list;
   }
 
-  const canReorderRoutines = state.routines.length > 1;
+  const homeRoutines = getRoutinesForHomeDisplay(state.routines);
+  // Due-first is display-only; disable drag while urgent items are pinned to the top.
+  const canReorderRoutines =
+    state.routines.length > 1 && !hasUrgentSpacedPractice(state.routines);
 
-  state.routines.forEach((routine) => {
+  homeRoutines.forEach((routine) => {
     const item = document.createElement("div");
     item.className = "routine-item";
     item.dataset.routineId = routine.id;
@@ -876,35 +881,27 @@ export function renderRoutineView() {
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
   const scheduleRow = document.createElement("label");
-  scheduleRow.className = "settings-row routine-schedule-row";
+  scheduleRow.className = "summary-row routine-schedule-row";
   const scheduleToggleId = `srs-toggle-${routine.id}`;
   scheduleRow.setAttribute("for", scheduleToggleId);
+  scheduleRow.title = t("srs.desc");
 
-  const scheduleCopy = document.createElement("span");
-  scheduleCopy.className = "settings-copy";
-
-  const scheduleTitle = document.createElement("span");
-  scheduleTitle.className = "settings-title";
-  scheduleTitle.textContent = t("srs.title");
-
-  const scheduleDesc = document.createElement("p");
-  scheduleDesc.className = "settings-desc";
-  scheduleDesc.textContent = t("srs.desc");
-
-  scheduleCopy.append(scheduleTitle, scheduleDesc);
+  const scheduleLabel = document.createElement("span");
+  scheduleLabel.textContent = t("srs.title");
 
   const scheduleToggle = document.createElement("input");
   scheduleToggle.id = scheduleToggleId;
-  scheduleToggle.className = "toggle-input";
+  scheduleToggle.className = "toggle-input toggle-input-compact";
   scheduleToggle.type = "checkbox";
   scheduleToggle.setAttribute("role", "switch");
   scheduleToggle.setAttribute("aria-label", t("srs.title"));
+  scheduleToggle.title = t("srs.desc");
   scheduleToggle.checked = isSpacedRepetitionEnabled(routine);
   scheduleToggle.addEventListener("change", () => {
     toggleRoutineSpacedRepetition(routine.id, scheduleToggle.checked);
   });
 
-  scheduleRow.append(scheduleCopy, scheduleToggle);
+  scheduleRow.append(scheduleLabel, scheduleToggle);
 
   const detailBits = [header, infoRow, scheduleRow];
 
