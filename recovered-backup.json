@@ -1,0 +1,326 @@
+{
+  "app": "habitizer",
+  "version": 1,
+  "exportedAt": "2026-09-20T00:00:00.000Z",
+  "routines": [
+    {
+      "id": "4662fdb7-599c-49f3-a38a-261101d7dd40",
+      "name": "Workout",
+      "color": "#ff7094",
+      "estimatedMinutes": 5,
+      "activities": [
+        {
+          "id": "82a4bfc8-6905-4d09-b7a1-7d2b87df1ee8",
+          "name": "Stretch",
+          "estimatedMinutes": 5,
+          "timeSpentMs": 1000
+        }
+      ],
+      "completionDates": [
+        "2026-09-14"
+      ],
+      "runHistory": [
+        {
+          "id": "f09fc06c-205a-4bec-abcf-634bbc3ad5be",
+          "completedAt": 1789418332274,
+          "dateKey": "2026-09-14",
+          "totalMs": 4466,
+          "estimatedMs": 300000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 1
+        }
+      ]
+    },
+    {
+      "id": "d09574ef-6eaa-4b4b-84dc-c83fae996eab",
+      "name": "Study",
+      "color": "#293051",
+      "estimatedMinutes": 55,
+      "activities": [
+        {
+          "id": "99520abc-4fb6-4ece-9205-f92238d14558",
+          "name": "Setup",
+          "estimatedMinutes": 5,
+          "timeSpentMs": 5973
+        },
+        {
+          "id": "71fbe1a4-619a-4987-ae9d-21fe550085f7",
+          "name": "Code",
+          "estimatedMinutes": 20,
+          "timeSpentMs": 26934
+        },
+        {
+          "id": "7009f069-f7fd-409b-b8d0-4c1712b24631",
+          "name": "Apply to Jobs",
+          "estimatedMinutes": 30,
+          "timeSpentMs": 358
+        }
+      ],
+      "completionDates": [
+        "2026-09-10",
+        "2026-09-14"
+      ],
+      "runHistory": [
+        {
+          "id": "a93a8298-9730-45c0-a91b-b7b1a3536ab8",
+          "completedAt": 1789428631691,
+          "dateKey": "2026-09-14",
+          "totalMs": 17584,
+          "estimatedMs": 3300000,
+          "activitiesCompleted": 3,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "38fa683a-0afc-4113-824a-232533480e74",
+          "completedAt": 1789090640677,
+          "dateKey": "2026-09-10",
+          "totalMs": 64846,
+          "estimatedMs": 3300000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 3
+        }
+      ],
+      "spacedRepetition": false,
+      "srsLevel": 0,
+      "nextDueDate": null
+    },
+    {
+      "id": "9d4dd362-d4d9-4415-b4e9-508ce635cc60",
+      "name": "Morning",
+      "estimatedMinutes": 1,
+      "activities": [
+        {
+          "id": "6f37e2f2-b9cc-4137-9f60-91794434bea8",
+          "name": "Stretch",
+          "timeSpentMs": 10113
+        },
+        {
+          "id": "80d7ce63-0642-4979-9799-897ddf91a26e",
+          "name": "Check calendar",
+          "timeSpentMs": 7193
+        },
+        {
+          "id": "abc847bd-9ecc-428c-9df9-494a10c43b3a",
+          "name": "Drink water",
+          "timeSpentMs": 141248
+        }
+      ],
+      "color": "#3c4e96",
+      "completionDates": [
+        "2026-09-12",
+        "2026-09-13"
+      ],
+      "runHistory": [
+        {
+          "id": "de9c9c60-f607-461d-94b8-afd8ab2e1123",
+          "completedAt": 1789360210153,
+          "dateKey": "2026-09-13",
+          "totalMs": 7744,
+          "estimatedMs": 60000,
+          "activitiesCompleted": 3,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "ffb6a6c6-4944-4403-be4a-06ace7fa1946",
+          "completedAt": 1789248519032,
+          "dateKey": "2026-09-12",
+          "totalMs": 11214,
+          "estimatedMs": 60000,
+          "activitiesCompleted": 3,
+          "activitiesTotal": 3
+        }
+      ],
+      "spacedRepetition": false,
+      "srsLevel": 0,
+      "nextDueDate": null
+    },
+    {
+      "id": "0cb72aa0-a8a5-4b05-a2c1-617b67a0ea3a",
+      "name": "Evening",
+      "estimatedMinutes": 20,
+      "activities": [
+        {
+          "id": "2d20b636-537c-4389-aaf3-04c4203f8548",
+          "name": "Brush teeth",
+          "timeSpentMs": 5786
+        },
+        {
+          "id": "a3f6dd3a-333b-4922-854e-5fb79e0014d5",
+          "name": "Skincare",
+          "timeSpentMs": 4712
+        },
+        {
+          "id": "035d0f89-cce1-498a-8ea6-0dd05ff54664",
+          "name": "Read",
+          "timeSpentMs": 3203
+        }
+      ],
+      "completionDates": [
+        "2026-08-30"
+      ]
+    },
+    {
+      "id": "81bdef92-b6a9-4826-9902-de049d4eeb14",
+      "name": "Night",
+      "estimatedMinutes": 20,
+      "activities": [
+        {
+          "id": "973a7abb-ba09-421b-8837-c063ac503c1a",
+          "name": "Brush Teeth",
+          "timeSpentMs": 5670,
+          "estimatedMinutes": 5
+        },
+        {
+          "id": "446f25cb-6f7f-476b-a4ab-0c9d11a1b2d7",
+          "name": "Wash face",
+          "timeSpentMs": 619,
+          "estimatedMinutes": 10
+        },
+        {
+          "id": "792bd7e5-ed2d-4003-9475-514a269c6a36",
+          "name": "Apply lotion",
+          "estimatedMinutes": 5,
+          "timeSpentMs": 579
+        }
+      ],
+      "completionDates": [
+        "2026-08-29",
+        "2026-08-30",
+        "2026-09-02",
+        "2026-09-04",
+        "2026-09-05",
+        "2026-09-06",
+        "2026-09-07",
+        "2026-09-08",
+        "2026-09-09",
+        "2026-09-11",
+        "2026-09-17"
+      ],
+      "color": "rose",
+      "runHistory": [
+        {
+          "id": "4311c78b-74f4-4f53-bac3-b26087cbc5d9",
+          "completedAt": 1789714210298,
+          "dateKey": "2026-09-17",
+          "totalMs": 19168,
+          "estimatedMs": 1200000,
+          "activitiesCompleted": 3,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "3aacd094-dda0-4ead-aed1-e74093f93af1",
+          "completedAt": 1789195698125,
+          "dateKey": "2026-09-11",
+          "totalMs": 7290,
+          "estimatedMs": 1200000,
+          "activitiesCompleted": 2,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "2392148d-323e-4fdb-bb62-e36a5bfdc0a1",
+          "completedAt": 1788995003728,
+          "dateKey": "2026-09-09",
+          "totalMs": 57936,
+          "estimatedMs": 1200000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "b6d20913-23e1-4bbd-ad35-a167498e5a16",
+          "completedAt": 1788935751212,
+          "dateKey": "2026-09-08",
+          "totalMs": 9034,
+          "estimatedMs": 1200000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "080a9d7f-529c-43eb-8a3d-78aa18183cd0",
+          "completedAt": 1788935744176,
+          "dateKey": "2026-09-08",
+          "totalMs": 24565,
+          "estimatedMs": 1200000,
+          "activitiesCompleted": 0,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "d56f99c5-76c3-45ad-9590-5b03a8aab09d",
+          "completedAt": 1788935566577,
+          "dateKey": "2026-09-08",
+          "totalMs": 73724,
+          "estimatedMs": 1200000,
+          "activitiesCompleted": 3,
+          "activitiesTotal": 3
+        },
+        {
+          "id": "fcb3b9e0-f624-436d-9791-0bb3bc8fd699",
+          "completedAt": 1788825793777,
+          "dateKey": "2026-09-07",
+          "totalMs": 36670,
+          "estimatedMs": 900000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 2
+        },
+        {
+          "id": "df543bee-fd67-4cbf-8818-28ad7b18102c",
+          "completedAt": 1788825766146,
+          "dateKey": "2026-09-07",
+          "totalMs": 431742,
+          "estimatedMs": 900000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 2
+        },
+        {
+          "id": "1829f415-64e4-4a27-865f-5a46df571bbb",
+          "completedAt": 1788825254680,
+          "dateKey": "2026-09-07",
+          "totalMs": 448739,
+          "estimatedMs": 900000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 2
+        },
+        {
+          "id": "67a05785-5ebf-49e4-8ad0-1b19861341ed",
+          "completedAt": 1788824216936,
+          "dateKey": "2026-09-07",
+          "totalMs": 25214,
+          "estimatedMs": 900000,
+          "activitiesCompleted": 2,
+          "activitiesTotal": 2
+        },
+        {
+          "id": "883136b1-4d3c-4d7d-8657-d4fe664e1578",
+          "completedAt": 1788824146303,
+          "dateKey": "2026-09-07",
+          "totalMs": 16384,
+          "estimatedMs": 600000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 2
+        },
+        {
+          "id": "163f2a38-603c-4365-aedd-49e96059fd0d",
+          "completedAt": 1788818703291,
+          "dateKey": "2026-09-07",
+          "totalMs": 8448,
+          "estimatedMs": 600000,
+          "activitiesCompleted": 2,
+          "activitiesTotal": 2
+        },
+        {
+          "id": "566ef6c6-b817-4f15-af62-f9350732a677",
+          "completedAt": 1788746831916,
+          "dateKey": "2026-09-06",
+          "totalMs": 8978,
+          "estimatedMs": 600000,
+          "activitiesCompleted": 1,
+          "activitiesTotal": 1
+        }
+      ],
+      "spacedRepetition": true,
+      "srsLevel": 1,
+      "nextDueDate": "2026-09-18"
+    }
+  ],
+  "settings": {},
+  "deletedRoutines": []
+}

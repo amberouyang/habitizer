@@ -23,6 +23,7 @@ import {
   exportBackupBtn,
   importBackupBtn,
   importBackupInput,
+  dueRemindersToggle,
   undoToastAction,
   backButton,
   addButton,
@@ -54,6 +55,12 @@ import {
   DELETED_ROUTINES_KEY,
   TIMER_SESSION_KEY,
 } from "./constants.js";
+import {
+  notificationsSupported,
+  enableDueReminders,
+  disableDueReminders,
+  checkAndNotifyDueRoutines,
+} from "./reminders.js";
 
 function resetLocalData() {
   localStorage.removeItem(STORAGE_KEY);
@@ -264,6 +271,44 @@ export function wireEvents() {
     if (settings.completionSound) {
       playCompletionSound({ force: true });
     }
+  });
+
+  dueRemindersToggle?.addEventListener("change", async () => {
+    if (!dueRemindersToggle.checked) {
+      disableDueReminders();
+      saveSettings();
+      return;
+    }
+
+    if (!notificationsSupported()) {
+      dueRemindersToggle.checked = false;
+      disableDueReminders();
+      saveSettings();
+      openConfirmModal({
+        title: t("reminders.unsupportedTitle"),
+        message: t("reminders.unsupportedMessage"),
+        confirmLabel: t("app.done"),
+        onConfirm: closeConfirmModal,
+      });
+      return;
+    }
+
+    const permission = await enableDueReminders();
+    if (permission !== "granted") {
+      dueRemindersToggle.checked = false;
+      disableDueReminders();
+      saveSettings();
+      openConfirmModal({
+        title: t("reminders.deniedTitle"),
+        message: t("reminders.deniedMessage"),
+        confirmLabel: t("app.done"),
+        onConfirm: closeConfirmModal,
+      });
+      return;
+    }
+
+    saveSettings();
+    checkAndNotifyDueRoutines();
   });
 
   languageSelect?.addEventListener("change", () => {

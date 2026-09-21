@@ -14,7 +14,7 @@ import {
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
 import { sanitizeSpacedRepetitionFields } from "./schedule.js";
-import { darkModeToggle, cumulativeToggle, completionSoundToggle } from "./dom.js";
+import { darkModeToggle, cumulativeToggle, completionSoundToggle, dueRemindersToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 import { createId } from "./id.js";
 
@@ -123,6 +123,7 @@ function sanitizeSettings(raw) {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
+      dueReminders: Boolean(settings.dueReminders),
       savedColors: [...(settings.savedColors || [])],
       language: sanitizeLanguage(settings.language),
       homeWidgets: [...(settings.homeWidgets || [])],
@@ -147,6 +148,9 @@ function sanitizeSettings(raw) {
     completionSound: raw.completionSound !== undefined
       ? Boolean(raw.completionSound)
       : Boolean(settings.completionSound),
+    dueReminders: raw.dueReminders !== undefined
+      ? Boolean(raw.dueReminders)
+      : Boolean(settings.dueReminders),
     language: sanitizeLanguage(raw.language ?? settings.language),
     savedColors,
     homeWidgets: sanitizeHomeWidgets(raw.homeWidgets ?? settings.homeWidgets),
@@ -186,6 +190,7 @@ export function buildBackupPayload() {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
+      dueReminders: Boolean(settings.dueReminders),
       language: sanitizeLanguage(settings.language),
       savedColors: [...(settings.savedColors || [])],
       homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
@@ -275,6 +280,7 @@ export function applyBackup(parsed) {
   if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
   if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;
   if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
+  if (dueRemindersToggle) dueRemindersToggle.checked = settings.dueReminders;
 }
 
 export async function readBackupFile(file) {

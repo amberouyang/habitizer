@@ -26,6 +26,7 @@ import {
   darkModeToggle,
   cumulativeToggle,
   completionSoundToggle,
+  dueRemindersToggle,
   languageSelect,
   deletedRoutinesList,
   homeWidgetsSettings,
@@ -784,6 +785,7 @@ export function syncSettingsView() {
   darkModeToggle.checked = settings.darkMode;
   cumulativeToggle.checked = settings.cumulativeMode;
   completionSoundToggle.checked = settings.completionSound;
+  if (dueRemindersToggle) dueRemindersToggle.checked = settings.dueReminders;
   populateLanguageSelect();
   applyDocumentLanguage();
   renderHomeWidgetSettings();
@@ -810,6 +812,7 @@ export function closeSettings() {
   settings.darkMode = darkModeToggle.checked;
   settings.cumulativeMode = cumulativeToggle.checked;
   settings.completionSound = completionSoundToggle.checked;
+  if (dueRemindersToggle) settings.dueReminders = dueRemindersToggle.checked;
   applyTheme();
   saveSettings();
 }

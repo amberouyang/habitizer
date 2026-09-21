@@ -27,7 +27,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=due-first1" />
+    <link rel="stylesheet" href="styles.css?v=due-reminders1" />
   </head>
   <body>
     <div class="app-shell">
@@ -68,6 +68,13 @@
               <p class="settings-desc" data-i18n="settings.soundDesc">Play a short chime when you finish a routine.</p>
             </span>
             <input id="completionSoundToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.sound" aria-label="Completion sound" />
+          </label>
+          <label class="settings-row" for="dueRemindersToggle">
+            <span class="settings-copy">
+              <span class="settings-title" data-i18n="settings.dueReminders">Due reminders</span>
+              <p class="settings-desc" data-i18n="settings.dueRemindersDesc">Get a browser notification when a spaced-practice routine is due or overdue.</p>
+            </span>
+            <input id="dueRemindersToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.dueReminders" aria-label="Due reminders" />
           </label>
           <label class="settings-row" for="languageSelect">
             <span class="settings-copy">
@@ -182,7 +189,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-09-17-due-first1";
+      window.__HABITIZER_BUILD__ = "2026-09-20-due-reminders1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [
@@ -200,6 +207,7 @@
           "modals",
           "persistence",
           "pwa",
+          "reminders",
           "routines",
           "schedule",
           "state",

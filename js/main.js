@@ -3,6 +3,7 @@ import { setView } from "./views.js";
 import { wireEvents } from "./events.js";
 import { restoreTimerSession } from "./timer.js";
 import { prepareAppCache, registerServiceWorker } from "./pwa.js";
+import { wireDueReminders } from "./reminders.js";
 import { appEl } from "./dom.js";
 
 function showBootError(error) {
@@ -44,6 +45,7 @@ export function init() {
     clearLegacyDemoRoutines();
     wireEvents();
     registerServiceWorker();
+    wireDueReminders();
 
     if (!restoreTimerSession()) {
       setView("home");
