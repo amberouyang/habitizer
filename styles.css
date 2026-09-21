@@ -1470,47 +1470,18 @@ button {
 
 .item-actions {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
 
 .home-start-btn {
-  appearance: none;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 12px;
-  min-width: 64px;
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1;
-  color: #fff;
-  background: var(--primary);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.home-start-btn:hover:not(:disabled) {
-  background: var(--primary-strong);
+  color: var(--primary-strong);
 }
 
 .home-start-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.home-start-btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.item-action-icons {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
 }
 
 .icon-btn,

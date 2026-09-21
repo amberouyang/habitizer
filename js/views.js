@@ -574,33 +574,22 @@ function renderRoutinesWidgetContent() {
     actions.className = "item-actions";
 
     const isActiveSession = state.timer.routineId === routine.id;
-    const startBtn = document.createElement("button");
-    startBtn.type = "button";
-    startBtn.className = "home-start-btn";
-    startBtn.textContent = isActiveSession ? t("timer.continue") : t("home.start");
-    startBtn.title = isActiveSession
-      ? t("timer.resumeAria", { name: routine.name })
-      : t("home.startAria", { name: routine.name });
-    startBtn.setAttribute(
-      "aria-label",
-      isActiveSession
-        ? t("timer.resumeAria", { name: routine.name })
-        : t("home.startAria", { name: routine.name })
-    );
-    startBtn.disabled = routine.activities.length === 0 && !isActiveSession;
-    startBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      if (isActiveSession) {
-        resumeActiveTimer();
-        return;
-      }
-      startRoutine(routine.id);
-    });
 
-    actions.append(startBtn);
-
-    const iconActions = document.createElement("div");
-    iconActions.className = "item-action-icons";
+    // Continue lives on the top in-progress banner; cards only get a quiet Start.
+    if (!isActiveSession) {
+      const startBtn = document.createElement("button");
+      startBtn.type = "button";
+      startBtn.className = "small-btn home-start-btn";
+      startBtn.textContent = "▶";
+      startBtn.title = t("home.startAria", { name: routine.name });
+      startBtn.setAttribute("aria-label", t("home.startAria", { name: routine.name }));
+      startBtn.disabled = routine.activities.length === 0;
+      startBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        startRoutine(routine.id);
+      });
+      actions.appendChild(startBtn);
+    }
 
     const duplicateBtn = document.createElement("button");
     duplicateBtn.type = "button";
@@ -632,8 +621,7 @@ function renderRoutinesWidgetContent() {
       deleteRoutine(routine.id);
     });
 
-    iconActions.append(duplicateBtn, renameBtn, deleteBtn);
-    actions.append(iconActions);
+    actions.append(duplicateBtn, renameBtn, deleteBtn);
     main.append(openBtn);
     item.append(main, actions);
     list.appendChild(item);
