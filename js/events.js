@@ -49,6 +49,7 @@ import {
 import { undoDelete } from "./delete.js";
 import { exportBackup, readBackupFile, applyBackup } from "./backup.js";
 import { setView, render } from "./views.js";
+import { minimizeTimer } from "./timer.js";
 import {
   STORAGE_KEY,
   SETTINGS_KEY,
@@ -72,6 +73,10 @@ function resetLocalData() {
 
 export function wireEvents() {
   backButton?.addEventListener("click", () => {
+    if (state.currentView === "timer") {
+      minimizeTimer();
+      return;
+    }
     if (state.currentView === "routine") {
       const target = state.returnView === "history" ? "history" : "home";
       state.returnView = "home";
@@ -92,6 +97,10 @@ export function wireEvents() {
     if (!button || !tabBar.contains(button)) return;
     const tab = button.dataset.tab;
     if (!tab || tab === state.currentView) return;
+    if (state.currentView === "timer") {
+      minimizeTimer(tab);
+      return;
+    }
     setView(tab);
   });
 

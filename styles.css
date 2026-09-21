@@ -2082,6 +2082,78 @@ button {
   outline-offset: 2px;
 }
 
+.timer-resume-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: inset 3px 0 0 var(--routine-color, var(--primary));
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.timer-resume-banner:hover {
+  border-color: var(--primary);
+}
+
+.timer-resume-banner:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 3px 0 0 var(--routine-color, var(--primary)),
+    0 0 0 3px var(--input-focus-ring);
+}
+
+.timer-resume-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.timer-resume-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--primary-strong);
+}
+
+.timer-resume-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timer-resume-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.timer-resume-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.timer-resume-action {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-strong);
+}
+
 .live-timer {
   display: flex;
   flex-direction: column;

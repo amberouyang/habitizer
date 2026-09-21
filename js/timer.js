@@ -123,34 +123,97 @@ export function startLiveTimerLoop() {
   }
 
   setLiveTimerIntervalId(setInterval(() => {
-    if (state.currentView === "timer" && state.timer.isRunning) {
+    if (!state.timer.isRunning) return;
+    if (state.currentView === "timer") {
       updateTimerDisplay();
+      return;
     }
-  }, 100));
+    updateInProgressBanner();
+  }, 250));
+}
+
+export function isTimerSessionActive() {
+  return Boolean(state.timer.routineId && getRoutineById(state.timer.routineId));
+}
+
+export function getActiveTimerRoutine() {
+  if (!state.timer.routineId) return null;
+  return getRoutineById(state.timer.routineId);
+}
+
+const TAB_SAFE_VIEWS = new Set(["home", "history", "settings"]);
+
+/** Leave the timer screen without ending the run. */
+export function minimizeTimer(targetView = "home") {
+  if (isTimerSessionActive()) {
+    saveTimerSession();
+  }
+  if (TAB_SAFE_VIEWS.has(targetView)) {
+    setView(targetView);
+  } else {
+    setView("home");
+  }
+}
+
+export function resumeActiveTimer() {
+  const routine = getActiveTimerRoutine();
+  if (!routine) return;
+  setView("timer", routine.id);
+  startLiveTimerLoop();
+}
+
+function updateInProgressBanner() {
+  const timeEl = document.querySelector(".timer-resume-banner .timer-resume-time");
+  if (!timeEl || !isTimerSessionActive()) return;
+  timeEl.textContent = formatDuration(getTotalElapsedMs());
 }
 
 export function startRoutine(routineId, startActivityId = null) {
   const routine = getRoutineById(routineId);
   if (!routine || routine.activities.length === 0) return;
 
-  const shouldStartActivity = startActivityId
-    && routine.activities.some((activity) => activity.id === startActivityId);
+  // Same routine already in progress — just reopen the live view.
+  if (state.timer.routineId === routineId) {
+    resumeActiveTimer();
+    return;
+  }
 
-  state.timer = {
-    routineId,
-    isRunning: shouldStartActivity,
-    elapsedMs: 0,
-    lastTimestamp: shouldStartActivity ? Date.now() : null,
-    activeActivityIds: new Set(shouldStartActivity ? [startActivityId] : []),
-    completedActivityIds: new Set(),
-    activityStartTimes: shouldStartActivity
-      ? { [startActivityId]: Date.now() }
-      : {},
+  const replaceActive = () => {
+    const shouldStartActivity = startActivityId
+      && routine.activities.some((activity) => activity.id === startActivityId);
+
+    state.timer = {
+      routineId,
+      isRunning: shouldStartActivity,
+      elapsedMs: 0,
+      lastTimestamp: shouldStartActivity ? Date.now() : null,
+      activeActivityIds: new Set(shouldStartActivity ? [startActivityId] : []),
+      completedActivityIds: new Set(),
+      activityStartTimes: shouldStartActivity
+        ? { [startActivityId]: Date.now() }
+        : {},
+    };
+
+    saveTimerSession();
+    setView("timer", routineId);
+    startLiveTimerLoop();
   };
 
-  saveTimerSession();
-  setView("timer", routineId);
-  startLiveTimerLoop();
+  if (isTimerSessionActive() && hasRoutineClockStarted()) {
+    const active = getActiveTimerRoutine();
+    openConfirmModal({
+      title: t("timer.replaceTitle"),
+      message: t("timer.replaceMessage", { name: active?.name || t("view.liveRoutine") }),
+      confirmLabel: t("timer.replaceConfirm"),
+      onConfirm: () => {
+        closeConfirmModal();
+        replaceActive();
+      },
+    });
+    return;
+  }
+
+  replaceActive();
 }
 
 export function restoreTimerSession() {

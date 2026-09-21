@@ -75,6 +75,10 @@ import {
   applyActivityCheckboxState,
   hasRoutineClockStarted,
   requestEndRoutine,
+  isTimerSessionActive,
+  getActiveTimerRoutine,
+  minimizeTimer,
+  resumeActiveTimer,
 } from "./timer.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
 import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed, setHomeWidgetVisibility } from "./persistence.js";
@@ -82,7 +86,7 @@ import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed, se
 const TAB_VIEWS = new Set(["home", "history", "settings"]);
 
 function updateChrome(view) {
-  const showTabs = TAB_VIEWS.has(view);
+  const showTabs = TAB_VIEWS.has(view) || view === "timer";
   tabBar?.classList.toggle("hidden", !showTabs);
   document.querySelector(".app-shell")?.classList.toggle("tab-bar-hidden", !showTabs);
 
@@ -154,9 +158,10 @@ export function setView(view, routineId = null) {
     addButton.textContent = "+";
     addButton.setAttribute("aria-label", t("app.addActivity"));
   } else if (view === "timer") {
-    pageTitleEl.textContent = t("view.liveRoutine");
-    pageTitleEl.title = "";
-    backButton.classList.add("hidden");
+    const routine = getRoutineById(routineId);
+    pageTitleEl.textContent = routine ? routine.name : t("view.liveRoutine");
+    pageTitleEl.title = routine ? routine.name : "";
+    backButton.classList.remove("hidden");
     addButton.classList.add("hidden");
   } else if (view === "complete") {
     pageTitleEl.textContent = t("view.complete");
@@ -172,6 +177,11 @@ export function setView(view, routineId = null) {
 export function renderHomeView() {
   const home = document.createElement("div");
   home.className = "home-view";
+
+  const resumeBanner = renderTimerResumeBanner();
+  if (resumeBanner) {
+    home.appendChild(resumeBanner);
+  }
 
   const order = reconcileHomeWidgets();
   const routinesVisible = order.includes("routines");
@@ -404,6 +414,51 @@ function createHomeWidget(widgetId, bodyContent) {
 
   widget.append(header, body);
   return widget;
+}
+
+function renderTimerResumeBanner() {
+  if (!isTimerSessionActive()) return null;
+
+  const routine = getActiveTimerRoutine();
+  if (!routine) return null;
+
+  const banner = document.createElement("button");
+  banner.type = "button";
+  banner.className = "timer-resume-banner";
+  applyRoutineColorStyle(banner, routine);
+  banner.setAttribute(
+    "aria-label",
+    t("timer.resumeAria", { name: routine.name })
+  );
+  banner.addEventListener("click", resumeActiveTimer);
+
+  const copy = document.createElement("span");
+  copy.className = "timer-resume-copy";
+
+  const label = document.createElement("span");
+  label.className = "timer-resume-label";
+  label.textContent = t("timer.resumeLabel");
+
+  const name = document.createElement("strong");
+  name.className = "timer-resume-name";
+  name.textContent = routine.name;
+
+  copy.append(label, name);
+
+  const meta = document.createElement("span");
+  meta.className = "timer-resume-meta";
+
+  const time = document.createElement("span");
+  time.className = "timer-resume-time";
+  time.textContent = formatDuration(getTotalElapsedMs());
+
+  const action = document.createElement("span");
+  action.className = "timer-resume-action";
+  action.textContent = t("timer.continue");
+
+  meta.append(time, action);
+  banner.append(copy, meta);
+  return banner;
 }
 
 function renderRoutinesWidgetContent() {
@@ -996,9 +1051,16 @@ export function renderRoutineView() {
   const startBtn = document.createElement("button");
   startBtn.type = "button";
   startBtn.className = "primary-btn";
-  startBtn.textContent = t("routine.start");
+  const isActiveSession = state.timer.routineId === routine.id;
+  startBtn.textContent = isActiveSession ? t("timer.continue") : t("routine.start");
   startBtn.disabled = routine.activities.length === 0;
-  startBtn.addEventListener("click", () => startRoutine(routine.id));
+  startBtn.addEventListener("click", () => {
+    if (isActiveSession) {
+      resumeActiveTimer();
+      return;
+    }
+    startRoutine(routine.id);
+  });
 
   const addActivityButton = document.createElement("button");
   addActivityButton.type = "button";
