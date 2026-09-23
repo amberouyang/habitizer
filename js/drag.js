@@ -235,7 +235,7 @@ function handleRoutinePointerUp(event) {
       state.routines.forEach((routine) => {
         const node = list.querySelector(`[data-routine-id="${routine.id}"]`);
         if (node) {
-          list.insertBefore(node, list.querySelector(".home-add-button"));
+          list.appendChild(node);
         }
       });
     }

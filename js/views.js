@@ -631,14 +631,6 @@ function renderRoutinesWidgetContent() {
     setupRoutineDragAndDrop(list);
   }
 
-  const addRoutineButton = document.createElement("button");
-  addRoutineButton.type = "button";
-  addRoutineButton.className = "primary-btn home-add-button";
-  addRoutineButton.textContent = t("app.addRoutine");
-  addRoutineButton.setAttribute("aria-label", t("app.addRoutine"));
-  addRoutineButton.addEventListener("click", addRoutine);
-  list.appendChild(addRoutineButton);
-
   return list;
 }
 
