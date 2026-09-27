@@ -38,6 +38,7 @@ export let createModalColorId = DEFAULT_ROUTINE_COLOR_ID;
 export let colorModalRoutineId = null;
 export let calendarModalRoutineId = null;
 export let confirmCallback = null;
+export let confirmSecondaryCallback = null;
 export let settingsButton = null;
 
 export const pendingDelete = {
@@ -106,4 +107,8 @@ export function setCalendarModalRoutineId(id) {
 
 export function setConfirmCallback(cb) {
   confirmCallback = cb;
+}
+
+export function setConfirmSecondaryCallback(cb) {
+  confirmSecondaryCallback = cb;
 }

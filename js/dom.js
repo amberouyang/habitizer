@@ -29,6 +29,7 @@ export const confirmModal = document.getElementById("confirmModal");
 export const confirmTitle = document.getElementById("confirmTitle");
 export const confirmMessage = document.getElementById("confirmMessage");
 export const confirmCancel = document.getElementById("confirmCancel");
+export const confirmSecondary = document.getElementById("confirmSecondary");
 export const confirmAction = document.getElementById("confirmAction");
 export const colorModal = document.getElementById("colorModal");
 export const colorModalSwatches = document.getElementById("colorModalSwatches");

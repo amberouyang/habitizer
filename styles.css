@@ -1843,10 +1843,21 @@ button {
   margin-top: 18px;
 }
 
+.confirm-modal-actions {
+  flex-wrap: wrap;
+}
+
 .modal-actions .primary-btn,
 .modal-actions .secondary-btn,
 .modal-actions .danger-btn {
   flex: 1;
+}
+
+.confirm-modal-actions .secondary-btn,
+.confirm-modal-actions .primary-btn,
+.confirm-modal-actions .danger-btn {
+  flex: 1 1 calc(33.33% - 7px);
+  min-width: 96px;
 }
 
 .confirm-message {

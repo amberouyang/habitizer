@@ -1,4 +1,4 @@
-import { state, settings, modalState, confirmCallback, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
+import { state, settings, modalState, confirmCallback, confirmSecondaryCallback, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
 import { saveRoutines, saveSettings, saveTimerSession, applyTheme } from "./persistence.js";
 import { getRoutineById, syncRoutineEstimatedMinutes } from "./models.js";
 import { parseEstimatedMinutes } from "./utils.js";
@@ -11,6 +11,7 @@ import {
   modalCancel,
   confirmModal,
   confirmCancel,
+  confirmSecondary,
   confirmAction,
   colorModal,
   colorModalClose,
@@ -47,7 +48,7 @@ import {
   openAddActivityModal,
 } from "./routines.js";
 import { undoDelete } from "./delete.js";
-import { exportBackup, readBackupFile, applyBackup } from "./backup.js";
+import { exportBackup, readBackupFile, applyBackup, mergeBackup } from "./backup.js";
 import { setView, render } from "./views.js";
 import { minimizeTimer } from "./timer.js";
 import {
@@ -223,6 +224,12 @@ export function wireEvents() {
     }
   });
 
+  confirmSecondary?.addEventListener("click", () => {
+    if (confirmSecondaryCallback) {
+      confirmSecondaryCallback();
+    }
+  });
+
   confirmModal?.addEventListener("click", (event) => {
     if (event.target === confirmModal) {
       closeConfirmModal();
@@ -360,29 +367,40 @@ export function wireEvents() {
       const parsed = await readBackupFile(file);
       const routineCount = parsed.routines.length;
 
+      const finishImport = (mode) => {
+        closeConfirmModal();
+
+        if (liveTimerIntervalId) {
+          clearInterval(liveTimerIntervalId);
+          setLiveTimerIntervalId(null);
+        }
+
+        if (mode === "merge") {
+          mergeBackup(parsed);
+        } else {
+          applyBackup(parsed);
+        }
+        closeSettings();
+        setView("home");
+        render();
+      };
+
       openConfirmModal({
         title: t("modal.importTitle"),
         message: t("modal.importMessage", { count: routineCount }),
-        confirmLabel: t("modal.importConfirm"),
-        onConfirm: () => {
-          closeConfirmModal();
-
-          if (liveTimerIntervalId) {
-            clearInterval(liveTimerIntervalId);
-            setLiveTimerIntervalId(null);
-          }
-
-          applyBackup(parsed);
-          closeSettings();
-          setView("home");
-          render();
-        },
+        confirmLabel: t("modal.importMerge"),
+        confirmTone: "primary",
+        onConfirm: () => finishImport("merge"),
+        secondaryLabel: t("modal.importReplace"),
+        secondaryTone: "danger",
+        onSecondary: () => finishImport("replace"),
       });
     } catch (error) {
       openConfirmModal({
         title: t("modal.importErrorTitle"),
         message: error?.message || t("modal.importErrorFallback"),
         confirmLabel: t("app.done"),
+        confirmTone: "primary",
         onConfirm: closeConfirmModal,
       });
     } finally {

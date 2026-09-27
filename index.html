@@ -27,7 +27,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=add-dedupe1" />
+    <link rel="stylesheet" href="styles.css?v=merge-import1" />
   </head>
   <body>
     <div class="app-shell">
@@ -91,7 +91,7 @@
         </section>
         <section class="settings-backup-section" aria-labelledby="backupTitle">
           <h3 id="backupTitle" class="settings-section-title" data-i18n="settings.backup">Backup</h3>
-          <p class="settings-section-desc" data-i18n="settings.backupDesc">Export or restore routines, settings, and recently deleted items as a JSON file.</p>
+          <p class="settings-section-desc" data-i18n="settings.backupDesc">Export or restore routines, settings, and recently deleted items as a JSON file. Import can merge or replace.</p>
           <div class="settings-backup-actions">
             <button id="exportBackupBtn" type="button" class="secondary-btn" data-i18n="settings.export">Export</button>
             <button id="importBackupBtn" type="button" class="secondary-btn" data-i18n="settings.import">Import</button>
@@ -180,8 +180,9 @@
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
         <h2 id="confirmTitle">Confirm</h2>
         <p id="confirmMessage" class="confirm-message"></p>
-        <div class="modal-actions">
+        <div class="modal-actions confirm-modal-actions">
           <button id="confirmCancel" type="button" class="secondary-btn" data-i18n="app.cancel">Cancel</button>
+          <button id="confirmSecondary" type="button" class="danger-btn hidden">Replace</button>
           <button id="confirmAction" type="button" class="danger-btn">Confirm</button>
         </div>
       </div>
@@ -189,7 +190,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-09-22-add-dedupe1";
+      window.__HABITIZER_BUILD__ = "2026-09-27-merge-import1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [

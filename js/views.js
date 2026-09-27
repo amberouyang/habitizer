@@ -128,9 +128,14 @@ export function setView(view, routineId = null) {
     pageTitleEl.textContent = t("app.name");
     pageTitleEl.title = "";
     backButton.classList.add("hidden");
-    addButton.classList.remove("hidden");
-    addButton.textContent = "+";
-    addButton.setAttribute("aria-label", t("app.addRoutine"));
+    // Top + only when routines exist; empty state has its own Add CTA.
+    if (state.routines.length > 0) {
+      addButton.classList.remove("hidden");
+      addButton.textContent = "+";
+      addButton.setAttribute("aria-label", t("app.addRoutine"));
+    } else {
+      addButton.classList.add("hidden");
+    }
   } else if (view === "history") {
     pageTitleEl.textContent = t("nav.history");
     pageTitleEl.title = "";
@@ -1331,6 +1336,13 @@ export function render() {
   if (state.currentView === "home") {
     appEl.innerHTML = "";
     appEl.appendChild(renderHomeView());
+    if (state.routines.length > 0) {
+      addButton.classList.remove("hidden");
+      addButton.textContent = "+";
+      addButton.setAttribute("aria-label", t("app.addRoutine"));
+    } else {
+      addButton.classList.add("hidden");
+    }
     return;
   }
 

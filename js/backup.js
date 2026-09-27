@@ -249,12 +249,115 @@ export function exportBackup() {
   URL.revokeObjectURL(url);
 }
 
-export function applyBackup(parsed) {
-  state.routines = parsed.routines;
-  Object.assign(settings, parsed.settings);
-  reconcileHomeWidgets();
-  setDeletedRoutines(parsed.deletedRoutines);
+function unionDateKeys(a = [], b = []) {
+  return [...new Set([...(a || []), ...(b || [])].filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)))].sort();
+}
 
+function mergeRunHistory(localRuns = [], remoteRuns = []) {
+  const byId = new Map();
+  [...(localRuns || []), ...(remoteRuns || [])].forEach((run) => {
+    if (!run || typeof run !== "object") return;
+    const key = typeof run.id === "string" && run.id
+      ? run.id
+      : `${run.completedAt}-${run.dateKey || ""}-${run.totalMs}`;
+    const existing = byId.get(key);
+    if (!existing || Number(run.completedAt) >= Number(existing.completedAt)) {
+      byId.set(key, run);
+    }
+  });
+
+  return [...byId.values()]
+    .sort((a, b) => Number(b.completedAt) - Number(a.completedAt))
+    .slice(0, RUN_HISTORY_LIMIT);
+}
+
+function pickNextDueDate(local, remote) {
+  const localDue = typeof local?.nextDueDate === "string" ? local.nextDueDate : null;
+  const remoteDue = typeof remote?.nextDueDate === "string" ? remote.nextDueDate : null;
+  if (localDue && remoteDue) return localDue < remoteDue ? localDue : remoteDue;
+  return remoteDue || localDue || null;
+}
+
+function mergeRoutine(local, remote) {
+  const localLevel = Number(local.srsLevel) || 0;
+  const remoteLevel = Number(remote.srsLevel) || 0;
+  const spacedRepetition = Boolean(local.spacedRepetition || remote.spacedRepetition);
+
+  return {
+    ...local,
+    name: remote.name || local.name,
+    color: remote.color || local.color,
+    estimatedMinutes: remote.estimatedMinutes,
+    activities: Array.isArray(remote.activities) && remote.activities.length > 0
+      ? remote.activities
+      : local.activities,
+    completionDates: unionDateKeys(local.completionDates, remote.completionDates),
+    runHistory: mergeRunHistory(local.runHistory, remote.runHistory),
+    spacedRepetition,
+    srsLevel: spacedRepetition ? Math.max(localLevel, remoteLevel) : 0,
+    nextDueDate: spacedRepetition ? pickNextDueDate(local, remote) : null,
+  };
+}
+
+export function mergeRoutines(localRoutines, incomingRoutines) {
+  const local = Array.isArray(localRoutines) ? localRoutines : [];
+  const incoming = Array.isArray(incomingRoutines) ? incomingRoutines : [];
+  const byId = new Map(local.map((routine) => [routine.id, { ...routine }]));
+
+  incoming.forEach((remote) => {
+    const existing = byId.get(remote.id);
+    if (!existing) {
+      byId.set(remote.id, remote);
+      return;
+    }
+    byId.set(remote.id, mergeRoutine(existing, remote));
+  });
+
+  const merged = [];
+  const seen = new Set();
+  local.forEach((routine) => {
+    merged.push(byId.get(routine.id));
+    seen.add(routine.id);
+  });
+  incoming.forEach((routine) => {
+    if (!seen.has(routine.id)) {
+      merged.push(byId.get(routine.id));
+      seen.add(routine.id);
+    }
+  });
+  return merged;
+}
+
+function mergeDeletedRoutines(localDeleted, incomingDeleted) {
+  const byKey = new Map();
+  [...(localDeleted || []), ...(incomingDeleted || [])].forEach((entry) => {
+    if (!entry?.routine) return;
+    const key = entry.id || entry.routine.id;
+    const existing = byKey.get(key);
+    if (!existing || Number(entry.deletedAt) >= Number(existing.deletedAt)) {
+      byKey.set(key, entry);
+    }
+  });
+  return [...byKey.values()].sort((a, b) => Number(b.deletedAt) - Number(a.deletedAt));
+}
+
+function mergeSettings(localSettings, incomingSettings) {
+  const localColors = Array.isArray(localSettings.savedColors) ? localSettings.savedColors : [];
+  const remoteColors = Array.isArray(incomingSettings.savedColors) ? incomingSettings.savedColors : [];
+  const savedColors = [...localColors, ...remoteColors]
+    .filter((color) => typeof color === "string" && /^#[0-9A-Fa-f]{6}$/.test(color))
+    .map((color) => color.toLowerCase())
+    .filter((color, index, list) => list.indexOf(color) === index)
+    .slice(0, SAVED_COLORS_LIMIT);
+
+  // Keep the live app preferences; only absorb extra saved colors from the backup.
+  return {
+    ...localSettings,
+    savedColors,
+  };
+}
+
+function resetTransientState() {
   state.timer = {
     routineId: null,
     isRunning: false,
@@ -268,19 +371,45 @@ export function applyBackup(parsed) {
   state.currentRoutineId = null;
   state.routineCalendarOffset = 0;
   state.calendarRoutineId = null;
-
   clearTimerSession();
+}
+
+function syncSettingsToggles() {
+  if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
+  if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;
+  if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
+  if (dueRemindersToggle) dueRemindersToggle.checked = settings.dueReminders;
+}
+
+export function applyBackup(parsed) {
+  state.routines = parsed.routines;
+  Object.assign(settings, parsed.settings);
+  reconcileHomeWidgets();
+  setDeletedRoutines(parsed.deletedRoutines);
+  resetTransientState();
   saveRoutines();
   saveSettings();
   pruneExpiredDeletedRoutines();
   saveDeletedRoutines();
   applyTheme();
   applyDocumentLanguage();
+  syncSettingsToggles();
+}
 
-  if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
-  if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;
-  if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
-  if (dueRemindersToggle) dueRemindersToggle.checked = settings.dueReminders;
+/** Keep local routines/settings; add new backup routines and union history for shared ids. */
+export function mergeBackup(parsed) {
+  state.routines = mergeRoutines(state.routines, parsed.routines);
+  Object.assign(settings, mergeSettings(settings, parsed.settings));
+  reconcileHomeWidgets();
+  setDeletedRoutines(mergeDeletedRoutines(deletedRoutines, parsed.deletedRoutines));
+  resetTransientState();
+  saveRoutines();
+  saveSettings();
+  pruneExpiredDeletedRoutines();
+  saveDeletedRoutines();
+  applyTheme();
+  applyDocumentLanguage();
+  syncSettingsToggles();
 }
 
 export async function readBackupFile(file) {

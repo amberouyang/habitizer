@@ -11,6 +11,7 @@ import {
   setColorModalRoutineId,
   setCalendarModalRoutineId,
   setConfirmCallback,
+  setConfirmSecondaryCallback,
   setDeletedRoutines,
 } from "./state.js";
 import {
@@ -34,6 +35,7 @@ import {
   confirmTitle,
   confirmMessage,
   confirmCancel,
+  confirmSecondary,
   confirmAction,
   colorModal,
   colorModalSwatches,
@@ -871,11 +873,35 @@ function renderHomeWidgetSettings() {
   });
 }
 
-export function openConfirmModal({ title, message, confirmLabel, onConfirm }) {
+export function openConfirmModal({
+  title,
+  message,
+  confirmLabel,
+  onConfirm,
+  confirmTone = "danger",
+  secondaryLabel = null,
+  onSecondary = null,
+  secondaryTone = "danger",
+}) {
   confirmTitle.textContent = title;
   confirmMessage.textContent = message;
   confirmAction.textContent = confirmLabel;
+  confirmAction.classList.remove("danger-btn", "primary-btn", "secondary-btn");
+  confirmAction.classList.add(confirmTone === "primary" ? "primary-btn" : "danger-btn");
   setConfirmCallback(onConfirm);
+
+  if (confirmSecondary) {
+    if (secondaryLabel && typeof onSecondary === "function") {
+      confirmSecondary.textContent = secondaryLabel;
+      confirmSecondary.classList.remove("hidden", "danger-btn", "primary-btn", "secondary-btn");
+      confirmSecondary.classList.add(secondaryTone === "primary" ? "primary-btn" : "danger-btn");
+      setConfirmSecondaryCallback(onSecondary);
+    } else {
+      confirmSecondary.classList.add("hidden");
+      setConfirmSecondaryCallback(null);
+    }
+  }
+
   confirmModal.classList.remove("hidden");
   confirmModal.setAttribute("aria-hidden", "false");
   confirmCancel.focus();
@@ -885,6 +911,10 @@ export function closeConfirmModal() {
   confirmModal.classList.add("hidden");
   confirmModal.setAttribute("aria-hidden", "true");
   setConfirmCallback(null);
+  setConfirmSecondaryCallback(null);
+  if (confirmSecondary) {
+    confirmSecondary.classList.add("hidden");
+  }
 }
 
 export function restoreDeletedRoutine(entryId) {
