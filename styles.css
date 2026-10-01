@@ -1442,6 +1442,11 @@ button {
   border-color: var(--hover-border-strong);
 }
 
+.run-history-item.is-focused {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
 .run-history-item-top {
   display: flex;
   align-items: baseline;

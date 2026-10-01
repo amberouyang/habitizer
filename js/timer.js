@@ -286,6 +286,32 @@ function ensureRoutineClockRunning(now = Date.now()) {
   state.timer.lastTimestamp = now;
 }
 
+/** Start the next idle activity after `afterActivityId` in list order. Returns its id, or null. */
+function startNextIdleActivity(routine, afterActivityId, now) {
+  const index = routine.activities.findIndex((item) => item.id === afterActivityId);
+  if (index < 0) return null;
+
+  for (let i = index + 1; i < routine.activities.length; i += 1) {
+    const next = routine.activities[i];
+    if (getActivityRunStatus(next.id) !== "idle") continue;
+    ensureRoutineClockRunning(now);
+    state.timer.activeActivityIds.add(next.id);
+    state.timer.activityStartTimes[next.id] = now;
+    return next.id;
+  }
+  return null;
+}
+
+function scrollActivityIntoView(activityId) {
+  if (!activityId) return;
+  requestAnimationFrame(() => {
+    document
+      .querySelector(`.progress-item input[data-activity-id="${activityId}"]`)
+      ?.closest(".progress-item")
+      ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+}
+
 export function advanceActivityState(activityId) {
   if (!state.timer.routineId) return;
 
@@ -298,6 +324,7 @@ export function advanceActivityState(activityId) {
   ensureTimerSets();
   const status = getActivityRunStatus(activityId);
   const now = Date.now();
+  let autoAdvancedId = null;
 
   if (status === "idle") {
     ensureRoutineClockRunning(now);
@@ -311,6 +338,7 @@ export function advanceActivityState(activityId) {
     delete state.timer.activityStartTimes[activityId];
     state.timer.activeActivityIds.delete(activityId);
     state.timer.completedActivityIds.add(activityId);
+    autoAdvancedId = startNextIdleActivity(routine, activityId, now);
   } else {
     state.timer.completedActivityIds.delete(activityId);
   }
@@ -318,6 +346,7 @@ export function advanceActivityState(activityId) {
   saveRoutines();
   saveTimerSession();
   render();
+  scrollActivityIntoView(autoAdvancedId);
 }
 
 /** @deprecated use advanceActivityState — kept for older call sites */

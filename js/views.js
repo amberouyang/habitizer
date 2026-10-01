@@ -22,6 +22,7 @@ import {
   getWeeklyStats,
   getWeekdayShortLabel,
   getRoutineRunHistory,
+  getRunDateKey,
   formatRunCompletedAt,
   getRoutineYearlyContributions,
   formatContributionDayLabel,
@@ -305,13 +306,14 @@ export function renderHistoryView() {
   list.setAttribute("role", "list");
 
   items.forEach(({ routine, run, completedAt }) => {
+    const dateKey = getRunDateKey(run);
     const item = document.createElement("button");
     item.type = "button";
     item.className = "history-item";
     item.setAttribute("role", "listitem");
     item.setAttribute(
       "aria-label",
-      t("history.openRoutine", { name: routine.name })
+      t("history.viewDayDetails", { name: routine.name })
     );
     applyRoutineColorStyle(item, routine);
 
@@ -338,8 +340,11 @@ export function renderHistoryView() {
 
     item.append(swatch, copy, duration);
     item.addEventListener("click", () => {
-      state.returnView = "history";
-      setView("routine", routine.id);
+      if (!dateKey) return;
+      openCalendarModal(routine.id, {
+        dateKey,
+        focusRunId: typeof run.id === "string" ? run.id : null,
+      });
     });
     list.appendChild(item);
   });

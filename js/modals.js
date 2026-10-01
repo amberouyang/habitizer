@@ -434,10 +434,12 @@ export function closeColorModal() {
 }
 
 let selectedCalendarDateKey = null;
+let focusedCalendarRunId = null;
 
 function changeRoutineCalendarMonth(delta) {
   state.routineCalendarOffset += delta;
   selectedCalendarDateKey = null;
+  focusedCalendarRunId = null;
   if (!calendarModal.classList.contains("hidden")) {
     refreshCalendarModalContent();
   }
@@ -468,7 +470,7 @@ function formatCalendarDayLabel(dateKey) {
   });
 }
 
-function buildRunDetailItem(run, { fastestMs = null } = {}) {
+function buildRunDetailItem(run, { fastestMs = null, focusRunId = null } = {}) {
   const item = document.createElement("div");
   item.className = "run-history-item";
 
@@ -503,6 +505,9 @@ function buildRunDetailItem(run, { fastestMs = null } = {}) {
   if (fastestMs != null && Number(run.totalMs) === fastestMs) {
     item.classList.add("is-best");
   }
+  if (focusRunId && run.id === focusRunId) {
+    item.classList.add("is-focused");
+  }
 
   item.append(top, meta);
   return item;
@@ -527,6 +532,7 @@ function buildCalendarDayDetailContent(routine, dateKey) {
   clearBtn.setAttribute("aria-label", t("calendar.clearDay"));
   clearBtn.addEventListener("click", () => {
     selectedCalendarDateKey = null;
+    focusedCalendarRunId = null;
     refreshCalendarModalContent();
   });
 
@@ -541,7 +547,7 @@ function buildCalendarDayDetailContent(routine, dateKey) {
     const list = document.createElement("div");
     list.className = "run-history-list";
     runs.forEach((run) => {
-      list.appendChild(buildRunDetailItem(run, { fastestMs }));
+      list.appendChild(buildRunDetailItem(run, { fastestMs, focusRunId: focusedCalendarRunId }));
     });
     section.appendChild(list);
     return section;
@@ -647,6 +653,7 @@ function buildStreakCalendarContent(routine) {
 
       cell.addEventListener("click", () => {
         selectedCalendarDateKey = isSelected ? null : dateKey;
+        focusedCalendarRunId = null;
         refreshCalendarModalContent();
         calendarModalBody
           .querySelector(".calendar-day-detail")
@@ -728,10 +735,11 @@ function updateCalendarModal(routine) {
     calendarModalSubtitle.classList.add("hidden");
   }
 
-  const children = [buildStreakCalendarContent(routine)];
+  const children = [];
   if (selectedCalendarDateKey) {
     children.push(buildCalendarDayDetailContent(routine, selectedCalendarDateKey));
   }
+  children.push(buildStreakCalendarContent(routine));
   children.push(buildRunHistoryContent(routine));
   calendarModalBody.replaceChildren(...children);
 }
@@ -750,6 +758,10 @@ export function openCalendarModal(routineId, options = {}) {
     typeof options.dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(options.dateKey)
       ? options.dateKey
       : null;
+  const focusRunId =
+    typeof options.focusRunId === "string" && options.focusRunId
+      ? options.focusRunId
+      : null;
 
   if (focusDateKey) {
     const [year, month] = focusDateKey.split("-").map(Number);
@@ -758,12 +770,14 @@ export function openCalendarModal(routineId, options = {}) {
       (year - now.getFullYear()) * 12 + ((month - 1) - now.getMonth());
     state.calendarRoutineId = routineId;
     selectedCalendarDateKey = focusDateKey;
+    focusedCalendarRunId = focusRunId;
   } else {
     if (routineId !== state.calendarRoutineId) {
       state.routineCalendarOffset = 0;
       state.calendarRoutineId = routineId;
     }
     selectedCalendarDateKey = null;
+    focusedCalendarRunId = null;
   }
 
   setCalendarModalRoutineId(routineId);
@@ -771,6 +785,15 @@ export function openCalendarModal(routineId, options = {}) {
   calendarModal.classList.remove("hidden");
   calendarModal.setAttribute("aria-hidden", "false");
   calendarModalClose.focus();
+
+  if (focusDateKey) {
+    requestAnimationFrame(() => {
+      const focused =
+        calendarModalBody.querySelector(".run-history-item.is-focused") ||
+        calendarModalBody.querySelector(".calendar-day-detail");
+      focused?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+  }
 }
 
 export function closeCalendarModal() {
@@ -778,6 +801,7 @@ export function closeCalendarModal() {
   calendarModal.setAttribute("aria-hidden", "true");
   setCalendarModalRoutineId(null);
   selectedCalendarDateKey = null;
+  focusedCalendarRunId = null;
   calendarModalBody.replaceChildren();
   calendarModalSubtitle.textContent = "";
   calendarModalSubtitle.classList.add("hidden");

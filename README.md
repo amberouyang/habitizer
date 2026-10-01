@@ -10,13 +10,13 @@ A phone-first web app for building, running, and sticking with daily routines �
 - **Estimated time** — Per-activity estimates; routine total sums from activities
 - **Routine colors** — Presets, custom colors, and saved swatches (tinted cards + timer progress)
 - **Start from Home** — Tap ▶ on a card to jump straight into the live timer
-- **Live timer** — Total and per-activity time vs estimates; pause/resume; survives refresh
+- **Live timer** — Total and per-activity time vs estimates; finish a step to auto-start the next; pause/resume; survives refresh
 - **Leave & resume** — Back or switch tabs without ending a run; continue from the Home banner
 - **Completion screen** — Results, streak, personal best, and next practice date (when spaced practice is on)
 - **Streaks** — Daily completion tracking, calendar history, and streak badges
 - **Contribution graph** — GitHub-style yearly activity on routine detail
 - **Weekly stats** — Home widget for this week’s completions, active days, and total time
-- **History tab** — Recent runs across all routines
+- **History tab** — Recent runs across all routines; tap a run for that day’s details
 - **Spaced practice** — Optional spaced-repetition schedule (1 → 2 → 4 → 7 → 14 → 30 days) with due/overdue badges and due-first sorting on Home
 - **Due reminders** — Optional browser notifications when spaced-practice routines are due or overdue
 - **Languages** — English, Español, 中文
@@ -120,7 +120,7 @@ Use the bottom tab bar:
 ### Running a routine
 
 1. Start from Home (▶) or routine detail
-2. Tap an activity to **start**, tap again to **finish**
+2. Tap an activity to **start**, tap again to **finish** — the next step starts automatically
 3. Watch total / estimate progress (amber when over)
 4. **Pause** / **Resume** as needed
 5. Use **Back** or tabs to leave without ending — resume from the Home banner
@@ -132,7 +132,7 @@ Starting a different routine while one is active asks before replacing the timer
 ### History
 
 - Scroll recent runs (routine name, duration, when)
-- Tap a row to open that routine’s detail
+- Tap a row to open that day’s details (duration, activities done, vs estimate), plus the routine calendar
 
 ### Settings
 
