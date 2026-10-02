@@ -1944,6 +1944,12 @@ button {
 
 .confirm-modal-actions {
   flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Don't leave a ghost gap for the optional third confirm button. */
+#confirmSecondary.hidden {
+  display: none;
 }
 
 .modal-actions .primary-btn,
@@ -1955,8 +1961,15 @@ button {
 .confirm-modal-actions .secondary-btn,
 .confirm-modal-actions .primary-btn,
 .confirm-modal-actions .danger-btn {
-  flex: 1 1 calc(33.33% - 7px);
+  flex: 1 1 calc(50% - 5px);
   min-width: 96px;
+  text-align: center;
+}
+
+.confirm-modal-actions:has(#confirmSecondary:not(.hidden)) .secondary-btn,
+.confirm-modal-actions:has(#confirmSecondary:not(.hidden)) .primary-btn,
+.confirm-modal-actions:has(#confirmSecondary:not(.hidden)) .danger-btn {
+  flex-basis: calc(33.33% - 7px);
 }
 
 .confirm-message {
