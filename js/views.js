@@ -81,6 +81,7 @@ import {
   minimizeTimer,
   resumeActiveTimer,
 } from "./timer.js";
+import { createEmptyArt } from "./emptyArt.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
 import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed, setHomeWidgetVisibility } from "./persistence.js";
 
@@ -207,6 +208,7 @@ export function renderHomeView() {
       createHomeEmptyState({
         title: t("home.routinesHiddenTitle"),
         hint: t("home.routinesHiddenHint"),
+        art: "hidden",
         actions: [
           {
             label: t("home.showRoutines"),
@@ -233,7 +235,7 @@ export function renderHomeView() {
   return home;
 }
 
-function createHomeEmptyState({ title, hint, actions = [] }) {
+function createHomeEmptyState({ title, hint, actions = [], art = "routines" }) {
   const empty = document.createElement("div");
   empty.className = "empty-state home-empty-state";
 
@@ -245,7 +247,7 @@ function createHomeEmptyState({ title, hint, actions = [] }) {
   hintEl.className = "empty-state-hint";
   hintEl.textContent = hint;
 
-  empty.append(titleEl, hintEl);
+  empty.append(createEmptyArt(art), titleEl, hintEl);
 
   if (actions.length > 0) {
     const actionsEl = document.createElement("div");
@@ -286,17 +288,17 @@ export function renderHistoryView() {
   const items = getRecentHistoryItems();
   if (items.length === 0) {
     const empty = document.createElement("div");
-    empty.className = "history-empty";
+    empty.className = "empty-state history-empty";
 
     const title = document.createElement("h2");
-    title.className = "history-empty-title";
+    title.className = "empty-state-title history-empty-title";
     title.textContent = t("history.emptyTitle");
 
     const hint = document.createElement("p");
-    hint.className = "history-empty-hint";
+    hint.className = "empty-state-hint history-empty-hint";
     hint.textContent = t("history.emptyHint");
 
-    empty.append(title, hint);
+    empty.append(createEmptyArt("history"), title, hint);
     view.appendChild(empty);
     return view;
   }
@@ -480,6 +482,7 @@ function renderRoutinesWidgetContent() {
       createHomeEmptyState({
         title: t("home.emptyTitle"),
         hint: t("home.emptyHint"),
+        art: "routines",
         actions: [
           {
             label: t("app.addRoutine"),
@@ -661,6 +664,7 @@ function renderWeeklyStatsContent() {
         state.routines.length === 0
           ? t("home.weeklyEmptyHintNoRoutines")
           : t("home.weeklyEmptyHint"),
+      art: "weekly",
     });
     empty.classList.add("weekly-empty-state");
     section.appendChild(empty);
@@ -1005,10 +1009,13 @@ export function renderRoutineView() {
   activityList.className = "activity-list";
 
   if (routine.activities.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "empty-state";
-    empty.textContent = t("routine.emptyActivities");
-    activityList.appendChild(empty);
+    activityList.appendChild(
+      createHomeEmptyState({
+        title: t("routine.emptyActivities"),
+        hint: t("routine.emptyActivitiesHint"),
+        art: "activities",
+      })
+    );
   } else {
     routine.activities.forEach((activity) => {
       const item = document.createElement("div");

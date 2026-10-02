@@ -346,11 +346,7 @@ button {
 
 .history-empty {
   margin: 28px 0;
-  padding: 28px 18px;
-  text-align: center;
-  border-radius: 18px;
-  background: var(--empty-state-bg);
-  border: 1px dashed var(--empty-state-border);
+  padding: 32px 18px 28px;
 }
 
 .history-empty-title {
@@ -1741,12 +1737,78 @@ button {
 }
 
 .empty-state {
-  background: var(--empty-state-bg);
-  border: 1px dashed var(--empty-state-border);
-  border-radius: 16px;
-  padding: 26px 16px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--empty-state-bg));
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border));
+  border-radius: 20px;
+  padding: 28px 18px 24px;
   text-align: center;
   color: var(--muted);
+}
+
+.empty-art {
+  width: min(148px, 72%);
+  margin: 0 auto 12px;
+  line-height: 0;
+}
+
+.empty-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.empty-art-glow {
+  fill: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.empty-art-surface {
+  fill: color-mix(in srgb, var(--primary) 8%, var(--panel));
+  stroke: color-mix(in srgb, var(--primary) 22%, var(--border));
+  stroke-width: 1.5;
+}
+
+.empty-art-ring {
+  fill: color-mix(in srgb, var(--primary) 12%, var(--panel));
+  stroke: color-mix(in srgb, var(--primary) 35%, var(--border));
+  stroke-width: 1.5;
+}
+
+.empty-art-line {
+  stroke: color-mix(in srgb, var(--primary) 45%, var(--muted));
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.empty-art-accent {
+  stroke: var(--primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.empty-art-badge {
+  fill: var(--primary);
+}
+
+.empty-art-badge-mark {
+  stroke: #fff;
+  stroke-width: 2.75;
+  stroke-linecap: round;
+}
+
+.empty-art-bar {
+  fill: color-mix(in srgb, var(--primary) 22%, var(--panel-alt));
+}
+
+.empty-art-bar-strong {
+  fill: color-mix(in srgb, var(--primary) 55%, var(--panel-alt));
+}
+
+.empty-art-check {
+  fill: color-mix(in srgb, var(--primary) 12%, var(--panel));
+  stroke: color-mix(in srgb, var(--primary) 35%, var(--border));
+  stroke-width: 1.5;
 }
 
 .empty-state-title {
@@ -1781,9 +1843,14 @@ button {
 
 .weekly-empty-state {
   margin-bottom: 14px;
-  padding: 18px 14px;
+  padding: 16px 12px 14px;
   background: transparent;
-  border-style: dashed;
+  border: none;
+}
+
+.weekly-empty-state .empty-art {
+  width: min(120px, 64%);
+  margin-bottom: 8px;
 }
 
 .weekly-stats-chart.is-quiet {
