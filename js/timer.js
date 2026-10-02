@@ -24,6 +24,7 @@ import {
 import { saveRoutines, saveTimerSession, clearTimerSession, loadTimerSession } from "./persistence.js";
 import { openConfirmModal, closeConfirmModal } from "./modals.js";
 import { playCompletionSound } from "./audio.js";
+import { triggerHaptic } from "./haptics.js";
 import { setView, render } from "./views.js";
 
 export function updateTimerDisplay() {
@@ -339,6 +340,7 @@ export function advanceActivityState(activityId) {
     state.timer.activeActivityIds.delete(activityId);
     state.timer.completedActivityIds.add(activityId);
     autoAdvancedId = startNextIdleActivity(routine, activityId, now);
+    triggerHaptic("step");
   } else {
     state.timer.completedActivityIds.delete(activityId);
   }
@@ -428,6 +430,7 @@ export function endRoutine() {
   clearTimerSession();
   saveRoutines();
   playCompletionSound();
+  triggerHaptic("complete");
   setView("complete");
 }
 

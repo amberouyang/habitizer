@@ -25,6 +25,7 @@ A phone-first web app for building, running, and sticking with daily routines �
 - **Duplicate / undo / recently deleted** — Copy routines, brief undo after delete, 30-day restore archive
 - **Dark mode** — Status bar / theme-color follow light & dark
 - **Completion sound** — Optional chime when a routine finishes
+- **Haptics** — Optional light vibration on step finish / routine complete (where supported)
 - **Export / import** — JSON backup; import can **merge** or **replace all**
 - **Reset app data** — Wipe local data for the current browser origin
 - **Auto-save** — Everything persists in `localStorage`
@@ -142,6 +143,7 @@ Open the **Settings** tab:
 - **Dark mode** — Also syncs the system status bar color on install / supported browsers
 - **Cumulative Habit Tracker** — Times accumulate across runs when on
 - **Completion sound**
+- **Haptics** — Light vibration on step/routine finish (Android Chrome and similar; often unavailable on iPhone)
 - **Due reminders** — Notify when spaced-practice items are due/overdue (needs notification permission; works best on installed / supported browsers)
 - **Language** — English, Español, 中文
 - **Home widgets** — Show/hide sections (at least one must stay on)

@@ -11,7 +11,7 @@ import {
   DEFAULT_HOME_WIDGETS,
 } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
-import { darkModeToggle, cumulativeToggle, completionSoundToggle, dueRemindersToggle } from "./dom.js";
+import { darkModeToggle, cumulativeToggle, completionSoundToggle, hapticsToggle, dueRemindersToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 import { createId } from "./id.js";
 
@@ -314,6 +314,9 @@ export function loadSettings() {
   settings.completionSound = settings.completionSound !== undefined
     ? Boolean(settings.completionSound)
     : true;
+  settings.haptics = settings.haptics !== undefined
+    ? Boolean(settings.haptics)
+    : true;
   settings.dueReminders = Boolean(settings.dueReminders);
   settings.language = sanitizeLanguage(settings.language);
   settings.homeWidgets = sanitizeHomeWidgets(settings.homeWidgets);
@@ -334,6 +337,7 @@ export function loadSettings() {
   if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
   if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;
   if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
+  if (hapticsToggle) hapticsToggle.checked = settings.haptics;
   if (dueRemindersToggle) dueRemindersToggle.checked = settings.dueReminders;
 }
 

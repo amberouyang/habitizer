@@ -14,7 +14,7 @@ import {
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
 import { sanitizeSpacedRepetitionFields } from "./schedule.js";
-import { darkModeToggle, cumulativeToggle, completionSoundToggle, dueRemindersToggle } from "./dom.js";
+import { darkModeToggle, cumulativeToggle, completionSoundToggle, hapticsToggle, dueRemindersToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 import { createId } from "./id.js";
 
@@ -123,6 +123,7 @@ function sanitizeSettings(raw) {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
+      haptics: Boolean(settings.haptics),
       dueReminders: Boolean(settings.dueReminders),
       savedColors: [...(settings.savedColors || [])],
       language: sanitizeLanguage(settings.language),
@@ -148,6 +149,9 @@ function sanitizeSettings(raw) {
     completionSound: raw.completionSound !== undefined
       ? Boolean(raw.completionSound)
       : Boolean(settings.completionSound),
+    haptics: raw.haptics !== undefined
+      ? Boolean(raw.haptics)
+      : Boolean(settings.haptics),
     dueReminders: raw.dueReminders !== undefined
       ? Boolean(raw.dueReminders)
       : Boolean(settings.dueReminders),
@@ -190,6 +194,7 @@ export function buildBackupPayload() {
       darkMode: Boolean(settings.darkMode),
       cumulativeMode: Boolean(settings.cumulativeMode),
       completionSound: Boolean(settings.completionSound),
+      haptics: Boolean(settings.haptics),
       dueReminders: Boolean(settings.dueReminders),
       language: sanitizeLanguage(settings.language),
       savedColors: [...(settings.savedColors || [])],
@@ -378,6 +383,7 @@ function syncSettingsToggles() {
   if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
   if (cumulativeToggle) cumulativeToggle.checked = settings.cumulativeMode;
   if (completionSoundToggle) completionSoundToggle.checked = settings.completionSound;
+  if (hapticsToggle) hapticsToggle.checked = settings.haptics;
   if (dueRemindersToggle) dueRemindersToggle.checked = settings.dueReminders;
 }
 

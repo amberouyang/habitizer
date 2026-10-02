@@ -20,6 +20,7 @@ import {
   darkModeToggle,
   cumulativeToggle,
   completionSoundToggle,
+  hapticsToggle,
   languageSelect,
   exportBackupBtn,
   importBackupBtn,
@@ -40,6 +41,7 @@ import {
   openConfirmModal,
 } from "./modals.js";
 import { playCompletionSound } from "./audio.js";
+import { hapticsSupported, triggerHaptic } from "./haptics.js";
 import { t, applyDocumentLanguage, sanitizeLanguage } from "./i18n.js";
 import {
   addRoutine,
@@ -286,6 +288,22 @@ export function wireEvents() {
     saveSettings();
     if (settings.completionSound) {
       playCompletionSound({ force: true });
+    }
+  });
+
+  hapticsToggle?.addEventListener("change", () => {
+    settings.haptics = hapticsToggle.checked;
+    saveSettings();
+    if (settings.haptics) {
+      triggerHaptic("step", { force: true });
+      if (!hapticsSupported()) {
+        openConfirmModal({
+          title: t("haptics.unsupportedTitle"),
+          message: t("haptics.unsupportedMessage"),
+          confirmLabel: t("app.done"),
+          onConfirm: closeConfirmModal,
+        });
+      }
     }
   });
 

@@ -23,6 +23,7 @@ export const settings = {
   cumulativeMode: true,
   darkMode: false,
   completionSound: true,
+  haptics: true,
   dueReminders: false,
   language: "en",
   savedColors: [],

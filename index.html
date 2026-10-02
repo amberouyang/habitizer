@@ -72,6 +72,13 @@
             </span>
             <input id="completionSoundToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.sound" aria-label="Completion sound" />
           </label>
+          <label class="settings-row" for="hapticsToggle">
+            <span class="settings-copy">
+              <span class="settings-title" data-i18n="settings.haptics">Haptics</span>
+              <p class="settings-desc" data-i18n="settings.hapticsDesc">Light vibration when you finish a step or a routine (phones that support it).</p>
+            </span>
+            <input id="hapticsToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.haptics" aria-label="Haptics" />
+          </label>
           <label class="settings-row" for="dueRemindersToggle">
             <span class="settings-copy">
               <span class="settings-title" data-i18n="settings.dueReminders">Due reminders</span>
@@ -193,7 +200,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-10-01-glass-chrome1";
+      window.__HABITIZER_BUILD__ = "2026-10-01-haptics1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [
@@ -204,6 +211,7 @@
           "dom",
           "drag",
           "events",
+          "haptics",
           "i18n",
           "id",
           "main",

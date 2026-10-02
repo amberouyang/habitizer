@@ -18,6 +18,7 @@ export const modalCancel = document.getElementById("modalCancel");
 export const darkModeToggle = document.getElementById("darkModeToggle");
 export const cumulativeToggle = document.getElementById("cumulativeToggle");
 export const completionSoundToggle = document.getElementById("completionSoundToggle");
+export const hapticsToggle = document.getElementById("hapticsToggle");
 export const dueRemindersToggle = document.getElementById("dueRemindersToggle");
 export const languageSelect = document.getElementById("languageSelect");
 export const exportBackupBtn = document.getElementById("exportBackupBtn");
