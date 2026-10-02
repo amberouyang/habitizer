@@ -146,6 +146,29 @@ body::after {
   body::after {
     animation: none;
   }
+
+  .view-enter,
+  .modal-overlay,
+  .modal-overlay .modal-card,
+  .progress-item.just-finished {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-enter {
+  animation: view-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 button {
@@ -295,7 +318,7 @@ button {
   color: var(--muted);
   font: inherit;
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
 }
 
 .tab-btn:hover {
@@ -306,6 +329,7 @@ button {
 .tab-btn.is-active {
   color: var(--primary-strong);
   background: color-mix(in srgb, var(--primary) 12%, transparent);
+  transform: translateY(-1px);
 }
 
 .tab-btn:focus-visible {
@@ -1871,6 +1895,22 @@ button {
   background: var(--modal-overlay);
   z-index: 50;
   padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.modal-overlay:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .confirm-modal-overlay {
@@ -1884,6 +1924,16 @@ button {
   border-radius: 22px;
   padding: 22px 18px 18px;
   box-shadow: 0 24px 48px var(--modal-shadow);
+  transform: translateY(18px);
+  opacity: 0.92;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+}
+
+.modal-overlay:not(.hidden) .modal-card {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .modal-card h2 {
@@ -2381,6 +2431,10 @@ button {
   background: var(--accent);
 }
 
+.progress-item.just-finished {
+  animation: progress-finish-pop 0.45s ease;
+}
+
 .progress-item.active {
   background: rgba(14, 116, 144, 0.16);
   border-color: var(--primary);
@@ -2463,6 +2517,21 @@ button {
   }
   50% {
     box-shadow: 0 0 0 5px rgba(45, 212, 191, 0.24);
+  }
+}
+
+@keyframes progress-finish-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+  40% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 22%, transparent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
   }
 }
 

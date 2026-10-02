@@ -87,6 +87,18 @@ import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed, se
 
 const TAB_VIEWS = new Set(["home", "history", "settings"]);
 
+function prefersReducedMotion() {
+  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+}
+
+/** Short enter fade used when switching tabs / main screens. */
+function playViewEnter(el) {
+  if (!el || prefersReducedMotion()) return;
+  el.classList.remove("view-enter");
+  void el.offsetWidth;
+  el.classList.add("view-enter");
+}
+
 function updateChrome(view) {
   const showTabs = TAB_VIEWS.has(view) || view === "timer";
   tabBar?.classList.toggle("hidden", !showTabs);
@@ -178,7 +190,7 @@ export function setView(view, routineId = null) {
   }
 
   updateChrome(view);
-  render();
+  render({ animateEnter: true });
 }
 
 export function renderHomeView() {
@@ -1338,10 +1350,13 @@ export function renderTimerView() {
   return wrapper;
 }
 
-export function render() {
+export function render({ animateEnter = false } = {}) {
   if (state.currentView === "settings") {
     appEl.innerHTML = "";
     syncSettingsView();
+    if (animateEnter) {
+      playViewEnter(settingsView?.querySelector(".settings-content") || settingsView);
+    }
     return;
   }
 
@@ -1355,29 +1370,34 @@ export function render() {
     } else {
       addButton.classList.add("hidden");
     }
+    if (animateEnter) playViewEnter(appEl.firstElementChild);
     return;
   }
 
   if (state.currentView === "history") {
     appEl.innerHTML = "";
     appEl.appendChild(renderHistoryView());
+    if (animateEnter) playViewEnter(appEl.firstElementChild);
     return;
   }
 
   if (state.currentView === "routine") {
     appEl.innerHTML = "";
     appEl.appendChild(renderRoutineView());
+    if (animateEnter) playViewEnter(appEl.firstElementChild);
     return;
   }
 
   if (state.currentView === "timer") {
     appEl.innerHTML = "";
     appEl.appendChild(renderTimerView());
+    if (animateEnter) playViewEnter(appEl.firstElementChild);
     return;
   }
 
   if (state.currentView === "complete") {
     appEl.innerHTML = "";
     appEl.appendChild(renderCompletionView());
+    if (animateEnter) playViewEnter(appEl.firstElementChild);
   }
 }

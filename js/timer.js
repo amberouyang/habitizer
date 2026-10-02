@@ -313,6 +313,22 @@ function scrollActivityIntoView(activityId) {
   });
 }
 
+function playStepFinishFeedback(activityId) {
+  if (!activityId) return;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
+
+  requestAnimationFrame(() => {
+    const item = document
+      .querySelector(`.progress-item input[data-activity-id="${activityId}"]`)
+      ?.closest(".progress-item");
+    if (!item) return;
+    item.classList.remove("just-finished");
+    void item.offsetWidth;
+    item.classList.add("just-finished");
+    window.setTimeout(() => item.classList.remove("just-finished"), 480);
+  });
+}
+
 export function advanceActivityState(activityId) {
   if (!state.timer.routineId) return;
 
@@ -326,6 +342,7 @@ export function advanceActivityState(activityId) {
   const status = getActivityRunStatus(activityId);
   const now = Date.now();
   let autoAdvancedId = null;
+  let finishedId = null;
 
   if (status === "idle") {
     ensureRoutineClockRunning(now);
@@ -339,6 +356,7 @@ export function advanceActivityState(activityId) {
     delete state.timer.activityStartTimes[activityId];
     state.timer.activeActivityIds.delete(activityId);
     state.timer.completedActivityIds.add(activityId);
+    finishedId = activityId;
     autoAdvancedId = startNextIdleActivity(routine, activityId, now);
     triggerHaptic("step");
   } else {
@@ -348,6 +366,7 @@ export function advanceActivityState(activityId) {
   saveRoutines();
   saveTimerSession();
   render();
+  playStepFinishFeedback(finishedId);
   scrollActivityIntoView(autoAdvancedId);
 }
 
