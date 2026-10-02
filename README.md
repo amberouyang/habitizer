@@ -23,7 +23,8 @@ A phone-first web app for building, running, and sticking with daily routines �
 - **Home widgets** — Collapse, show/hide, and drag home sections (This week, Routines)
 - **Run history** — Past run durations per routine (best + recent runs, up to 50)
 - **Duplicate / undo / recently deleted** — Copy routines, brief undo after delete, 30-day restore archive
-- **Dark mode** & **completion sound**
+- **Dark mode** — Status bar / theme-color follow light & dark
+- **Completion sound** — Optional chime when a routine finishes
 - **Export / import** — JSON backup; import can **merge** or **replace all**
 - **Reset app data** — Wipe local data for the current browser origin
 - **Auto-save** — Everything persists in `localStorage`
@@ -138,7 +139,7 @@ Starting a different routine while one is active asks before replacing the timer
 
 Open the **Settings** tab:
 
-- **Dark mode**
+- **Dark mode** — Also syncs the system status bar color on install / supported browsers
 - **Cumulative Habit Tracker** — Times accumulate across runs when on
 - **Completion sound**
 - **Due reminders** — Notify when spaced-practice items are due/overdue (needs notification permission; works best on installed / supported browsers)

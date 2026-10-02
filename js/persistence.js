@@ -282,7 +282,20 @@ export function saveSettings() {
 }
 
 export function applyTheme() {
-  document.documentElement.dataset.theme = settings.darkMode ? "dark" : "light";
+  const dark = Boolean(settings.darkMode);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) {
+    // Match page background so the system status bar blends with the app chrome.
+    themeColor.setAttribute("content", dark ? "#0d1117" : "#f4f6f8");
+  }
+
+  const statusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (statusBar) {
+    // default = dark icons on light bar; black-translucent = light icons over dark content.
+    statusBar.setAttribute("content", dark ? "black-translucent" : "default");
+  }
 }
 
 export function loadSettings() {
