@@ -5,9 +5,11 @@ import { restoreTimerSession } from "./timer.js";
 import { prepareAppCache, registerServiceWorker } from "./pwa.js";
 import { wireDueReminders } from "./reminders.js";
 import { appEl } from "./dom.js";
+import { armBootSplashTimeout, hideBootSplash } from "./splash.js";
 
 function showBootError(error) {
   console.error("Habitizer failed to start:", error);
+  hideBootSplash();
   if (!appEl) return;
 
   appEl.hidden = false;
@@ -37,6 +39,7 @@ function showBootError(error) {
 }
 
 export function init() {
+  armBootSplashTimeout();
   try {
     loadRoutines();
     loadDeletedRoutines();
@@ -50,6 +53,10 @@ export function init() {
     if (!restoreTimerSession()) {
       setView("home");
     }
+    // Wait one frame so the first view paints under the splash, then fade out.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => hideBootSplash());
+    });
   } catch (error) {
     showBootError(error);
   }

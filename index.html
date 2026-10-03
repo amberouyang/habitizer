@@ -8,6 +8,7 @@
     <meta http-equiv="Expires" content="0" />
     <meta name="description" content="Build and run daily routines with timing and streak tracking." />
     <meta name="theme-color" content="#f4f6f8" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -24,15 +25,91 @@
         const stored = localStorage.getItem("habitizer-settings-v1");
         const dark = Boolean(stored && JSON.parse(stored).darkMode);
         if (dark) document.documentElement.dataset.theme = "dark";
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
         const themeColor = document.querySelector('meta[name="theme-color"]');
         if (themeColor) themeColor.setAttribute("content", dark ? "#0d1117" : "#f4f6f8");
         const statusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
         if (statusBar) statusBar.setAttribute("content", dark ? "black-translucent" : "default");
       } catch {}
     </script>
-    <link rel="stylesheet" href="styles.css?v=motion1" />
+    <!-- Critical boot paint: avoid white flash before styles.css / modules load. -->
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #f4f6f8;
+        color: #0f172a;
+      }
+      html[data-theme="dark"],
+      html[data-theme="dark"] body {
+        background: #0d1117;
+        color: #e2e8f0;
+      }
+      #bootSplash {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: grid;
+        place-items: center;
+        padding: max(24px, env(safe-area-inset-top, 0px)) 24px max(24px, env(safe-area-inset-bottom, 0px));
+        background: #f4f6f8;
+        color: #0f172a;
+        transition: opacity 0.28s ease, visibility 0.28s ease;
+      }
+      html[data-theme="dark"] #bootSplash {
+        background: #0d1117;
+        color: #e2e8f0;
+      }
+      #bootSplash.is-done {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .boot-splash-mark {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        text-align: center;
+      }
+      .boot-splash-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        box-shadow: 0 12px 28px rgba(14, 116, 144, 0.28);
+      }
+      html[data-theme="dark"] .boot-splash-icon {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      }
+      .boot-splash-title {
+        margin: 0;
+        font-family: "Sora", "Segoe UI", sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      .boot-splash-hint {
+        margin: 0;
+        font-family: "Sora", "Segoe UI", sans-serif;
+        font-size: 0.85rem;
+        opacity: 0.62;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #bootSplash {
+          transition: none;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="styles.css?v=splash1" />
   </head>
   <body>
+    <div id="bootSplash" role="status" aria-live="polite" aria-label="Loading Habitizer">
+      <div class="boot-splash-mark">
+        <img class="boot-splash-icon" src="icons/icon-192.png" width="72" height="72" alt="" />
+        <p class="boot-splash-title">Habitizer</p>
+        <p class="boot-splash-hint">Loading…</p>
+      </div>
+    </div>
     <div class="app-shell">
       <header class="topbar">
         <button id="backButton" class="icon-btn hidden" data-i18n-aria="app.back" aria-label="Go back">←</button>
@@ -200,7 +277,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-10-02-motion1";
+      window.__HABITIZER_BUILD__ = "2026-10-03-splash1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [
@@ -223,6 +300,7 @@
           "reminders",
           "routines",
           "schedule",
+          "splash",
           "state",
           "timer",
           "utils",
@@ -290,6 +368,12 @@
 
       boot().catch((error) => {
         console.error(error);
+        const splash = document.getElementById("bootSplash");
+        if (splash) {
+          splash.classList.add("is-done");
+          splash.setAttribute("aria-hidden", "true");
+          window.setTimeout(() => splash.remove(), 300);
+        }
         const app = document.getElementById("app");
         if (!app) return;
         app.innerHTML = `
