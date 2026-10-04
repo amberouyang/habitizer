@@ -89,6 +89,8 @@ html, body {
   font-family: "Sora", "Segoe UI", sans-serif;
   background-color: var(--bg);
   color: var(--text);
+  /* Stop Safari/Chrome pull-to-refresh from wiping an in-progress run. */
+  overscroll-behavior: none;
 }
 
 body {
@@ -98,6 +100,7 @@ body {
   padding: 24px 0;
   isolation: isolate;
   overflow-x: hidden;
+  overscroll-behavior: none;
   background:
     radial-gradient(900px 520px at 12% -8%, var(--atmosphere-1), transparent 58%),
     radial-gradient(760px 480px at 92% 8%, var(--atmosphere-2), transparent 55%),
@@ -256,6 +259,7 @@ button {
   overflow-y: auto;
   padding: calc(18px + var(--chrome-top)) 16px calc(24px + var(--chrome-bottom));
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
 }
 
 .app-shell.tab-bar-hidden .app-content {
@@ -2921,14 +2925,22 @@ button.contribution-cell:focus-visible {
 }
 
 @media (max-width: 480px) {
+  html,
+  body {
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
   body {
     padding: 0;
   }
 
   .app-shell {
     width: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100%;
+    height: 100dvh;
+    min-height: 0;
     max-height: none;
     border-radius: 0;
     border: none;

@@ -29,7 +29,7 @@ A phone-first web app for building, running, and sticking with daily routines �
 - **Export / import** — JSON backup; import can **merge** or **replace all**
 - **Reset app data** — Wipe local data for the current browser origin
 - **Auto-save** — Everything persists in `localStorage`
-- **Installable (PWA)** — Add to home screen for an app-like experience; frosted top/bottom bars; illustrated empty states; light motion; branded splash (no white flash on cold start)
+- **Installable (PWA)** — Add to home screen for an app-like experience; frosted chrome; illustrated empty states; light motion; branded splash; pull-to-refresh blocked so Safari won’t reload mid-run
 
 ## Installation
 
