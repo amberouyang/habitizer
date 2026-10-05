@@ -47,6 +47,7 @@ import {
   calendarModalBody,
   calendarModalClose,
 } from "./dom.js";
+import { syncBackupReminderUI } from "./backup.js";
 import {
   formatDeletedAtLabel,
   formatStreakLabel,
@@ -818,6 +819,7 @@ export function syncSettingsView() {
   applyDocumentLanguage();
   renderHomeWidgetSettings();
   renderDeletedRoutinesList();
+  syncBackupReminderUI();
 }
 
 function populateLanguageSelect() {

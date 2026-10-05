@@ -1,4 +1,4 @@
-import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS, DEFAULT_HOME_WIDGETS } from "./constants.js";
+import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS, DEFAULT_HOME_WIDGETS, BACKUP_REMINDER_DAYS } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import {
   saveRoutines,
@@ -14,8 +14,8 @@ import {
 } from "./persistence.js";
 import { isValidRoutineColor, normalizeHexColor } from "./models.js";
 import { sanitizeSpacedRepetitionFields } from "./schedule.js";
-import { darkModeToggle, cumulativeToggle, completionSoundToggle, hapticsToggle, dueRemindersToggle } from "./dom.js";
-import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
+import { darkModeToggle, cumulativeToggle, completionSoundToggle, hapticsToggle, dueRemindersToggle, backupReminderEl } from "./dom.js";
+import { sanitizeLanguage, applyDocumentLanguage, t, getLocale } from "./i18n.js";
 import { createId } from "./id.js";
 
 const BACKUP_APP = "habitizer";
@@ -117,6 +117,71 @@ function sanitizeDeletedEntry(entry) {
   };
 }
 
+function sanitizeLastBackupExportAt(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function formatBackupExportDate(timestamp) {
+  return new Date(timestamp).toLocaleDateString(getLocale(), {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function daysSinceBackupExport(timestamp) {
+  const ms = Date.now() - timestamp;
+  return Math.max(0, Math.floor(ms / (24 * 60 * 60 * 1000)));
+}
+
+export function markBackupExported() {
+  settings.lastBackupExportAt = Date.now();
+  saveSettings();
+  syncBackupReminderUI();
+}
+
+export function syncBackupReminderUI() {
+  const el = backupReminderEl;
+  if (!el) return;
+
+  const exportedAt = sanitizeLastBackupExportAt(settings.lastBackupExportAt);
+  el.classList.remove("backup-reminder--ok", "backup-reminder--due");
+  el.replaceChildren();
+
+  if (!exportedAt) {
+    el.hidden = false;
+    el.classList.remove("hidden");
+    el.classList.add("backup-reminder--due");
+    el.textContent = t("settings.backupReminderNever", { days: BACKUP_REMINDER_DAYS });
+    return;
+  }
+
+  const days = daysSinceBackupExport(exportedAt);
+  const dateLabel = formatBackupExportDate(exportedAt);
+
+  el.hidden = false;
+  el.classList.remove("hidden");
+
+  if (days >= BACKUP_REMINDER_DAYS) {
+    el.classList.add("backup-reminder--due");
+    el.textContent = t("settings.backupReminderOverdue", {
+      date: dateLabel,
+      days,
+      threshold: BACKUP_REMINDER_DAYS,
+    });
+    return;
+  }
+
+  el.classList.add("backup-reminder--ok");
+  const daysUntil = BACKUP_REMINDER_DAYS - days;
+  el.textContent = t("settings.backupReminderOk", {
+    date: dateLabel,
+    days: daysUntil,
+    threshold: BACKUP_REMINDER_DAYS,
+  });
+}
+
 function sanitizeSettings(raw) {
   if (!raw || typeof raw !== "object") {
     return {
@@ -125,6 +190,7 @@ function sanitizeSettings(raw) {
       completionSound: Boolean(settings.completionSound),
       haptics: Boolean(settings.haptics),
       dueReminders: Boolean(settings.dueReminders),
+      lastBackupExportAt: sanitizeLastBackupExportAt(settings.lastBackupExportAt),
       savedColors: [...(settings.savedColors || [])],
       language: sanitizeLanguage(settings.language),
       homeWidgets: [...(settings.homeWidgets || [])],
@@ -155,6 +221,9 @@ function sanitizeSettings(raw) {
     dueReminders: raw.dueReminders !== undefined
       ? Boolean(raw.dueReminders)
       : Boolean(settings.dueReminders),
+    lastBackupExportAt: sanitizeLastBackupExportAt(
+      raw.lastBackupExportAt ?? settings.lastBackupExportAt
+    ),
     language: sanitizeLanguage(raw.language ?? settings.language),
     savedColors,
     homeWidgets: sanitizeHomeWidgets(raw.homeWidgets ?? settings.homeWidgets),
@@ -196,6 +265,7 @@ export function buildBackupPayload() {
       completionSound: Boolean(settings.completionSound),
       haptics: Boolean(settings.haptics),
       dueReminders: Boolean(settings.dueReminders),
+      lastBackupExportAt: sanitizeLastBackupExportAt(settings.lastBackupExportAt),
       language: sanitizeLanguage(settings.language),
       savedColors: [...(settings.savedColors || [])],
       homeWidgets: sanitizeHomeWidgets(settings.homeWidgets),
@@ -252,6 +322,7 @@ export function exportBackup() {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+  markBackupExported();
 }
 
 function unionDateKeys(a = [], b = []) {

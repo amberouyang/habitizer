@@ -22,6 +22,7 @@ export const hapticsToggle = document.getElementById("hapticsToggle");
 export const dueRemindersToggle = document.getElementById("dueRemindersToggle");
 export const languageSelect = document.getElementById("languageSelect");
 export const exportBackupBtn = document.getElementById("exportBackupBtn");
+export const backupReminderEl = document.getElementById("backupReminder");
 export const importBackupBtn = document.getElementById("importBackupBtn");
 export const importBackupInput = document.getElementById("importBackupInput");
 export const deletedRoutinesList = document.getElementById("deletedRoutinesList");

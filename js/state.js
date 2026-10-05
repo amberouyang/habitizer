@@ -26,6 +26,7 @@ export const settings = {
   haptics: true,
   dueReminders: false,
   language: "en",
+  lastBackupExportAt: null,
   savedColors: [],
   homeWidgets: [...DEFAULT_HOME_WIDGETS],
   hiddenHomeWidgets: [],

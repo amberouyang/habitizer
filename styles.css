@@ -2131,6 +2131,27 @@ button {
   border-top: 1px solid var(--border);
 }
 
+.backup-reminder {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--primary) 6%, var(--panel));
+  color: var(--text);
+}
+
+.backup-reminder--ok {
+  color: var(--muted);
+  background: var(--panel-alt);
+}
+
+.backup-reminder--due {
+  border-color: color-mix(in srgb, var(--warning) 45%, var(--border));
+  background: color-mix(in srgb, var(--warning) 12%, var(--panel));
+}
+
 .settings-backup-actions {
   display: flex;
   flex-wrap: wrap;

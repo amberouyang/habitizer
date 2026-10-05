@@ -100,7 +100,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="styles.css?v=no-ptr1" />
+    <link rel="stylesheet" href="styles.css?v=backup-reminder1" />
   </head>
   <body>
     <div id="bootSplash" role="status" aria-live="polite" aria-label="Loading Habitizer">
@@ -179,6 +179,7 @@
         <section class="settings-backup-section" aria-labelledby="backupTitle">
           <h3 id="backupTitle" class="settings-section-title" data-i18n="settings.backup">Backup</h3>
           <p class="settings-section-desc" data-i18n="settings.backupDesc">Export or restore routines, settings, and recently deleted items as a JSON file. Import can merge or replace.</p>
+          <div id="backupReminder" class="backup-reminder hidden" role="status" hidden></div>
           <div class="settings-backup-actions">
             <button id="exportBackupBtn" type="button" class="secondary-btn" data-i18n="settings.export">Export</button>
             <button id="importBackupBtn" type="button" class="secondary-btn" data-i18n="settings.import">Import</button>
@@ -277,7 +278,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-10-03-no-ptr1";
+      window.__HABITIZER_BUILD__ = "2026-10-04-backup-reminder1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [

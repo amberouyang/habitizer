@@ -318,6 +318,8 @@ export function loadSettings() {
     ? Boolean(settings.haptics)
     : true;
   settings.dueReminders = Boolean(settings.dueReminders);
+  const lastExport = Number(settings.lastBackupExportAt);
+  settings.lastBackupExportAt = Number.isFinite(lastExport) && lastExport > 0 ? lastExport : null;
   settings.language = sanitizeLanguage(settings.language);
   settings.homeWidgets = sanitizeHomeWidgets(settings.homeWidgets);
   settings.hiddenHomeWidgets = sanitizeHiddenHomeWidgets(settings.hiddenHomeWidgets);

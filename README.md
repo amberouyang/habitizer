@@ -26,7 +26,7 @@ A phone-first web app for building, running, and sticking with daily routines �
 - **Dark mode** — Status bar / theme-color follow light & dark
 - **Completion sound** — Optional chime when a routine finishes
 - **Haptics** — Optional light vibration on step finish / routine complete (where supported)
-- **Export / import** — JSON backup; import can **merge** or **replace all**
+- **Export / import** — JSON backup; import can **merge** or **replace all**; **14-day export reminder** in Settings
 - **Reset app data** — Wipe local data for the current browser origin
 - **Auto-save** — Everything persists in `localStorage`
 - **Installable (PWA)** — Add to home screen for an app-like experience; frosted chrome; illustrated empty states; light motion; branded splash; pull-to-refresh blocked so Safari won’t reload mid-run
@@ -148,7 +148,7 @@ Open the **Settings** tab:
 - **Language** — English, Español, 中文
 - **Home widgets** — Show/hide sections (at least one must stay on)
 - **Backup**
-  - **Export** — Download `habitizer-backup-YYYY-MM-DD.json`
+  - **Export** — Download `habitizer-backup-YYYY-MM-DD.json`; tracks last export and nudges if it’s been **14+ days** (or never)
   - **Import** — Choose **Merge** (keep local + combine shared history) or **Replace all**
   - **Reset app data** — Wipe local data for this browser origin
 - **Recently deleted** — Restore or permanently delete (30-day retention)
