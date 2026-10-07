@@ -58,6 +58,7 @@ import {
   getDueStatus,
   formatNextPracticeLabel,
   formatNextRepetitionValue,
+  formatSrsIntervalLabel,
   isSpacedRepetitionEnabled,
   getRoutinesForHomeDisplay,
   hasUrgentSpacedPractice,
@@ -591,6 +592,14 @@ function renderRoutinesWidgetContent() {
         date: formatNextRepetitionValue(routine),
       });
       info.appendChild(nextDue);
+
+      const intervalLabel = formatSrsIntervalLabel(routine);
+      if (intervalLabel) {
+        const intervalEl = document.createElement("div");
+        intervalEl.className = "routine-srs-interval";
+        intervalEl.textContent = intervalLabel;
+        info.appendChild(intervalEl);
+      }
     }
 
     openBtn.appendChild(info);
@@ -997,6 +1006,9 @@ export function renderRoutineView() {
   const detailBits = [header, infoRow, scheduleRow];
 
   if (isSpacedRepetitionEnabled(routine)) {
+    const nextBlock = document.createElement("div");
+    nextBlock.className = "routine-next-block";
+
     const nextRow = document.createElement("div");
     nextRow.className = "summary-row routine-next-row";
     const status = getDueStatus(routine);
@@ -1011,7 +1023,17 @@ export function renderRoutineView() {
     nextValue.textContent = formatNextRepetitionValue(routine);
 
     nextRow.append(nextLabel, nextValue);
-    detailBits.push(nextRow);
+    nextBlock.appendChild(nextRow);
+
+    const intervalLabel = formatSrsIntervalLabel(routine);
+    if (intervalLabel) {
+      const intervalEl = document.createElement("div");
+      intervalEl.className = "routine-srs-interval routine-srs-interval-detail";
+      intervalEl.textContent = intervalLabel;
+      nextBlock.appendChild(intervalEl);
+    }
+
+    detailBits.push(nextBlock);
   }
 
   detailBits.push(renderContributionGraph(routine));
@@ -1165,6 +1187,15 @@ export function renderCompletionView() {
     nextEl.className = "completion-next-due";
     nextEl.textContent = formatNextPracticeLabel(data.nextDueDate);
     card.appendChild(nextEl);
+
+    const completedRoutine = getRoutineById(data.routineId);
+    const intervalLabel = formatSrsIntervalLabel(completedRoutine);
+    if (intervalLabel) {
+      const intervalEl = document.createElement("div");
+      intervalEl.className = "completion-srs-interval";
+      intervalEl.textContent = intervalLabel;
+      card.appendChild(intervalEl);
+    }
   }
 
   if (data.estimatedMs > 0) {

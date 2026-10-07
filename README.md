@@ -112,7 +112,7 @@ Use the bottom tab bar:
 
 ### Routine detail
 
-- **Spaced practice** — Compact toggle; when on, shows **Next practice**
+- **Spaced practice** — Compact toggle; when on, shows **Next practice** and the current interval (e.g. Every 7 days)
 - **Past year** — Contribution graph of completions
 - **Add / edit / reorder / delete** activities
 - **Start** or **Continue** — Opens the live timer
@@ -161,6 +161,7 @@ Per routine:
 2. First due date is **today**
 3. After each on-time completion, the gap grows: **1 → 2 → 4 → 7 → 14 → 30** days
 4. Overdue completions step the interval back one level
+5. Home, routine detail, and the completion screen show **Every N days** under Next practice
 
 Home shows due/overdue labels and pins those routines first. Optional **Due reminders** notify when you open or return to the app.
 

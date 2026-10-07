@@ -62,6 +62,7 @@ export function submitRoutineCreation() {
     runHistory: [],
     spacedRepetition: false,
     srsLevel: 0,
+    srsIntervalDays: null,
     nextDueDate: null,
   };
 
@@ -162,6 +163,7 @@ export function duplicateRoutine(routineId) {
     runHistory: [],
     spacedRepetition: false,
     srsLevel: 0,
+    srsIntervalDays: null,
     nextDueDate: null,
   };
   copySpacedRepetitionFields(routine, duplicate);

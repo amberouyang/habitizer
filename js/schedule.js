@@ -12,6 +12,16 @@ export function getSrsLevel(routine) {
   return Math.min(Math.floor(level), SRS_INTERVAL_DAYS.length - 1);
 }
 
+/** Days in the current spaced-practice step (1 → 2 → 4 → 7 → 14 → 30). */
+export function getSrsIntervalDays(routine) {
+  if (!isSpacedRepetitionEnabled(routine)) return null;
+  const stored = Number(routine?.srsIntervalDays);
+  if (Number.isFinite(stored) && SRS_INTERVAL_DAYS.includes(stored)) {
+    return stored;
+  }
+  return SRS_INTERVAL_DAYS[getSrsLevel(routine)];
+}
+
 export function getNextDueDate(routine) {
   const value = routine?.nextDueDate;
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
@@ -21,6 +31,7 @@ export function enableSpacedRepetition(routine) {
   if (!routine) return;
   routine.spacedRepetition = true;
   routine.srsLevel = 0;
+  routine.srsIntervalDays = SRS_INTERVAL_DAYS[0];
   routine.nextDueDate = getLocalDateKey();
 }
 
@@ -28,6 +39,7 @@ export function disableSpacedRepetition(routine) {
   if (!routine) return;
   routine.spacedRepetition = false;
   routine.srsLevel = 0;
+  routine.srsIntervalDays = null;
   routine.nextDueDate = null;
 }
 
@@ -57,6 +69,7 @@ export function advanceSpacedRepetitionOnComplete(routine) {
 
   const intervalDays = SRS_INTERVAL_DAYS[level];
   routine.nextDueDate = shiftDateKey(today, intervalDays);
+  routine.srsIntervalDays = intervalDays;
 
   if (!wasOverdue) {
     routine.srsLevel = Math.min(level + 1, SRS_INTERVAL_DAYS.length - 1);
@@ -170,16 +183,26 @@ export function formatNextPracticeLabel(dateKey) {
   return t("srs.nextPractice", { date: formatDueDateLabel(dateKey) });
 }
 
+/** e.g. "Every 7 days" for the current spaced-practice step. */
+export function formatSrsIntervalLabel(routine) {
+  const days = getSrsIntervalDays(routine);
+  if (days == null) return null;
+  if (days === 1) return t("srs.everyDay");
+  return t("srs.everyDays", { count: days });
+}
+
 export function copySpacedRepetitionFields(source, target) {
   if (!source || !target) return;
   if (!isSpacedRepetitionEnabled(source)) {
     target.spacedRepetition = false;
     target.srsLevel = 0;
+    target.srsIntervalDays = null;
     target.nextDueDate = null;
     return;
   }
   target.spacedRepetition = true;
   target.srsLevel = 0;
+  target.srsIntervalDays = SRS_INTERVAL_DAYS[0];
   target.nextDueDate = getLocalDateKey();
 }
 
@@ -189,6 +212,7 @@ export function sanitizeSpacedRepetitionFields(routine) {
     return {
       spacedRepetition: false,
       srsLevel: 0,
+      srsIntervalDays: null,
       nextDueDate: null,
     };
   }
@@ -201,6 +225,10 @@ export function sanitizeSpacedRepetitionFields(routine) {
     typeof routine?.nextDueDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(routine.nextDueDate)
       ? routine.nextDueDate
       : getLocalDateKey();
+  const storedInterval = Number(routine?.srsIntervalDays);
+  const srsIntervalDays = Number.isFinite(storedInterval) && SRS_INTERVAL_DAYS.includes(storedInterval)
+    ? storedInterval
+    : SRS_INTERVAL_DAYS[srsLevel];
 
-  return { spacedRepetition: true, srsLevel, nextDueDate };
+  return { spacedRepetition: true, srsLevel, srsIntervalDays, nextDueDate };
 }

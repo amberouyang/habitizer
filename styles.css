@@ -986,8 +986,33 @@ button {
   color: var(--muted);
 }
 
-.routine-next-row {
+.routine-srs-interval {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.routine-next-block {
   margin-top: 8px;
+}
+
+.routine-next-row {
+  margin-top: 0;
+}
+
+.routine-srs-interval-detail {
+  margin: 0 0 0 2px;
+  padding: 0 2px 2px;
+  font-size: 0.78rem;
+}
+
+.completion-srs-interval {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: center;
 }
 
 .routine-next-row.is-due strong {

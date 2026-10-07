@@ -117,6 +117,8 @@ const messages = {
     "srs.nextDue": "Next · {date}",
     "srs.nextPractice": "Next practice · {date}",
     "srs.nextLabel": "Next practice",
+    "srs.everyDay": "Every 1 day",
+    "srs.everyDays": "Every {count} days",
 
     "reminders.dueTitle": "{name} is due today",
     "reminders.dueBody": "Open Habitizer and run this spaced practice.",
@@ -362,6 +364,8 @@ const messages = {
     "srs.nextDue": "Próxima · {date}",
     "srs.nextPractice": "Próxima práctica · {date}",
     "srs.nextLabel": "Próxima práctica",
+    "srs.everyDay": "Cada 1 día",
+    "srs.everyDays": "Cada {count} días",
 
     "reminders.dueTitle": "{name} es para hoy",
     "reminders.dueBody": "Abre Habitizer y haz esta práctica espaciada.",
@@ -607,6 +611,8 @@ const messages = {
     "srs.nextDue": "下次 · {date}",
     "srs.nextPractice": "下次练习 · {date}",
     "srs.nextLabel": "下次练习",
+    "srs.everyDay": "每 1 天",
+    "srs.everyDays": "每 {count} 天",
 
     "reminders.dueTitle": "{name} 今天到期",
     "reminders.dueBody": "打开 Habitizer 完成这次间隔练习。",

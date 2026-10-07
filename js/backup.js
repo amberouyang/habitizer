@@ -1,4 +1,4 @@
-import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS, DEFAULT_HOME_WIDGETS, BACKUP_REMINDER_DAYS } from "./constants.js";
+import { DEFAULT_ROUTINE_COLOR_ID, RUN_HISTORY_LIMIT, SAVED_COLORS_LIMIT, HOME_WIDGET_IDS, DEFAULT_HOME_WIDGETS, BACKUP_REMINDER_DAYS, SRS_INTERVAL_DAYS } from "./constants.js";
 import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js";
 import {
   saveRoutines,
@@ -358,6 +358,15 @@ function mergeRoutine(local, remote) {
   const localLevel = Number(local.srsLevel) || 0;
   const remoteLevel = Number(remote.srsLevel) || 0;
   const spacedRepetition = Boolean(local.spacedRepetition || remote.spacedRepetition);
+  const srsLevel = spacedRepetition ? Math.max(localLevel, remoteLevel) : 0;
+  const localInterval = Number(local.srsIntervalDays);
+  const remoteInterval = Number(remote.srsIntervalDays);
+  const intervalCandidates = [localInterval, remoteInterval].filter((days) =>
+    Number.isFinite(days) && SRS_INTERVAL_DAYS.includes(days)
+  );
+  const srsIntervalDays = spacedRepetition
+    ? (intervalCandidates.length ? Math.max(...intervalCandidates) : SRS_INTERVAL_DAYS[srsLevel])
+    : null;
 
   return {
     ...local,
@@ -370,7 +379,8 @@ function mergeRoutine(local, remote) {
     completionDates: unionDateKeys(local.completionDates, remote.completionDates),
     runHistory: mergeRunHistory(local.runHistory, remote.runHistory),
     spacedRepetition,
-    srsLevel: spacedRepetition ? Math.max(localLevel, remoteLevel) : 0,
+    srsLevel,
+    srsIntervalDays,
     nextDueDate: spacedRepetition ? pickNextDueDate(local, remote) : null,
   };
 }
