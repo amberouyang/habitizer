@@ -46,9 +46,10 @@ import {
   calendarModalSubtitle,
   calendarModalBody,
   calendarModalClose,
+  pageTitleEl,
 } from "./dom.js";
 import { syncBackupReminderUI } from "./backup.js";
-import { setIcon } from "./icons.js";
+import { setIcon, createIcon } from "./icons.js";
 import {
   formatDeletedAtLabel,
   formatStreakLabel,
@@ -117,11 +118,10 @@ function removeSavedColor(hex) {
 function swatchMatchesSelection(node, selectedColor) {
   if (node.classList.contains("color-swatch-add")) return false;
   const selectedHex = normalizeHexColor(selectedColor);
-  const value = node.dataset.colorValue || node.dataset.colorId;
   if (selectedHex) {
-    return normalizeHexColor(value) === selectedHex;
+    return normalizeHexColor(node.dataset.colorValue || node.dataset.colorId) === selectedHex;
   }
-  return value === selectedColor;
+  return node.dataset.colorId === selectedColor;
 }
 
 function updateSwatchSelection(container, selectedColor) {
@@ -818,6 +818,7 @@ export function syncSettingsView() {
   if (dueRemindersToggle) dueRemindersToggle.checked = settings.dueReminders;
   populateLanguageSelect();
   applyDocumentLanguage();
+  if (pageTitleEl) pageTitleEl.textContent = t("settings.title");
   renderHomeWidgetSettings();
   renderDeletedRoutinesList();
   syncBackupReminderUI();
@@ -863,6 +864,11 @@ function renderHomeWidgetSettings() {
     row.className = "settings-row home-widget-setting-row";
     row.htmlFor = `homeWidgetToggle-${widgetId}`;
 
+    const icon = document.createElement("span");
+    icon.className = `settings-icon ${widgetId === "weekly" ? "settings-icon--teal" : "settings-icon--blue"}`;
+    icon.setAttribute("aria-hidden", "true");
+    icon.appendChild(createIcon(widgetId === "weekly" ? "chart" : "list", { size: 16 }));
+
     const copy = document.createElement("span");
     copy.className = "settings-copy";
 
@@ -898,7 +904,7 @@ function renderHomeWidgetSettings() {
       }
     });
 
-    row.append(copy, toggle);
+    row.append(icon, copy, toggle);
     homeWidgetsSettings.appendChild(row);
   });
 }
@@ -989,7 +995,7 @@ export function renderDeletedRoutinesList() {
   if (deletedRoutines.length === 0) {
     const empty = document.createElement("p");
     empty.className = "deleted-routines-empty";
-    empty.textContent = "No recently deleted routines.";
+    empty.textContent = t("settings.deletedEmpty");
     deletedRoutinesList.appendChild(empty);
     return;
   }
@@ -1015,7 +1021,7 @@ export function renderDeletedRoutinesList() {
     const restoreBtn = document.createElement("button");
     restoreBtn.type = "button";
     restoreBtn.className = "secondary-btn deleted-routine-restore";
-    restoreBtn.textContent = "Restore";
+    restoreBtn.textContent = t("settings.restore");
     restoreBtn.addEventListener("click", () => restoreDeletedRoutine(entry.id));
 
     const deleteBtn = document.createElement("button");

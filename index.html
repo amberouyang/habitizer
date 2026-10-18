@@ -100,7 +100,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="styles.css?v=history-ui1" />
+    <link rel="stylesheet" href="styles.css?v=settings-ui1" />
   </head>
   <body>
     <div id="bootSplash" role="status" aria-live="polite" aria-label="Loading Habitizer">
@@ -127,70 +127,102 @@
 
       <section id="settingsView" class="app-content settings-view hidden" aria-labelledby="settingsTitle" hidden>
         <h2 id="settingsTitle" class="visually-hidden" data-i18n="settings.title">Settings</h2>
-        <div class="settings-content">
-          <label class="settings-row" for="darkModeToggle">
-            <span class="settings-copy">
-              <span class="settings-title" data-i18n="settings.darkMode">Dark mode</span>
-              <p class="settings-desc" data-i18n="settings.darkModeDesc">Use a darker theme that's easier on the eyes at night.</p>
-            </span>
-            <input id="darkModeToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.darkMode" aria-label="Dark mode" />
-          </label>
-          <label class="settings-row" for="cumulativeToggle">
-            <span class="settings-copy">
-              <span class="settings-title" data-i18n="settings.cumulative">Cumulative Habit Tracker</span>
-              <p class="settings-desc" data-i18n="settings.cumulativeDesc">Times accumulate across multiple runs. Turn off for per-session mode.</p>
-            </span>
-            <input id="cumulativeToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.cumulative" aria-label="Cumulative habit tracker" />
-          </label>
-          <label class="settings-row" for="completionSoundToggle">
-            <span class="settings-copy">
-              <span class="settings-title" data-i18n="settings.sound">Completion sound</span>
-              <p class="settings-desc" data-i18n="settings.soundDesc">Play a short chime when you finish a routine.</p>
-            </span>
-            <input id="completionSoundToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.sound" aria-label="Completion sound" />
-          </label>
-          <label class="settings-row" for="hapticsToggle">
-            <span class="settings-copy">
-              <span class="settings-title" data-i18n="settings.haptics">Haptics</span>
-              <p class="settings-desc" data-i18n="settings.hapticsDesc">Light vibration when you finish a step or a routine (phones that support it).</p>
-            </span>
-            <input id="hapticsToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.haptics" aria-label="Haptics" />
-          </label>
-          <label class="settings-row" for="dueRemindersToggle">
-            <span class="settings-copy">
-              <span class="settings-title" data-i18n="settings.dueReminders">Due reminders</span>
-              <p class="settings-desc" data-i18n="settings.dueRemindersDesc">Get a browser notification when a spaced-practice routine is due or overdue.</p>
-            </span>
-            <input id="dueRemindersToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.dueReminders" aria-label="Due reminders" />
-          </label>
-          <label class="settings-row" for="languageSelect">
-            <span class="settings-copy">
-              <span class="settings-title" data-i18n="settings.language">Language</span>
-              <p class="settings-desc" data-i18n="settings.languageDesc">Choose the language used across Habitizer.</p>
-            </span>
-            <select id="languageSelect" class="settings-select" data-i18n-aria="settings.languageAria" aria-label="Language"></select>
-          </label>
-        </div>
-        <section class="settings-widgets-section" aria-labelledby="homeWidgetsTitle">
-          <h3 id="homeWidgetsTitle" class="settings-section-title" data-i18n="settings.widgets">Home widgets</h3>
-          <p class="settings-section-desc" data-i18n="settings.widgetsDesc">Turn sections on or off for the home screen. On home, Hide only collapses a section until you tap Show.</p>
-          <div id="homeWidgetsSettings" class="home-widgets-settings"></div>
-        </section>
-        <section class="settings-backup-section" aria-labelledby="backupTitle">
-          <h3 id="backupTitle" class="settings-section-title" data-i18n="settings.backup">Backup</h3>
-          <p class="settings-section-desc" data-i18n="settings.backupDesc">Export or restore routines, settings, and recently deleted items as a JSON file. Import can merge or replace.</p>
-          <div id="backupReminder" class="backup-reminder hidden" role="status" hidden></div>
-          <div class="settings-backup-actions">
-            <button id="exportBackupBtn" type="button" class="secondary-btn" data-i18n="settings.export">Export</button>
-            <button id="importBackupBtn" type="button" class="secondary-btn" data-i18n="settings.import">Import</button>
-            <button id="resetDataBtn" type="button" class="danger-btn" data-i18n="settings.reset">Reset app data</button>
-            <input id="importBackupInput" class="hidden" type="file" accept="application/json,.json" aria-hidden="true" tabindex="-1" />
+        <section class="settings-group" aria-labelledby="settingsAppearanceTitle">
+          <h3 id="settingsAppearanceTitle" class="settings-section-title" data-i18n="settings.groupAppearance">Appearance</h3>
+          <div class="settings-content">
+            <label class="settings-row" for="darkModeToggle">
+              <span class="settings-icon settings-icon--indigo" data-settings-icon="moon"></span>
+              <span class="settings-copy">
+                <span class="settings-title" data-i18n="settings.darkMode">Dark mode</span>
+                <p class="settings-desc" data-i18n="settings.darkModeDesc">Use a darker theme that's easier on the eyes at night.</p>
+              </span>
+              <input id="darkModeToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.darkMode" aria-label="Dark mode" />
+            </label>
+            <label class="settings-row" for="languageSelect">
+              <span class="settings-icon settings-icon--blue" data-settings-icon="globe"></span>
+              <span class="settings-copy">
+                <span class="settings-title" data-i18n="settings.language">Language</span>
+                <p class="settings-desc" data-i18n="settings.languageDesc">Choose the language used across Habitizer.</p>
+              </span>
+              <select id="languageSelect" class="settings-select" data-i18n-aria="settings.languageAria" aria-label="Language"></select>
+            </label>
           </div>
         </section>
-        <section class="settings-deleted-section" aria-labelledby="deletedRoutinesTitle">
+        <section class="settings-group" aria-labelledby="settingsTimerTitle">
+          <h3 id="settingsTimerTitle" class="settings-section-title" data-i18n="settings.groupTimer">Timer</h3>
+          <div class="settings-content">
+            <label class="settings-row" for="cumulativeToggle">
+              <span class="settings-icon settings-icon--teal" data-settings-icon="layers"></span>
+              <span class="settings-copy">
+                <span class="settings-title" data-i18n="settings.cumulative">Cumulative Habit Tracker</span>
+                <p class="settings-desc" data-i18n="settings.cumulativeDesc">Times accumulate across multiple runs. Turn off for per-session mode.</p>
+              </span>
+              <input id="cumulativeToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.cumulative" aria-label="Cumulative habit tracker" />
+            </label>
+            <label class="settings-row" for="completionSoundToggle">
+              <span class="settings-icon settings-icon--pink" data-settings-icon="sound"></span>
+              <span class="settings-copy">
+                <span class="settings-title" data-i18n="settings.sound">Completion sound</span>
+                <p class="settings-desc" data-i18n="settings.soundDesc">Play a short chime when you finish a routine.</p>
+              </span>
+              <input id="completionSoundToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.sound" aria-label="Completion sound" />
+            </label>
+            <label class="settings-row" for="hapticsToggle">
+              <span class="settings-icon settings-icon--purple" data-settings-icon="vibrate"></span>
+              <span class="settings-copy">
+                <span class="settings-title" data-i18n="settings.haptics">Haptics</span>
+                <p class="settings-desc" data-i18n="settings.hapticsDesc">Light vibration when you finish a step or a routine (phones that support it).</p>
+              </span>
+              <input id="hapticsToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.haptics" aria-label="Haptics" />
+            </label>
+          </div>
+        </section>
+        <section class="settings-group" aria-labelledby="settingsNotificationsTitle">
+          <h3 id="settingsNotificationsTitle" class="settings-section-title" data-i18n="settings.groupNotifications">Notifications</h3>
+          <div class="settings-content">
+            <label class="settings-row" for="dueRemindersToggle">
+              <span class="settings-icon settings-icon--red" data-settings-icon="bell"></span>
+              <span class="settings-copy">
+                <span class="settings-title" data-i18n="settings.dueReminders">Due reminders</span>
+                <p class="settings-desc" data-i18n="settings.dueRemindersDesc">Get a browser notification when a spaced-practice routine is due or overdue.</p>
+              </span>
+              <input id="dueRemindersToggle" class="toggle-input" type="checkbox" role="switch" data-i18n-aria="settings.dueReminders" aria-label="Due reminders" />
+            </label>
+          </div>
+        </section>
+        <section class="settings-group settings-widgets-section" aria-labelledby="homeWidgetsTitle">
+          <h3 id="homeWidgetsTitle" class="settings-section-title" data-i18n="settings.widgets">Home widgets</h3>
+          <div id="homeWidgetsSettings" class="settings-content home-widgets-settings"></div>
+          <p class="settings-section-desc" data-i18n="settings.widgetsDesc">Turn sections on or off for the home screen. On home, Hide only collapses a section until you tap Show.</p>
+        </section>
+        <section class="settings-group settings-backup-section" aria-labelledby="backupTitle">
+          <h3 id="backupTitle" class="settings-section-title" data-i18n="settings.backup">Backup</h3>
+          <div id="backupReminder" class="backup-reminder hidden" role="status" hidden></div>
+          <div class="settings-content">
+            <button id="exportBackupBtn" type="button" class="settings-row settings-action-row">
+              <span class="settings-icon settings-icon--green" data-settings-icon="download"></span>
+              <span class="settings-title" data-i18n="settings.export">Export</span>
+              <span class="settings-chevron" data-settings-icon="chevronRight"></span>
+            </button>
+            <button id="importBackupBtn" type="button" class="settings-row settings-action-row">
+              <span class="settings-icon settings-icon--orange" data-settings-icon="upload"></span>
+              <span class="settings-title" data-i18n="settings.import">Import</span>
+              <span class="settings-chevron" data-settings-icon="chevronRight"></span>
+            </button>
+          </div>
+          <p class="settings-section-desc" data-i18n="settings.backupDesc">Export or restore routines, settings, and recently deleted items as a JSON file. Import can merge or replace.</p>
+          <div class="settings-content">
+            <button id="resetDataBtn" type="button" class="settings-row settings-action-row is-danger">
+              <span class="settings-icon settings-icon--danger" data-settings-icon="trash"></span>
+              <span class="settings-title" data-i18n="settings.reset">Reset app data</span>
+            </button>
+          </div>
+          <input id="importBackupInput" class="hidden" type="file" accept="application/json,.json" aria-hidden="true" tabindex="-1" />
+        </section>
+        <section class="settings-group settings-deleted-section" aria-labelledby="deletedRoutinesTitle">
           <h3 id="deletedRoutinesTitle" class="settings-section-title" data-i18n="settings.deleted">Recently deleted</h3>
-          <p class="settings-section-desc" data-i18n="settings.deletedDesc">Routines stay here for 30 days.</p>
           <div id="deletedRoutinesList" class="deleted-routines-list"></div>
+          <p class="settings-section-desc" data-i18n="settings.deletedDesc">Routines stay here for 30 days.</p>
         </section>
       </section>
 
@@ -223,7 +255,7 @@
       </div>
     </div>
 
-    <div id="nameModal" class="modal-overlay hidden" aria-hidden="true">
+    <div id="nameModal" class="modal-overlay sheet-overlay hidden" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <h2 id="modalTitle">New routine</h2>
         <label id="modalLabel" class="modal-label" for="modalInput" data-i18n="modal.name">Name</label>
@@ -243,7 +275,7 @@
       </div>
     </div>
 
-    <div id="colorModal" class="modal-overlay hidden" aria-hidden="true">
+    <div id="colorModal" class="modal-overlay sheet-overlay hidden" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle">
         <h2 id="colorModalTitle" data-i18n="modal.colorTitle">Routine color</h2>
         <div id="colorModalSwatches" class="color-modal-swatches" role="radiogroup" data-i18n-aria="modal.routineColor" aria-label="Routine color"></div>
@@ -253,7 +285,7 @@
       </div>
     </div>
 
-    <div id="calendarModal" class="modal-overlay hidden" aria-hidden="true">
+    <div id="calendarModal" class="modal-overlay sheet-overlay hidden" aria-hidden="true">
       <div class="modal-card calendar-modal-card" role="dialog" aria-modal="true" aria-labelledby="calendarModalTitle">
         <h2 id="calendarModalTitle" data-i18n="calendar.title">Completion history</h2>
         <p id="calendarModalSubtitle" class="calendar-modal-subtitle hidden"></p>
@@ -278,7 +310,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-10-17-history-ui1";
+      window.__HABITIZER_BUILD__ = "2026-10-17-settings-ui1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [

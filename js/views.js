@@ -1556,7 +1556,7 @@ export function render({ animateEnter = false } = {}) {
     appEl.innerHTML = "";
     syncSettingsView();
     if (animateEnter) {
-      playViewEnter(settingsView?.querySelector(".settings-content") || settingsView);
+      playViewEnter(settingsView);
     }
     return;
   }

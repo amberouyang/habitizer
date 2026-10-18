@@ -640,33 +640,6 @@ button {
   margin-top: 1px;
 }
 
-.home-widgets-settings {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-top: 12px;
-  padding: 16px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 2px var(--card-shadow);
-}
-
-.home-widgets-settings .settings-row + .settings-row {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-
-.home-widgets-settings .settings-copy {
-  gap: 6px;
-}
-
-.settings-widgets-section .settings-section-desc {
-  margin: 6px 0 0;
-  line-height: 1.5;
-}
-
 .home-widget[data-widget-id="weekly"] .weekly-stats {
   padding: 16px;
   border: 1px solid var(--border);
@@ -1175,8 +1148,18 @@ button {
 }
 
 .color-swatch[aria-checked="true"] {
-  border-color: var(--text);
-  box-shadow: 0 0 0 2px var(--panel);
+  position: relative;
+  border-color: var(--panel);
+  box-shadow: 0 0 0 2px var(--swatch-color);
+}
+
+.color-swatch[aria-checked="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: center / 55% no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
 }
 
 .color-swatch:focus-visible {
@@ -2236,24 +2219,78 @@ button {
   letter-spacing: -0.01em;
 }
 
+.sheet-overlay {
+  align-items: flex-end;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+.sheet-overlay .modal-card {
+  width: min(100%, 406px);
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  box-shadow: 0 16px 40px var(--modal-shadow);
+  transform: translateY(32px);
+}
+
+.sheet-overlay .modal-card h2 {
+  margin-bottom: 16px;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.sheet-overlay .modal-actions {
+  margin-top: 20px;
+}
+
+.sheet-overlay .modal-actions .primary-btn,
+.sheet-overlay .modal-actions .secondary-btn {
+  min-height: 46px;
+}
+
+.sheet-overlay .calendar-modal-card {
+  max-height: min(86vh, 720px);
+}
+
+/* Destructive confirms stay as centered alerts. */
+.confirm-modal-overlay .modal-card {
+  width: min(100%, 320px);
+  padding: 22px 18px 16px;
+  text-align: center;
+}
+
+.confirm-modal-overlay .modal-card h2 {
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+}
+
+.confirm-modal-overlay .confirm-message {
+  margin-bottom: 20px;
+}
+
 .modal-label {
   display: block;
   margin-bottom: 6px;
   color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 #modalInput,
 .modal-input {
   width: 100%;
-  padding: 11px 12px;
-  border: 1px solid var(--hover-border);
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-control);
   font: inherit;
+  /* 16px+ keeps iOS Safari from zooming on focus. */
+  font-size: 1rem;
   outline: none;
   background: var(--input-bg);
   color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 #modalInput:focus,
@@ -2263,7 +2300,7 @@ button {
 }
 
 .modal-field-group {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .modal-field-group.hidden {
@@ -2324,9 +2361,25 @@ button {
   line-height: 1.5;
 }
 
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-group + .settings-group {
+  margin-top: 24px;
+}
+
+.settings-group > .settings-section-title,
+.settings-group > .settings-section-desc {
+  padding: 0 4px;
+}
+
 .settings-content {
-  margin: 0 0 18px;
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   font-size: 0.82rem;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -2337,10 +2390,69 @@ button {
 .settings-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px;
   cursor: pointer;
   user-select: none;
+}
+
+.settings-row .settings-copy {
+  flex: 1 1 auto;
+}
+
+.settings-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: #fff;
+  background: var(--settings-icon-bg, var(--primary));
+}
+
+.settings-icon--indigo { --settings-icon-bg: #5856d6; }
+.settings-icon--blue { --settings-icon-bg: #2f7cf6; }
+.settings-icon--teal { --settings-icon-bg: #0e8a8a; }
+.settings-icon--pink { --settings-icon-bg: #e0457b; }
+.settings-icon--purple { --settings-icon-bg: #8e55d9; }
+.settings-icon--red { --settings-icon-bg: #e5484d; }
+.settings-icon--green { --settings-icon-bg: #2f9e5b; }
+.settings-icon--orange { --settings-icon-bg: #e8833a; }
+.settings-icon--danger { --settings-icon-bg: var(--danger); }
+
+.settings-action-row {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.settings-action-row .settings-title {
+  flex: 1 1 auto;
+  font-weight: 500;
+}
+
+.settings-action-row:hover {
+  background: var(--panel-alt);
+}
+
+.settings-action-row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.settings-action-row.is-danger .settings-title {
+  color: var(--danger);
+}
+
+.settings-chevron {
+  display: grid;
+  color: var(--muted);
+  opacity: 0.6;
 }
 
 .settings-select {
@@ -2384,15 +2496,13 @@ button {
 }
 
 .settings-row + .settings-row {
-  margin-top: 14px;
-  padding-top: 14px;
   border-top: 1px solid var(--border);
 }
 
 .settings-copy {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -2409,15 +2519,7 @@ button {
   line-height: 1.4;
 }
 
-.settings-widgets-section,
-.settings-deleted-section,
-.settings-backup-section {
-  margin-top: 26px;
-  padding: 0 2px;
-}
-
 .backup-reminder {
-  margin-top: 12px;
   padding: 12px 14px;
   border-radius: 14px;
   font-size: 0.82rem;
@@ -2437,18 +2539,6 @@ button {
   background: color-mix(in srgb, var(--warning) 12%, var(--panel));
 }
 
-.settings-backup-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.settings-backup-actions .secondary-btn,
-.settings-backup-actions .danger-btn {
-  flex: 1 1 calc(50% - 5px);
-}
-
 .settings-section-title {
   margin: 0;
   font-size: 0.74rem;
@@ -2459,27 +2549,26 @@ button {
 }
 
 .settings-section-desc {
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 0.72rem;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .deleted-routines-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px var(--card-shadow);
 }
 
 .deleted-routines-empty {
   margin: 0;
-  padding: 14px 12px;
-  border-radius: 14px;
-  background: var(--panel-alt);
-  border: 1px dashed var(--border);
+  padding: 16px 14px;
   text-align: center;
   font-size: 0.82rem;
   color: var(--muted);
@@ -2490,10 +2579,11 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px;
-  border-radius: 14px;
-  background: var(--panel-alt);
-  border: 1px solid var(--border);
+  padding: 10px 10px 10px 14px;
+}
+
+.deleted-routine-item + .deleted-routine-item {
+  border-top: 1px solid var(--border);
 }
 
 .deleted-routine-info {

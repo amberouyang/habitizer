@@ -6,7 +6,7 @@ import { prepareAppCache, registerServiceWorker } from "./pwa.js";
 import { wireDueReminders } from "./reminders.js";
 import { appEl, backButton, menuButton, addButton } from "./dom.js";
 import { armBootSplashTimeout, hideBootSplash } from "./splash.js";
-import { setIcon } from "./icons.js";
+import { setIcon, createIcon } from "./icons.js";
 
 function showBootError(error) {
   console.error("Habitizer failed to start:", error);
@@ -44,6 +44,10 @@ export function init() {
   setIcon(backButton, "back", { size: 22 });
   setIcon(menuButton, "more", { size: 22 });
   setIcon(addButton, "plus", { size: 20 });
+  document.querySelectorAll("[data-settings-icon]").forEach((el) => {
+    el.setAttribute("aria-hidden", "true");
+    el.replaceChildren(createIcon(el.dataset.settingsIcon, { size: 16 }));
+  });
   try {
     loadRoutines();
     loadDeletedRoutines();

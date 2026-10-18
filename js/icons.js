@@ -30,10 +30,28 @@ const ICON_PATHS = {
   calendar: ["M5.5 5.5h13a1.5 1.5 0 0 1 1.5 1.5v11.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5V7a1.5 1.5 0 0 1 1.5-1.5z", "M8 3.5v4", "M16 3.5v4", "M4 10h16"],
   chevronLeft: ["M15 18l-6-6 6-6"],
   chevronRight: ["M9 18l6-6-6-6"],
+  moon: ["M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"],
+  globe: [
+    "M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z",
+    "M3.5 12h17",
+    "M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5z",
+  ],
+  layers: ["M12 4l8.5 4.5L12 13 3.5 8.5z", "M3.5 12.5L12 17l8.5-4.5", "M3.5 16.5L12 21l8.5-4.5"],
+  sound: ["M4.5 9.5h3l4.5-4v13l-4.5-4h-3z", "M15.5 9a4 4 0 0 1 0 6", "M18 6.5a7.5 7.5 0 0 1 0 11"],
+  vibrate: [
+    "M9 4.5h6a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H9A1.5 1.5 0 0 1 7.5 18V6A1.5 1.5 0 0 1 9 4.5z",
+    "M4 9v6",
+    "M20 9v6",
+  ],
+  bell: ["M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z", "M10 20.5a2 2 0 0 0 4 0"],
+  download: ["M12 4v11", "M7.5 10.5L12 15l4.5-4.5", "M5 19.5h14"],
+  upload: ["M12 15V4", "M7.5 8.5L12 4l4.5 4.5", "M5 19.5h14"],
+  chart: ["M5 19.5V13", "M10 19.5V8", "M15 19.5v-9", "M20 19.5V5"],
+  list: ["M9 7h11", "M9 12h11", "M9 17h11", "M4.5 7h.01", "M4.5 12h.01", "M4.5 17h.01"],
 };
 
 const FILLED_ICONS = new Set(["play"]);
-const STROKE_WIDTHS = { more: "3", pause: "2.6", check: "2.4" };
+const STROKE_WIDTHS = { more: "3", pause: "2.6", check: "2.4", list: "2.2" };
 
 export function createIcon(name, { size = 18 } = {}) {
   const svg = document.createElementNS(SVG_NS, "svg");
