@@ -301,6 +301,7 @@ button {
   width: 22px;
   height: 22px;
   display: block;
+  transition: transform 0.12s ease;
 }
 
 .tab-label {
@@ -598,32 +599,39 @@ button {
 
 .home-widget-hide {
   flex: 0 0 auto;
-  margin-top: 2px;
-  padding: 2px 4px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -5px -6px -5px 0;
+  padding: 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font: inherit;
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
   cursor: pointer;
-  opacity: 0.45;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  opacity: 0.55;
+  transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.home-widget-hide .ui-icon {
+  transition: transform 0.2s ease;
+}
+
+.home-widget.is-collapsed .home-widget-hide .ui-icon {
+  transform: rotate(-90deg);
 }
 
 .home-widget:hover .home-widget-hide,
-.home-widget:focus-within .home-widget-hide,
-.home-widget.is-collapsed .home-widget-hide {
-  opacity: 0.72;
+.home-widget:focus-within .home-widget-hide {
+  opacity: 0.8;
 }
 
 .home-widget-hide:hover,
 .home-widget-hide:focus-visible {
   opacity: 1;
   color: var(--text);
-  background: transparent;
+  background: var(--panel-alt);
 }
 
 .home-widget-hide:focus-visible {
@@ -1669,6 +1677,38 @@ button {
   transform: scale(0.97);
 }
 
+button,
+a,
+label,
+.routine-item {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.routine-item:active:not(.is-dragging):not(:has(button:active)),
+.timer-resume-banner:active {
+  transform: scale(0.985);
+}
+
+.tab-btn:active .tab-icon {
+  transform: scale(0.9);
+}
+
+.history-item:active,
+.action-sheet-btn:active,
+.settings-action-row:active,
+.routine-setting-button:active,
+.settings-row:active:not(:has(.toggle-input:active, .settings-select:focus)) {
+  background: color-mix(in srgb, var(--text) 7%, var(--panel));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routine-item:active,
+  .timer-resume-banner:active,
+  .tab-btn:active .tab-icon {
+    transform: none;
+  }
+}
+
 .ui-icon {
   display: block;
   flex-shrink: 0;
@@ -2682,6 +2722,7 @@ button {
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease;
 }
 
 .timer-resume-banner:hover {
@@ -3436,6 +3477,19 @@ button.contribution-cell:focus-visible {
 .completion-done-btn {
   width: 100%;
   min-height: 48px;
+}
+
+.routine-start-btn,
+.timer-now-action,
+.completion-done-btn {
+  background: var(--routine-color, var(--primary));
+  color: var(--routine-on-color, var(--on-primary));
+}
+
+.routine-start-btn:hover:not(:disabled),
+.timer-now-action:hover:not(:disabled),
+.completion-done-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--routine-color, var(--primary)) 86%, #000);
 }
 
 @media (prefers-reduced-motion: reduce) {

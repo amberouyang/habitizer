@@ -58,9 +58,28 @@ export function getNextRoutineColorId() {
   return ROUTINE_COLORS[state.routines.length % ROUTINE_COLORS.length].id;
 }
 
+function getRelativeLuminance(hex) {
+  const channels = [1, 3, 5].map((index) => {
+    const value = parseInt(hex.slice(index, index + 2), 16) / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+const DARK_ON_COLOR = "#0f172a";
+
+export function getRoutineOnColor(hex) {
+  const luminance = getRelativeLuminance(hex);
+  const contrastWithWhite = 1.05 / (luminance + 0.05);
+  const contrastWithDark = (luminance + 0.05) / (getRelativeLuminance(DARK_ON_COLOR) + 0.05);
+  return contrastWithWhite >= contrastWithDark ? "#ffffff" : DARK_ON_COLOR;
+}
+
 export function applyRoutineColorStyle(element, routine) {
   if (!element) return;
-  element.style.setProperty("--routine-color", getRoutineColorValue(routine));
+  const color = getRoutineColorValue(routine);
+  element.style.setProperty("--routine-color", color);
+  element.style.setProperty("--routine-on-color", getRoutineOnColor(color));
 }
 
 export function applyProgressFillColor(progressFill, routine) {

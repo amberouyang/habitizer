@@ -453,7 +453,7 @@ function createHomeWidget(widgetId, bodyContent) {
   const collapseBtn = document.createElement("button");
   collapseBtn.type = "button";
   collapseBtn.className = "home-widget-hide";
-  collapseBtn.textContent = collapsed ? t("app.show") : t("app.hide");
+  collapseBtn.appendChild(createIcon("chevronDown", { size: 16 }));
   collapseBtn.title = collapsed
     ? t("home.widgetShow", { name: getHomeWidgetLabel(widgetId) })
     : t("home.widgetHide", { name: getHomeWidgetLabel(widgetId) });
