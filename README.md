@@ -1,22 +1,98 @@
 # Habitizer
 
-A phone-first PWA for building and running daily routines — live timer, streaks, spaced practice, and local backups.
+Habitizer helps you build daily routines and actually stick with them. Make a routine like "Morning" or "Workout," break it into steps, and run it with a built-in timer. Habitizer keeps track of your streaks and history so you can see your progress over time.
 
-Designed for a phone screen first (bottom tabs, big taps, home-screen install). It also runs in a desktop browser as a centered phone-sized app.
+It's made for your phone, and you can add it to your home screen so it works like a regular app. It also works in a computer browser.
 
-## Features
+## What you can do
 
-- **Routines & activities** — Create routines, add steps with time estimates, colors, drag-to-reorder
-- **Live timer** — Start from Home (▶), auto-advance steps, pause/resume, leave and continue later
-- **Streaks & history** — Daily streaks, contribution graph, weekly stats, History tab with day drill-down
-- **Spaced practice** — Optional schedule (1 → 2 → 4 → 7 → 14 → 30 days) with due/overdue badges and “Every N days”
-- **Due reminders** — Optional browser notifications when spaced-practice items are due
-- **Backup** — Export/import JSON (merge or replace); 14-day export reminder in Settings
-- **Polish** — Dark mode, EN/ES/ZH, completion sound, haptics (where supported), installable PWA with splash and frosted chrome
+- **Build routines.** Add steps, set how long each one should take, and pick a color.
+- **Time yourself.** Tap ▶ to start. When you finish a step, the next one starts on its own.
+- **Take a break.** Pause anytime, or leave the app and pick up where you left off.
+- **Track streaks.** See how many days in a row you've finished a routine, plus a yearly activity chart.
+- **Look back.** The History tab shows your past runs. Tap one to see that day's details.
+- **Practice on a schedule (optional).** Turn on spaced practice and Habitizer spaces your sessions further apart as you get consistent: every 1, 2, 4, 7, 14, then 30 days.
+- **Get reminders (optional).** Allow notifications and Habitizer will tell you when a routine is due.
+- **Make it yours.** Dark mode, English / Español / 中文, sounds, and vibration on supported phones.
 
-All data stays in the browser (`localStorage`). No account required.
+## Your data stays on your device
 
-## Quick start
+Habitizer has no accounts and no servers. Everything is saved in your browser on the device you're using.
+
+That means:
+
+- **Nobody else can see your data.**
+- **Your data doesn't sync between devices.** Your phone and your computer each keep their own copy.
+- **Clearing your browser data erases your routines.**
+
+To keep a copy safe, go to **Settings → Backup → Export**. This downloads a backup file. Habitizer will remind you if it's been more than 14 days since your last backup.
+
+To restore or move your data to another device, open **Settings → Backup → Import** and choose your backup file. You can **Merge** it with what's already there or **Replace all**.
+
+## Add it to your home screen
+
+Adding Habitizer to your home screen gives you an app icon and a full-screen view without the browser bars. You don't need the App Store.
+
+**iPhone**
+
+1. Open Habitizer in **Safari**.
+2. Tap the **Share** button (square with an arrow).
+3. Tap **Add to Home Screen**, then **Add**.
+
+**Android**
+
+1. Open Habitizer in **Chrome**.
+2. Tap the **⋮** menu.
+3. Tap **Install app** or **Add to Home screen**.
+
+## How to use it
+
+### Make your first routine
+
+1. On the **Home** tab, tap **Add routine**.
+2. Give it a name, an estimated time, and a color, then tap **Create**.
+3. Add the steps you want to do, like "Stretch," "Shower," or "Make coffee."
+
+### Run a routine
+
+1. Tap ▶ on a routine.
+2. Tap a step to start it. Tap it again when you're done, and the next step starts automatically.
+3. Tap **Pause** if you need a break.
+4. When you're finished, tap **End Routine** to see your results.
+
+If you leave the app in the middle of a routine, a banner on the Home tab lets you jump back in.
+
+### Use spaced practice
+
+Spaced practice is good for things you want to keep up with but don't need to do every day.
+
+1. Open a routine and turn on **Spaced practice**.
+2. It's due today to start.
+3. Each time you finish it on time, the gap before the next session gets longer. If you miss one, the gap shrinks a step.
+
+Routines that are due or overdue show up at the top of your Home tab.
+
+## Common questions
+
+**Where did my routines go?**
+Your data lives in the browser you used. If you switch browsers, use a different device, or open Habitizer from a different web address, you'll start fresh. Import a backup to bring your routines back.
+
+**Why didn't my phone vibrate?**
+Vibration only works on some phones, mostly Android. iPhones don't support it for web apps.
+
+**Why am I not getting reminders?**
+Make sure you turned on **Due reminders** in Settings and allowed notifications. On iPhone, reminders work best after you add Habitizer to your home screen.
+
+**Can I delete a routine by accident?**
+After you delete something, you get a few seconds to undo. Deleted routines also stay in **Settings → Recently deleted** for 30 days.
+
+---
+
+## For developers
+
+Habitizer is plain HTML, CSS, and JavaScript with no build step and no dependencies.
+
+### Run it locally
 
 ```bash
 git clone https://github.com/amberouyang/habitizer.git
@@ -24,116 +100,42 @@ cd habitizer
 python3 -m http.server 8000
 ```
 
-Open [http://localhost:8000](http://localhost:8000).
+Then open [http://localhost:8000](http://localhost:8000).
 
-For phone testing on the same Wi‑Fi (no-cache server):
+To test on a phone on the same Wi-Fi, use the no-cache dev server and open `http://YOUR_COMPUTER_IP:8000` on the phone:
 
 ```bash
 python3 serve.py --port 8000
 ```
 
-Then open `http://YOUR_MAC_IP:8000` on your phone.
+Browser storage is separate for each address, so `localhost`, `127.0.0.1`, and your IP address each have their own data. Use Export and Import to move data between them.
 
-> **Data note:** Progress is stored **per origin**. `localhost`, `127.0.0.1`, and `http://YOUR_IP:8000` are separate stores. Use **Settings → Export**, then **Import** (Merge or Replace all) to move data between them.
+### Project layout
 
-## Install on your phone (PWA)
-
-A PWA is still the same website — “install” means Add to Home Screen (no App Store).
-
-**iPhone (Safari):** open the site → Share → **Add to Home Screen**.
-
-**Android (Chrome):** menu → **Install app** / **Add to Home screen**. Local `http://` may not show Install; HTTPS (e.g. GitHub Pages) is more reliable.
-
-You get a home-screen icon and a fullscreen window. You do **not** get a native App Store app.
-
-## Usage
-
-### Tabs
-
-- **Home** — Weekly stats and routines
-- **History** — Recent runs; tap a row for that day’s details
-- **Settings** — Theme, language, widgets, backup, recently deleted
-
-### Home
-
-- Tap a card to open a routine; tap ▶ to start the timer
-- In-progress banner appears if you left a live run
-- Spaced-practice due/overdue badges sort to the top
-- Drag **⋮⋮** to reorder widgets or routines (when nothing is due)
-
-### Running a routine
-
-1. Start from Home or routine detail  
-2. Tap an activity to start, tap again to finish — the next step starts automatically  
-3. Pause / resume as needed; Back or tabs leave the run without ending it  
-4. **End Routine** → completion summary → **Done**
-
-### Spaced practice
-
-1. On a routine, turn on **Spaced practice**  
-2. First due date is **today**  
-3. On-time completions grow the gap: **1 → 2 → 4 → 7 → 14 → 30** days  
-4. Overdue completions step the interval back one level  
-5. Home, routine detail, and completion show **Every N days** under Next practice  
-
-### Settings highlights
-
-- Dark mode (status bar color follows theme on install / supported browsers)
-- Cumulative Habit Tracker, completion sound, haptics
-- Due reminders (needs notification permission)
-- Language: English, Español, 中文
-- **Backup → Export** — downloads `habitizer-backup-YYYY-MM-DD.json`; nudges if it’s been 14+ days (or never)
-- **Import** — Merge or Replace all
-- Recently deleted — 30-day restore
-
-## Technical details
-
-### Stack
-
-- HTML / CSS / vanilla JS (ES modules) — no build step, no framework
-- `localStorage` for all data
-- PWA: `manifest.webmanifest`, icons, service worker (skipped on localhost / LAN for fresher reloads)
+```
+index.html            App shell, settings, dialogs, launch splash
+styles.css            All styles
+manifest.webmanifest  Home screen install settings
+sw.js                 Offline caching (off on localhost and LAN)
+serve.py              Dev server with caching disabled
+icons/                App icons
+js/
+  main.js             Startup
+  views.js            Home, History, routine, timer, and results screens
+  timer.js            Live timer
+  schedule.js         Spaced practice
+  backup.js           Export, import, and backup reminder
+  persistence.js      Saving and loading
+  i18n.js             Translations
+```
 
 ### Storage keys
 
-| Key | Purpose |
-|-----|---------|
-| `habitizer-routines-v1` | Routines, activities, completions, run history, spaced-practice fields |
-| `habitizer-settings-v1` | Theme, language, sound, haptics, due reminders, widgets, last backup export |
-| `habitizer-deleted-routines-v1` | Recently deleted (30-day retention) |
-| `habitizer-timer-v1` | In-progress timer session (cleared when the run ends; max 24h) |
-| `habitizer-due-notified-v1` | Due-reminder dedupe (per day) |
-| `habitizer-build` | Build stamp for cache refresh |
-
-### Project structure
-
-```
-habitizer/
-├── index.html           # Shell, settings, modals, boot splash
-├── styles.css
-├── serve.py             # Dev server with Cache-Control: no-store
-├── manifest.webmanifest
-├── sw.js                # Offline shell (non-local hosts)
-├── icons/
-├── js/
-│   ├── main.js          # Boot
-│   ├── views.js         # Home, history, routine, timer, completion
-│   ├── timer.js         # Live run, auto-advance, pause/resume
-│   ├── schedule.js      # Spaced practice / due status
-│   ├── reminders.js     # Due notifications
-│   ├── backup.js        # Export, merge/replace import, backup reminder
-│   ├── persistence.js   # localStorage load/save
-│   ├── splash.js        # Launch splash dismiss
-│   ├── haptics.js       # Optional vibration
-│   ├── emptyArt.js      # Empty-state illustrations
-│   ├── i18n.js          # EN / ES / ZH
-│   └── …                # state, models, modals, drag, etc.
-└── README.md
-```
-
-### Browser support
-
-- Modern browsers with ES modules (Chrome, Firefox, Safari, Edge)
-- Requires `localStorage`
-- Due reminders need notification permission; on iPhone they work best when installed to the home screen
-- Haptics use the Vibration API (common on Android Chrome; usually unavailable on iPhone)
+| Key | What it stores |
+|-----|----------------|
+| `habitizer-routines-v1` | Routines, steps, completions, run history, spaced practice |
+| `habitizer-settings-v1` | Preferences and last backup date |
+| `habitizer-deleted-routines-v1` | Recently deleted routines (30 days) |
+| `habitizer-timer-v1` | The routine currently in progress |
+| `habitizer-due-notified-v1` | Which reminders were already sent today |
+| `habitizer-build` | App version, used to refresh cached files |
