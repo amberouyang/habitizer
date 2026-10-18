@@ -1,6 +1,7 @@
 import { STREAK_DISPLAY_MIN } from "./constants.js";
 import { t, getHomeWidgetLabel } from "./i18n.js";
 import { setIcon } from "./icons.js";
+import { openActionSheet } from "./actionSheet.js";
 import { state } from "./state.js";
 import {
   appEl,
@@ -582,63 +583,37 @@ function renderRoutinesWidgetContent() {
 
     const lastCompleted = document.createElement("div");
     lastCompleted.className = "routine-last-completed";
-    lastCompleted.textContent = formatLastCompletedLabel(routine);
+    const intervalLabel = dueLabel ? formatSrsIntervalLabel(routine) : null;
+    lastCompleted.textContent = intervalLabel
+      ? `${formatLastCompletedLabel(routine)} · ${intervalLabel}`
+      : formatLastCompletedLabel(routine);
 
     info.append(nameRow, meta, lastCompleted);
-
-    if (dueLabel) {
-      const nextDue = document.createElement("div");
-      nextDue.className = `routine-next-due routine-next-due-${dueStatus.kind}`;
-      nextDue.textContent = t("srs.nextPractice", {
-        date: formatNextRepetitionValue(routine),
-      });
-      info.appendChild(nextDue);
-
-      const intervalLabel = formatSrsIntervalLabel(routine);
-      if (intervalLabel) {
-        const intervalEl = document.createElement("div");
-        intervalEl.className = "routine-srs-interval";
-        intervalEl.textContent = intervalLabel;
-        info.appendChild(intervalEl);
-      }
-    }
-
     openBtn.appendChild(info);
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
 
-    const duplicateBtn = document.createElement("button");
-    duplicateBtn.type = "button";
-    duplicateBtn.className = "small-btn";
-    duplicateBtn.title = t("home.duplicate");
-    setIcon(duplicateBtn, "copy", { size: 16 });
-    duplicateBtn.addEventListener("click", (event) => {
+    const moreBtn = document.createElement("button");
+    moreBtn.type = "button";
+    moreBtn.className = "small-btn routine-more-btn";
+    moreBtn.title = t("home.moreActions", { name: routine.name });
+    moreBtn.setAttribute("aria-label", t("home.moreActions", { name: routine.name }));
+    moreBtn.setAttribute("aria-haspopup", "dialog");
+    setIcon(moreBtn, "more", { size: 18 });
+    moreBtn.addEventListener("click", (event) => {
       event.stopPropagation();
-      duplicateRoutine(routine.id);
+      openActionSheet({
+        title: routine.name,
+        actions: [
+          { label: t("home.duplicate"), icon: "copy", onSelect: () => duplicateRoutine(routine.id) },
+          { label: t("home.rename"), icon: "edit", onSelect: () => renameRoutine(routine.id) },
+          { label: t("home.delete"), icon: "trash", danger: true, onSelect: () => deleteRoutine(routine.id) },
+        ],
+      });
     });
 
-    const renameBtn = document.createElement("button");
-    renameBtn.type = "button";
-    renameBtn.className = "small-btn";
-    renameBtn.title = t("home.rename");
-    setIcon(renameBtn, "edit", { size: 16 });
-    renameBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      renameRoutine(routine.id);
-    });
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "small-btn delete-btn";
-    deleteBtn.title = t("home.delete");
-    setIcon(deleteBtn, "trash", { size: 16 });
-    deleteBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      deleteRoutine(routine.id);
-    });
-
-    actions.append(duplicateBtn, renameBtn, deleteBtn);
+    actions.appendChild(moreBtn);
 
     // Continue lives on the top in-progress banner; cards only get a quiet Start.
     const isActiveSession = state.timer.routineId === routine.id;

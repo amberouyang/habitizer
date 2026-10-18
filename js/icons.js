@@ -31,6 +31,7 @@ const ICON_PATHS = {
 };
 
 const FILLED_ICONS = new Set(["play"]);
+const STROKE_WIDTHS = { more: "3" };
 
 export function createIcon(name, { size = 18 } = {}) {
   const svg = document.createElementNS(SVG_NS, "svg");
@@ -44,7 +45,7 @@ export function createIcon(name, { size = 18 } = {}) {
   const filled = FILLED_ICONS.has(name);
   svg.setAttribute("fill", filled ? "currentColor" : "none");
   svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", filled ? "1.5" : "1.9");
+  svg.setAttribute("stroke-width", STROKE_WIDTHS[name] || (filled ? "1.5" : "1.9"));
   svg.setAttribute("stroke-linecap", "round");
   svg.setAttribute("stroke-linejoin", "round");
 
