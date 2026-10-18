@@ -48,6 +48,7 @@ import {
   calendarModalClose,
 } from "./dom.js";
 import { syncBackupReminderUI } from "./backup.js";
+import { setIcon } from "./icons.js";
 import {
   formatDeletedAtLabel,
   formatStreakLabel,
@@ -583,9 +584,9 @@ function buildStreakCalendarContent(routine) {
   const prevBtn = document.createElement("button");
   prevBtn.type = "button";
   prevBtn.className = "small-btn calendar-nav-btn";
-  prevBtn.textContent = "‹";
-  prevBtn.title = "Previous month";
+  prevBtn.title = t("calendar.prevMonth");
   prevBtn.setAttribute("aria-label", t("calendar.prevMonth"));
+  setIcon(prevBtn, "chevronLeft");
   prevBtn.addEventListener("click", (event) => {
     event.stopPropagation();
     changeRoutineCalendarMonth(-1);
@@ -598,9 +599,9 @@ function buildStreakCalendarContent(routine) {
   const nextBtn = document.createElement("button");
   nextBtn.type = "button";
   nextBtn.className = "small-btn calendar-nav-btn";
-  nextBtn.textContent = "›";
-  nextBtn.title = "Next month";
+  nextBtn.title = t("calendar.nextMonth");
   nextBtn.setAttribute("aria-label", t("calendar.nextMonth"));
+  setIcon(nextBtn, "chevronRight");
   nextBtn.disabled = state.routineCalendarOffset >= 0;
   nextBtn.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -1020,9 +1021,9 @@ export function renderDeletedRoutinesList() {
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "small-btn delete-btn deleted-routine-delete";
-    deleteBtn.textContent = "✕";
     deleteBtn.title = "Delete forever";
     deleteBtn.setAttribute("aria-label", `Delete ${entry.routine.name} forever`);
+    setIcon(deleteBtn, "trash", { size: 16 });
     deleteBtn.addEventListener("click", () => requestPermanentDeleteArchivedRoutine(entry.id));
 
     const actions = document.createElement("div");

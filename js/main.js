@@ -4,8 +4,9 @@ import { wireEvents } from "./events.js";
 import { restoreTimerSession } from "./timer.js";
 import { prepareAppCache, registerServiceWorker } from "./pwa.js";
 import { wireDueReminders } from "./reminders.js";
-import { appEl } from "./dom.js";
+import { appEl, backButton, menuButton, addButton } from "./dom.js";
 import { armBootSplashTimeout, hideBootSplash } from "./splash.js";
+import { setIcon } from "./icons.js";
 
 function showBootError(error) {
   console.error("Habitizer failed to start:", error);
@@ -40,6 +41,9 @@ function showBootError(error) {
 
 export function init() {
   armBootSplashTimeout();
+  setIcon(backButton, "back", { size: 22 });
+  setIcon(menuButton, "more", { size: 22 });
+  setIcon(addButton, "plus", { size: 20 });
   try {
     loadRoutines();
     loadDeletedRoutines();

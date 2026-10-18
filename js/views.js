@@ -1,5 +1,6 @@
 import { STREAK_DISPLAY_MIN } from "./constants.js";
 import { t, getHomeWidgetLabel } from "./i18n.js";
+import { setIcon } from "./icons.js";
 import { state } from "./state.js";
 import {
   appEl,
@@ -146,7 +147,7 @@ export function setView(view, routineId = null) {
     // Top + only when routines exist; empty state has its own Add CTA.
     if (state.routines.length > 0) {
       addButton.classList.remove("hidden");
-      addButton.textContent = "+";
+      setIcon(addButton, "plus", { size: 20 });
       addButton.setAttribute("aria-label", t("app.addRoutine"));
     } else {
       addButton.classList.add("hidden");
@@ -175,7 +176,7 @@ export function setView(view, routineId = null) {
     pageTitleEl.title = t("view.renameHint");
     backButton.classList.remove("hidden");
     addButton.classList.add("hidden");
-    addButton.textContent = "+";
+    setIcon(addButton, "plus", { size: 20 });
     addButton.setAttribute("aria-label", t("app.addActivity"));
   } else if (view === "timer") {
     const routine = getRoutineById(routineId);
@@ -614,9 +615,9 @@ function renderRoutinesWidgetContent() {
       const startBtn = document.createElement("button");
       startBtn.type = "button";
       startBtn.className = "small-btn home-start-btn";
-      startBtn.textContent = "▶";
       startBtn.title = t("home.startAria", { name: routine.name });
       startBtn.setAttribute("aria-label", t("home.startAria", { name: routine.name }));
+      setIcon(startBtn, "play", { size: 16 });
       startBtn.disabled = routine.activities.length === 0;
       startBtn.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -628,8 +629,8 @@ function renderRoutinesWidgetContent() {
     const duplicateBtn = document.createElement("button");
     duplicateBtn.type = "button";
     duplicateBtn.className = "small-btn";
-    duplicateBtn.textContent = "⎘";
     duplicateBtn.title = t("home.duplicate");
+    setIcon(duplicateBtn, "copy", { size: 16 });
     duplicateBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       duplicateRoutine(routine.id);
@@ -638,8 +639,8 @@ function renderRoutinesWidgetContent() {
     const renameBtn = document.createElement("button");
     renameBtn.type = "button";
     renameBtn.className = "small-btn";
-    renameBtn.textContent = "✎";
     renameBtn.title = t("home.rename");
+    setIcon(renameBtn, "edit", { size: 16 });
     renameBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       renameRoutine(routine.id);
@@ -648,8 +649,8 @@ function renderRoutinesWidgetContent() {
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "small-btn delete-btn";
-    deleteBtn.textContent = "🗑";
     deleteBtn.title = t("home.delete");
+    setIcon(deleteBtn, "trash", { size: 16 });
     deleteBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       deleteRoutine(routine.id);
@@ -939,32 +940,32 @@ export function renderRoutineView() {
   const duplicateButton = document.createElement("button");
   duplicateButton.type = "button";
   duplicateButton.className = "small-btn";
-  duplicateButton.textContent = "⎘";
   duplicateButton.title = t("home.duplicate");
+  setIcon(duplicateButton, "copy");
   duplicateButton.addEventListener("click", () => duplicateRoutine(routine.id));
 
   const metaButton = document.createElement("button");
   metaButton.type = "button";
   metaButton.className = "small-btn";
-  metaButton.textContent = "⏱";
   metaButton.title = t("routine.editTime");
+  setIcon(metaButton, "clock");
   metaButton.addEventListener("click", () => editRoutineTime(routine.id));
 
   const colorButton = document.createElement("button");
   colorButton.type = "button";
   colorButton.className = "small-btn color-btn";
-  colorButton.textContent = "🎨";
   colorButton.title = t("routine.changeColor");
   colorButton.setAttribute("aria-label", t("routine.changeColorAria"));
+  setIcon(colorButton, "palette");
   applyRoutineColorStyle(colorButton, routine);
   colorButton.addEventListener("click", () => openColorModal(routine.id));
 
   const calendarButton = document.createElement("button");
   calendarButton.type = "button";
   calendarButton.className = "small-btn calendar-btn";
-  calendarButton.textContent = "📅";
   calendarButton.title = t("routine.history");
   calendarButton.setAttribute("aria-label", t("routine.history"));
+  setIcon(calendarButton, "calendar");
   if (routineCompletedToday(routine)) {
     calendarButton.classList.add("has-today");
   }
@@ -1086,16 +1087,16 @@ export function renderRoutineView() {
       const editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.className = "small-btn";
-      editBtn.textContent = "✎";
       editBtn.title = t("routine.editActivity");
       editBtn.setAttribute("aria-label", t("routine.editActivityAria", { name: activity.name }));
+      setIcon(editBtn, "edit", { size: 16 });
       editBtn.addEventListener("click", () => renameActivity(routine.id, activity.id));
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
       deleteBtn.className = "small-btn delete-btn";
-      deleteBtn.textContent = "✕";
       deleteBtn.title = t("routine.deleteActivity");
+      setIcon(deleteBtn, "close", { size: 16 });
       deleteBtn.addEventListener("click", () => deleteActivity(routine.id, activity.id));
 
       controls.append(editBtn, deleteBtn);
@@ -1396,7 +1397,7 @@ export function render({ animateEnter = false } = {}) {
     appEl.appendChild(renderHomeView());
     if (state.routines.length > 0) {
       addButton.classList.remove("hidden");
-      addButton.textContent = "+";
+      setIcon(addButton, "plus", { size: 20 });
       addButton.setAttribute("aria-label", t("app.addRoutine"));
     } else {
       addButton.classList.add("hidden");
