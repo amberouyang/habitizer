@@ -5,6 +5,8 @@ const ICON_PATHS = {
   back: ["M15 18l-6-6 6-6"],
   more: ["M5 12h.01", "M12 12h.01", "M19 12h.01"],
   play: ["M8 5.5v13l10.5-6.5z"],
+  pause: ["M9 6v12", "M15 6v12"],
+  check: ["M5 12.5l4.5 4.5L19 7"],
   copy: [
     "M9 9h9.5a1.5 1.5 0 0 1 1.5 1.5V19a1.5 1.5 0 0 1-1.5 1.5H10A1.5 1.5 0 0 1 8.5 19v-8.5",
     "M15.5 9V5.5A1.5 1.5 0 0 0 14 4H5.5A1.5 1.5 0 0 0 4 5.5V14a1.5 1.5 0 0 0 1.5 1.5H8.5",
@@ -31,7 +33,7 @@ const ICON_PATHS = {
 };
 
 const FILLED_ICONS = new Set(["play"]);
-const STROKE_WIDTHS = { more: "3" };
+const STROKE_WIDTHS = { more: "3", pause: "2.6", check: "2.4" };
 
 export function createIcon(name, { size = 18 } = {}) {
   const svg = document.createElementNS(SVG_NS, "svg");

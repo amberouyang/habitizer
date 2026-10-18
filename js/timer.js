@@ -2,7 +2,6 @@ import { t } from "./i18n.js";
 import { state, settings, liveTimerIntervalId, setLiveTimerIntervalId } from "./state.js";
 import {
   formatDuration,
-  formatDurationLabel,
   getRoutineCompletionDates,
   getRoutineStreak,
   getRoutineLongestStreak,
@@ -11,13 +10,9 @@ import {
 import {
   getRoutineById,
   getRoutineTotalDurationMs,
-  getRoutineProgress,
   getActivityCompletionCount,
   formatActivityCompletionLabel,
   getTotalElapsedMs,
-  getActivityElapsedMs,
-  getActivityEstimatedMs,
-  applyProgressFillColor,
   recordRoutineCompletion,
   recordRoutineRun,
 } from "./models.js";
@@ -25,7 +20,7 @@ import { saveRoutines, saveTimerSession, clearTimerSession, loadTimerSession } f
 import { openConfirmModal, closeConfirmModal } from "./modals.js";
 import { playCompletionSound } from "./audio.js";
 import { triggerHaptic } from "./haptics.js";
-import { setView, render } from "./views.js";
+import { setView, render, syncTimerRing, formatActivityTimerText } from "./views.js";
 
 export function updateTimerDisplay() {
   const routine = getRoutineById(state.currentRoutineId);
@@ -43,24 +38,10 @@ export function updateTimerDisplay() {
     completionCountEl.classList.toggle("complete", total > 0 && completed === total);
   }
 
-  const progressFill = document.querySelector(".routine-progress-fill");
-  const progressLabel = document.querySelector(".routine-progress-label");
-  if (progressFill && progressLabel) {
-    const { percent, isOver } = getRoutineProgress(routine);
-    progressFill.style.width = `${percent}%`;
-    progressFill.classList.toggle("over", isOver);
-    applyProgressFillColor(progressFill, routine);
-    progressLabel.textContent = `${formatDuration(getTotalElapsedMs())} / ${formatDurationLabel(getRoutineTotalDurationMs(routine))}`;
-
-    const progressTrack = document.querySelector(".routine-progress-track");
-    if (progressTrack) {
-      progressTrack.setAttribute("aria-valuenow", String(Math.round(percent)));
-    }
-  }
+  syncTimerRing(routine);
 
   routine.activities.forEach((activity) => {
     const checkbox = document.querySelector(`input[type="checkbox"][data-activity-id="${activity.id}"]`);
-    const timeEl = document.querySelector(`.progress-time[data-activity-id="${activity.id}"]`);
     const progressItem = checkbox?.closest(".progress-item");
     const status = getActivityRunStatus(activity.id);
 
@@ -71,20 +52,15 @@ export function updateTimerDisplay() {
     if (progressItem) {
       progressItem.classList.toggle("active", status === "active");
       progressItem.classList.toggle("completed", status === "completed");
-      const statusBadge = progressItem.querySelector(".progress-status");
-      if (statusBadge) {
-        statusBadge.hidden = status !== "active";
-      }
     }
 
-    if (timeEl) {
-      const elapsedMs = getActivityElapsedMs(activity);
-      const estimateMs = getActivityEstimatedMs(activity);
-      timeEl.textContent = estimateMs > 0
-        ? `${formatDuration(elapsedMs)} / ${formatDurationLabel(estimateMs)}`
-        : formatDuration(elapsedMs);
-      timeEl.classList.toggle("over", estimateMs > 0 && elapsedMs > estimateMs);
-    }
+    const { text, isOver } = formatActivityTimerText(activity);
+    document
+      .querySelectorAll(`.progress-time[data-activity-id="${activity.id}"], .timer-now-time[data-activity-id="${activity.id}"]`)
+      .forEach((timeEl) => {
+        timeEl.textContent = text;
+        timeEl.classList.toggle("over", isOver);
+      });
   });
 }
 

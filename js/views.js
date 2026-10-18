@@ -1,6 +1,6 @@
 import { STREAK_DISPLAY_MIN } from "./constants.js";
 import { t, getHomeWidgetLabel } from "./i18n.js";
-import { setIcon } from "./icons.js";
+import { setIcon, createIcon } from "./icons.js";
 import { openActionSheet } from "./actionSheet.js";
 import { state } from "./state.js";
 import {
@@ -39,7 +39,6 @@ import {
   getTotalElapsedMs,
   getActivityElapsedMs,
   applyRoutineColorStyle,
-  applyProgressFillColor,
   getActivityEstimatedMinutes,
   getActivityEstimatedMs,
   routineCompletedToday,
@@ -79,6 +78,7 @@ import {
   applyActivityCheckboxState,
   hasRoutineClockStarted,
   requestEndRoutine,
+  endRoutine,
   isTimerSessionActive,
   getActiveTimerRoutine,
   minimizeTimer,
@@ -1222,6 +1222,148 @@ export function renderCompletionView() {
   return wrapper;
 }
 
+const TIMER_RING_RADIUS = 92;
+const TIMER_RING_CIRCUMFERENCE = 2 * Math.PI * TIMER_RING_RADIUS;
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+export function formatActivityTimerText(activity) {
+  const elapsedMs = getActivityElapsedMs(activity);
+  const estimateMs = getActivityEstimatedMs(activity);
+  return {
+    text: estimateMs > 0
+      ? `${formatDuration(elapsedMs)} / ${formatDurationLabel(estimateMs)}`
+      : formatDuration(elapsedMs),
+    isOver: estimateMs > 0 && elapsedMs > estimateMs,
+  };
+}
+
+/** Ring shows time vs. estimate when there is one, otherwise steps finished. */
+function applyTimerRingProgress(ring, progressCircle, routine) {
+  const { hasEstimate, percent, isOver } = getRoutineProgress(routine);
+  const { completed, total } = getActivityCompletionCount(routine);
+  const fraction = hasEstimate ? percent / 100 : total > 0 ? completed / total : 0;
+
+  progressCircle.style.strokeDashoffset = String(TIMER_RING_CIRCUMFERENCE * (1 - fraction));
+  ring.classList.toggle("is-over", isOver);
+  ring.setAttribute("aria-valuenow", String(Math.round(fraction * 100)));
+}
+
+export function syncTimerRing(routine) {
+  const ring = document.querySelector(".timer-ring");
+  const progressCircle = ring?.querySelector(".timer-ring-progress");
+  if (!ring || !progressCircle || !routine) return;
+  applyTimerRingProgress(ring, progressCircle, routine);
+}
+
+function getTimerFocusActivity(routine) {
+  const active = routine.activities.find((activity) => getActivityRunStatus(activity.id) === "active");
+  if (active) return { activity: active, mode: "active" };
+  const next = routine.activities.find((activity) => getActivityRunStatus(activity.id) === "idle");
+  if (next) return { activity: next, mode: "next" };
+  return { activity: null, mode: "done" };
+}
+
+function createTimerRing(routine) {
+  const ring = document.createElement("div");
+  ring.className = "timer-ring";
+  ring.setAttribute("role", "progressbar");
+  ring.setAttribute("aria-valuemin", "0");
+  ring.setAttribute("aria-valuemax", "100");
+
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 200 200");
+  svg.setAttribute("aria-hidden", "true");
+
+  const track = document.createElementNS(SVG_NS, "circle");
+  track.setAttribute("class", "timer-ring-track");
+  const progress = document.createElementNS(SVG_NS, "circle");
+  progress.setAttribute("class", "timer-ring-progress");
+  [track, progress].forEach((circle) => {
+    circle.setAttribute("cx", "100");
+    circle.setAttribute("cy", "100");
+    circle.setAttribute("r", String(TIMER_RING_RADIUS));
+  });
+  progress.style.strokeDasharray = String(TIMER_RING_CIRCUMFERENCE);
+  svg.append(track, progress);
+  applyTimerRingProgress(ring, progress, routine);
+
+  const center = document.createElement("div");
+  center.className = "timer-ring-center";
+
+  const totalTimeEl = document.createElement("div");
+  totalTimeEl.className = "total-time";
+  totalTimeEl.textContent = formatDuration(getTotalElapsedMs());
+
+  const sub = document.createElement("div");
+  sub.className = "timer-ring-sub";
+  const { hasEstimate } = getRoutineProgress(routine);
+  if (hasRoutineClockStarted() && !state.timer.isRunning) {
+    sub.textContent = t("timer.paused");
+    sub.classList.add("is-paused");
+  } else if (hasEstimate) {
+    sub.textContent = t("timer.ofEstimate", {
+      time: formatDurationLabel(getRoutineTotalDurationMs(routine)),
+    });
+  } else {
+    sub.textContent = t("timer.elapsed");
+  }
+
+  center.append(totalTimeEl, sub);
+  ring.append(svg, center);
+  return ring;
+}
+
+function createTimerNowCard(routine) {
+  const { activity, mode } = getTimerFocusActivity(routine);
+
+  const card = document.createElement("div");
+  card.className = `timer-now timer-now--${mode}`;
+
+  const copy = document.createElement("div");
+  copy.className = "timer-now-copy";
+
+  const label = document.createElement("div");
+  label.className = "timer-now-label";
+  label.textContent = mode === "active"
+    ? t("timer.now")
+    : mode === "next"
+      ? t("timer.upNext")
+      : t("timer.allDone");
+
+  const name = document.createElement("div");
+  name.className = "timer-now-name";
+  name.textContent = activity ? activity.name : routine.name;
+
+  copy.append(label, name);
+
+  if (activity) {
+    const time = document.createElement("div");
+    time.className = "timer-now-time";
+    time.dataset.activityId = activity.id;
+    const { text, isOver } = formatActivityTimerText(activity);
+    time.textContent = text;
+    time.classList.toggle("over", isOver);
+    copy.appendChild(time);
+  }
+
+  const action = document.createElement("button");
+  action.type = "button";
+  action.className = "primary-btn timer-now-action";
+  if (mode === "active") {
+    action.append(createIcon("check", { size: 18 }), document.createTextNode(t("app.done")));
+    action.addEventListener("click", () => advanceActivityState(activity.id));
+  } else if (mode === "next") {
+    action.append(createIcon("play", { size: 16 }), document.createTextNode(t("timer.startStep")));
+    action.addEventListener("click", () => advanceActivityState(activity.id));
+  } else {
+    action.append(createIcon("check", { size: 18 }), document.createTextNode(t("timer.finish")));
+    action.addEventListener("click", endRoutine);
+  }
+
+  card.append(copy, action);
+  return card;
+}
+
 export function renderTimerView() {
   const routine = getRoutineById(state.currentRoutineId);
   if (!routine) {
@@ -1231,13 +1373,10 @@ export function renderTimerView() {
 
   const wrapper = document.createElement("div");
   wrapper.className = "live-timer";
+  applyRoutineColorStyle(wrapper, routine);
 
-  const timerCard = document.createElement("div");
-  timerCard.className = "timer-card";
-
-  const totalTimeEl = document.createElement("div");
-  totalTimeEl.className = "total-time";
-  totalTimeEl.textContent = formatDuration(getTotalElapsedMs());
+  const hero = document.createElement("section");
+  hero.className = "timer-hero";
 
   const completionCountEl = document.createElement("div");
   completionCountEl.className = "activity-completion-count";
@@ -1245,42 +1384,14 @@ export function renderTimerView() {
   completionCountEl.textContent = formatActivityCompletionLabel(routine);
   completionCountEl.classList.toggle("complete", total > 0 && completed === total);
 
-  const timerCardChildren = [totalTimeEl, completionCountEl];
+  hero.append(createTimerRing(routine), completionCountEl);
 
-  if (!hasRoutineClockStarted()) {
-    const hint = document.createElement("p");
-    hint.className = "timer-start-hint";
-    hint.textContent = t("timer.tapToBegin");
-    timerCardChildren.push(hint);
-  }
+  const steps = document.createElement("section");
+  steps.className = "timer-steps";
 
-  const { hasEstimate } = getRoutineProgress(routine);
-  if (hasEstimate) {
-    const progressSection = document.createElement("div");
-    progressSection.className = "routine-progress";
-
-    const progressLabel = document.createElement("div");
-    progressLabel.className = "routine-progress-label";
-    progressLabel.textContent = `${formatDuration(getTotalElapsedMs())} / ${formatDurationLabel(getRoutineTotalDurationMs(routine))}`;
-
-    const progressTrack = document.createElement("div");
-    progressTrack.className = "routine-progress-track";
-    progressTrack.setAttribute("role", "progressbar");
-    progressTrack.setAttribute("aria-valuemin", "0");
-    progressTrack.setAttribute("aria-valuemax", "100");
-
-    const progressFill = document.createElement("div");
-    progressFill.className = "routine-progress-fill";
-    const { percent, isOver } = getRoutineProgress(routine);
-    progressFill.style.width = `${percent}%`;
-    progressFill.classList.toggle("over", isOver);
-    applyProgressFillColor(progressFill, routine);
-    progressTrack.setAttribute("aria-valuenow", String(Math.round(percent)));
-
-    progressTrack.appendChild(progressFill);
-    progressSection.append(progressLabel, progressTrack);
-    timerCardChildren.push(progressSection);
-  }
+  const stepsTitle = document.createElement("h2");
+  stepsTitle.className = "timer-steps-title";
+  stepsTitle.textContent = t("routine.activities");
 
   const progressList = document.createElement("div");
   progressList.className = "activity-progress";
@@ -1294,6 +1405,7 @@ export function renderTimerView() {
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
+    checkbox.className = "progress-check";
     checkbox.dataset.activityId = activity.id;
     applyActivityCheckboxState(checkbox, status);
     checkbox.addEventListener("click", (event) => {
@@ -1306,38 +1418,30 @@ export function renderTimerView() {
     labelText.textContent = activity.name;
     labelText.title = activity.name;
 
-    const statusBadge = document.createElement("span");
-    statusBadge.className = "progress-status";
-    statusBadge.textContent = t("timer.inProgress");
-    statusBadge.hidden = status !== "active";
-
     const timeText = document.createElement("span");
     timeText.className = "progress-time";
     timeText.dataset.activityId = activity.id;
-    const elapsedMs = getActivityElapsedMs(activity);
-    const estimateMs = getActivityEstimatedMs(activity);
-    timeText.textContent = estimateMs > 0
-      ? `${formatDuration(elapsedMs)} / ${formatDurationLabel(estimateMs)}`
-      : formatDuration(elapsedMs);
-    if (estimateMs > 0 && elapsedMs > estimateMs) {
-      timeText.classList.add("over");
-    }
+    const { text, isOver } = formatActivityTimerText(activity);
+    timeText.textContent = text;
+    timeText.classList.toggle("over", isOver);
 
-    item.append(checkbox, labelText, statusBadge, timeText);
+    item.append(checkbox, labelText, timeText);
     progressList.appendChild(item);
   });
 
-  timerCard.append(...timerCardChildren, progressList);
+  steps.append(stepsTitle, progressList);
 
   const controls = document.createElement("div");
   controls.className = "timer-controls";
 
   const pauseResumeBtn = document.createElement("button");
   pauseResumeBtn.type = "button";
-  pauseResumeBtn.className = "secondary-btn";
-  const clockStarted = hasRoutineClockStarted();
-  pauseResumeBtn.textContent = state.timer.isRunning ? t("app.pause") : t("app.resume");
-  pauseResumeBtn.disabled = !clockStarted;
+  pauseResumeBtn.className = "secondary-btn timer-pause-btn";
+  pauseResumeBtn.disabled = !hasRoutineClockStarted();
+  pauseResumeBtn.append(
+    createIcon(state.timer.isRunning ? "pause" : "play", { size: 16 }),
+    document.createTextNode(state.timer.isRunning ? t("app.pause") : t("app.resume"))
+  );
   pauseResumeBtn.addEventListener("click", () => {
     if (state.timer.isRunning) {
       pauseTimer();
@@ -1348,12 +1452,12 @@ export function renderTimerView() {
 
   const endBtn = document.createElement("button");
   endBtn.type = "button";
-  endBtn.className = "danger-btn";
+  endBtn.className = "timer-end-btn";
   endBtn.textContent = t("timer.end");
   endBtn.addEventListener("click", requestEndRoutine);
 
   controls.append(pauseResumeBtn, endBtn);
-  wrapper.append(timerCard, controls);
+  wrapper.append(hero, createTimerNowCard(routine), steps, controls);
   return wrapper;
 }
 
