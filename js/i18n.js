@@ -43,6 +43,8 @@ const messages = {
     "history.emptyTitle": "No completions yet",
     "history.emptyHint": "Finish a routine and your runs will show up here.",
     "history.viewDayDetails": "View day details for {name}",
+    "history.oneRun": "1 run",
+    "history.runs": "{count} runs",
 
     "home.emptyTitle": "No routines yet",
     "home.emptyHint": "Create a morning routine to get started.",
@@ -307,6 +309,8 @@ const messages = {
     "history.emptyTitle": "Aún no hay completados",
     "history.emptyHint": "Termina una rutina y aquí verás tus sesiones.",
     "history.viewDayDetails": "Ver detalles del día de {name}",
+    "history.oneRun": "1 sesión",
+    "history.runs": "{count} sesiones",
 
     "home.emptyTitle": "Aún no hay rutinas",
     "home.emptyHint": "Crea una rutina matutina para empezar.",
@@ -571,6 +575,8 @@ const messages = {
     "history.emptyTitle": "还没有完成记录",
     "history.emptyHint": "完成例行后，运行记录会显示在这里。",
     "history.viewDayDetails": "查看 {name} 的当天详情",
+    "history.oneRun": "1 次",
+    "history.runs": "{count} 次",
 
     "home.emptyTitle": "还没有例行",
     "home.emptyHint": "创建一个晨间例行开始吧。",

@@ -25,6 +25,9 @@ import {
   getRoutineRunHistory,
   getRunDateKey,
   formatRunCompletedAt,
+  formatRunTimeOfDay,
+  formatHistoryDayLabel,
+  getLocalDateKey,
   getRoutineYearlyContributions,
   formatContributionDayLabel,
 } from "./utils.js";
@@ -318,56 +321,95 @@ export function renderHistoryView() {
     return view;
   }
 
-  const list = document.createElement("div");
-  list.className = "history-list";
-  list.setAttribute("role", "list");
-
-  items.forEach(({ routine, run, completedAt }) => {
-    const dateKey = getRunDateKey(run);
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "history-item";
-    item.setAttribute("role", "listitem");
-    item.setAttribute(
-      "aria-label",
-      t("history.viewDayDetails", { name: routine.name })
-    );
-    applyRoutineColorStyle(item, routine);
-
-    const swatch = document.createElement("span");
-    swatch.className = "history-item-swatch";
-    swatch.setAttribute("aria-hidden", "true");
-
-    const copy = document.createElement("span");
-    copy.className = "history-item-copy";
-
-    const name = document.createElement("span");
-    name.className = "history-item-name";
-    name.textContent = routine.name;
-
-    const when = document.createElement("span");
-    when.className = "history-item-when";
-    when.textContent = formatRunCompletedAt(completedAt);
-
-    copy.append(name, when);
-
-    const duration = document.createElement("span");
-    duration.className = "history-item-duration";
-    duration.textContent = formatDuration(Number(run.totalMs) || 0);
-
-    item.append(swatch, copy, duration);
-    item.addEventListener("click", () => {
-      if (!dateKey) return;
-      openCalendarModal(routine.id, {
-        dateKey,
-        focusRunId: typeof run.id === "string" ? run.id : null,
-      });
-    });
-    list.appendChild(item);
+  const groups = [];
+  items.forEach((entry) => {
+    const dateKey = getRunDateKey(entry.run) || getLocalDateKey(entry.completedAt);
+    const last = groups[groups.length - 1];
+    if (last && last.dateKey === dateKey) {
+      last.items.push(entry);
+    } else {
+      groups.push({ dateKey, items: [entry] });
+    }
   });
 
-  view.appendChild(list);
+  groups.forEach((group) => {
+    const section = document.createElement("section");
+    section.className = "history-day";
+
+    const header = document.createElement("div");
+    header.className = "history-day-header";
+
+    const title = document.createElement("h2");
+    title.className = "history-day-title";
+    title.textContent = formatHistoryDayLabel(group.dateKey);
+
+    const totalMs = group.items.reduce((sum, { run }) => sum + (Number(run.totalMs) || 0), 0);
+    const summary = document.createElement("span");
+    summary.className = "history-day-summary";
+    summary.textContent = `${
+      group.items.length === 1 ? t("history.oneRun") : t("history.runs", { count: group.items.length })
+    } · ${formatDuration(totalMs)}`;
+
+    header.append(title, summary);
+
+    const list = document.createElement("div");
+    list.className = "history-list";
+    list.setAttribute("role", "list");
+    group.items.forEach((entry) => list.appendChild(createHistoryItem(entry)));
+
+    section.append(header, list);
+    view.appendChild(section);
+  });
+
   return view;
+}
+
+function createHistoryItem({ routine, run, completedAt }) {
+  const dateKey = getRunDateKey(run);
+  const item = document.createElement("button");
+  item.type = "button";
+  item.className = "history-item";
+  item.setAttribute("role", "listitem");
+  item.setAttribute(
+    "aria-label",
+    t("history.viewDayDetails", { name: routine.name })
+  );
+  item.title = formatRunCompletedAt(completedAt);
+  applyRoutineColorStyle(item, routine);
+
+  const swatch = document.createElement("span");
+  swatch.className = "history-item-swatch";
+  swatch.setAttribute("aria-hidden", "true");
+
+  const copy = document.createElement("span");
+  copy.className = "history-item-copy";
+
+  const name = document.createElement("span");
+  name.className = "history-item-name";
+  name.textContent = routine.name;
+
+  const when = document.createElement("span");
+  when.className = "history-item-when";
+  when.textContent = formatRunTimeOfDay(completedAt);
+
+  copy.append(name, when);
+
+  const duration = document.createElement("span");
+  duration.className = "history-item-duration";
+  duration.textContent = formatDuration(Number(run.totalMs) || 0);
+
+  const chevron = createIcon("chevronRight", { size: 16 });
+  chevron.classList.add("history-item-chevron");
+
+  item.append(swatch, copy, duration, chevron);
+  item.addEventListener("click", () => {
+    if (!dateKey) return;
+    openCalendarModal(routine.id, {
+      dateKey,
+      focusRunId: typeof run.id === "string" ? run.id : null,
+    });
+  });
+  return item;
 }
 
 function createHomeWidget(widgetId, bodyContent) {

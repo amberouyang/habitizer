@@ -82,6 +82,28 @@ export function formatLastCompletedLabel(routine) {
   return t("format.lastCompleted", { when: formatRelativeCompletedDay(dateKey) });
 }
 
+export function formatHistoryDayLabel(dateKey) {
+  const today = getLocalDateKey();
+  if (dateKey === today) return t("format.today");
+  if (dateKey === shiftDateKey(today, -1)) return t("format.yesterday");
+
+  const date = parseDateKey(dateKey);
+  const includeYear = date.getFullYear() !== new Date().getFullYear();
+  return date.toLocaleDateString(getLocale(), {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    ...(includeYear ? { year: "numeric" } : {}),
+  });
+}
+
+export function formatRunTimeOfDay(timestamp) {
+  return new Date(timestamp).toLocaleTimeString(getLocale(), {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 function parseDateKey(dateKey) {
   const [year, month, day] = dateKey.split("-").map(Number);
   return new Date(year, month - 1, day);
