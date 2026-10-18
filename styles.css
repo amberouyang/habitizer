@@ -468,10 +468,7 @@ button {
   outline-offset: 2px;
 }
 
-.section-card,
-.routine-item,
-.activity-item,
-.summary-card {
+.routine-item {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -882,6 +879,135 @@ button {
   background: var(--danger);
 }
 
+.routine-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.routine-settings-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px var(--card-shadow);
+}
+
+.routine-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 50px;
+  padding: 8px 0;
+  font-size: 0.94rem;
+}
+
+.routine-setting-row + .routine-setting-row {
+  border-top: 1px solid var(--border);
+}
+
+.routine-setting-row strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.routine-setting-button {
+  width: 100%;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.94rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.routine-setting-button strong::after {
+  content: "›";
+  margin-left: 8px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.routine-setting-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.routine-next-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  text-align: right;
+}
+
+.routine-next-value small {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.routine-next-row.is-due strong {
+  color: var(--primary-strong);
+}
+
+.routine-next-row.is-overdue strong {
+  color: var(--danger);
+}
+
+.routine-activities .section-header {
+  margin: 0 2px 10px;
+}
+
+.section-header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  margin-right: -6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.section-header-link:hover {
+  background: var(--accent);
+}
+
+.section-header-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.routine-start-bar {
+  position: sticky;
+  /* Cancel .app-content's bottom padding so the bar sits flush with the screen edge. */
+  bottom: calc(-24px - env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+  margin: 0 -16px calc(-24px - env(safe-area-inset-bottom, 0px));
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to bottom, transparent, var(--shell-bg) 34%);
+}
+
+.routine-start-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 50px;
+  font-size: 1rem;
+}
+
 .routine-schedule-row {
   cursor: pointer;
   margin: 0;
@@ -918,28 +1044,6 @@ button {
 .routine-srs-interval {
   font-size: 0.72rem;
   color: var(--muted);
-}
-
-.routine-next-block {
-  margin-top: 8px;
-}
-
-.routine-next-row {
-  margin-top: 0;
-}
-
-.routine-srs-interval-detail {
-  margin: 0 0 0 2px;
-  padding: 0 2px 2px;
-  font-size: 0.78rem;
-}
-
-.routine-next-row.is-due strong {
-  color: var(--primary-strong);
-}
-
-.routine-next-row.is-overdue strong {
-  color: var(--danger);
 }
 
 .color-modal-swatches {
@@ -1564,15 +1668,26 @@ button {
 .activity-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px var(--card-shadow);
+}
+
+.activity-list.is-empty {
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 14px 12px;
+  gap: 8px;
+  min-height: 52px;
+  padding: 6px 8px 6px 4px;
+  background: var(--panel);
   transform: none;
   opacity: 1;
   transform-origin: top center;
@@ -1587,8 +1702,27 @@ button {
   transition: box-shadow 180ms ease;
 }
 
+.activity-item + .activity-item {
+  border-top: 1px solid var(--border);
+}
+
+.activity-item:first-child {
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.activity-item:last-child {
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+.activity-item:only-child {
+  border-radius: var(--radius-card);
+}
+
+.activity-item.is-dragging {
+  border-radius: var(--radius-control);
+}
+
 .activity-item.drop-target {
-  border-color: var(--primary);
   background: var(--accent);
 }
 
@@ -2710,24 +2844,6 @@ button {
   font-weight: 600;
 }
 
-.routine-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 18px;
-  align-items: center;
-}
-
-.routine-actions .primary-btn {
-  width: min(100%, 220px);
-}
-
-.add-activity-btn {
-  width: min(100%, 180px);
-  padding: 10px 16px;
-  font-weight: 600;
-}
-
 .timer-controls {
   display: flex;
   flex-direction: column;
@@ -2793,29 +2909,13 @@ button {
   background: color-mix(in srgb, var(--danger) 22%, var(--danger-btn-bg));
 }
 
-.summary-card {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
 .contribution-graph {
-  margin: 0 0 18px;
+  margin: 0;
   padding: 14px 12px 12px;
-  border-radius: 18px;
+  border-radius: var(--radius-card);
   background: var(--panel);
   border: 1px solid var(--border);
-  box-shadow: 0 8px 18px var(--card-shadow);
+  box-shadow: 0 1px 2px var(--card-shadow);
 }
 
 .contribution-graph-header {
@@ -2976,39 +3076,6 @@ button.contribution-cell:focus-visible {
 
 .contribution-legend .contribution-cell {
   cursor: default;
-}
-
-.summary-row-button {
-  width: 100%;
-  margin: 0 0 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--panel);
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.12s ease, background-color 0.12s ease;
-}
-
-.summary-row-button:hover {
-  border-color: var(--hover-border-strong);
-  background: var(--accent);
-}
-
-.summary-row-button:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.summary-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.summary-row strong {
-  font-size: 1.05rem;
 }
 
 .completion-view {

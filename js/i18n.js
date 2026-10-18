@@ -83,6 +83,7 @@ const messages = {
     "home.completionsTitlePlural": "{count} completions",
 
     "routine.activities": "Activities",
+    "routine.moreActions": "Routine options",
     "routine.editTime": "Edit time estimate",
     "routine.changeColor": "Change color",
     "routine.changeColorAria": "Change routine color",
@@ -346,6 +347,7 @@ const messages = {
     "home.completionsTitlePlural": "{count} completados",
 
     "routine.activities": "Actividades",
+    "routine.moreActions": "Opciones de rutina",
     "routine.editTime": "Editar tiempo estimado",
     "routine.changeColor": "Cambiar color",
     "routine.changeColorAria": "Cambiar color de la rutina",
@@ -609,6 +611,7 @@ const messages = {
     "home.completionsTitlePlural": "{count} 次完成",
 
     "routine.activities": "活动",
+    "routine.moreActions": "例行选项",
     "routine.editTime": "编辑预计时间",
     "routine.changeColor": "更改颜色",
     "routine.changeColorAria": "更改例行颜色",

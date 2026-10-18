@@ -40,7 +40,6 @@ import {
   applyRoutineColorStyle,
   getActivityEstimatedMinutes,
   getActivityEstimatedMs,
-  routineCompletedToday,
 } from "./models.js";
 import {
   addRoutine,
@@ -176,8 +175,9 @@ export function setView(view, routineId = null) {
     pageTitleEl.title = t("view.renameHint");
     backButton.classList.remove("hidden");
     addButton.classList.add("hidden");
-    setIcon(addButton, "plus", { size: 20 });
-    addButton.setAttribute("aria-label", t("app.addActivity"));
+    menuButton?.classList.remove("hidden");
+    menuButton?.setAttribute("aria-label", t("routine.moreActions"));
+    if (menuButton) menuButton.title = t("routine.moreActions");
   } else if (view === "timer") {
     const routine = getRoutineById(routineId);
     pageTitleEl.textContent = routine ? routine.name : t("view.liveRoutine");
@@ -893,6 +893,22 @@ function renderContributionGraph(routine) {
   return section;
 }
 
+export function openRoutineMenu(routineId) {
+  const routine = getRoutineById(routineId);
+  if (!routine) return;
+  openActionSheet({
+    title: routine.name,
+    actions: [
+      { label: t("routine.history"), icon: "calendar", onSelect: () => openCalendarModal(routine.id) },
+      { label: t("routine.changeColor"), icon: "palette", onSelect: () => openColorModal(routine.id) },
+      { label: t("routine.editTime"), icon: "clock", onSelect: () => editRoutineTime(routine.id) },
+      { label: t("home.rename"), icon: "edit", onSelect: () => renameRoutine(routine.id) },
+      { label: t("home.duplicate"), icon: "copy", onSelect: () => duplicateRoutine(routine.id) },
+      { label: t("home.delete"), icon: "trash", danger: true, onSelect: () => deleteRoutine(routine.id) },
+    ],
+  });
+}
+
 export function renderRoutineView() {
   const routine = getRoutineById(state.currentRoutineId);
   if (!routine) {
@@ -901,62 +917,25 @@ export function renderRoutineView() {
   }
 
   const wrapper = document.createElement("div");
+  wrapper.className = "routine-view";
+  applyRoutineColorStyle(wrapper, routine);
 
-  const header = document.createElement("div");
-  header.className = "section-header";
-
-  const title = document.createElement("h2");
-  title.textContent = t("routine.activities");
-
-  const headerActions = document.createElement("div");
-  headerActions.className = "section-header-actions";
-
-  const duplicateButton = document.createElement("button");
-  duplicateButton.type = "button";
-  duplicateButton.className = "small-btn";
-  duplicateButton.title = t("home.duplicate");
-  setIcon(duplicateButton, "copy");
-  duplicateButton.addEventListener("click", () => duplicateRoutine(routine.id));
-
-  const metaButton = document.createElement("button");
-  metaButton.type = "button";
-  metaButton.className = "small-btn";
-  metaButton.title = t("routine.editTime");
-  setIcon(metaButton, "clock");
-  metaButton.addEventListener("click", () => editRoutineTime(routine.id));
-
-  const colorButton = document.createElement("button");
-  colorButton.type = "button";
-  colorButton.className = "small-btn color-btn";
-  colorButton.title = t("routine.changeColor");
-  colorButton.setAttribute("aria-label", t("routine.changeColorAria"));
-  setIcon(colorButton, "palette");
-  applyRoutineColorStyle(colorButton, routine);
-  colorButton.addEventListener("click", () => openColorModal(routine.id));
-
-  const calendarButton = document.createElement("button");
-  calendarButton.type = "button";
-  calendarButton.className = "small-btn calendar-btn";
-  calendarButton.title = t("routine.history");
-  calendarButton.setAttribute("aria-label", t("routine.history"));
-  setIcon(calendarButton, "calendar");
-  if (routineCompletedToday(routine)) {
-    calendarButton.classList.add("has-today");
-  }
-  calendarButton.addEventListener("click", () => openCalendarModal(routine.id));
-
-  headerActions.append(duplicateButton, calendarButton, colorButton, metaButton);
-  header.append(title, headerActions);
+  const settingsCard = document.createElement("section");
+  settingsCard.className = "routine-settings-card";
 
   const infoRow = document.createElement("button");
   infoRow.type = "button";
-  infoRow.className = "summary-row summary-row-button";
+  infoRow.className = "routine-setting-row routine-setting-button";
   infoRow.title = t("routine.editEstimated");
-  infoRow.innerHTML = `<span>Estimated time</span><strong>${formatDurationLabel(getRoutineTotalDurationMs(routine))}</strong>`;
+  const infoLabel = document.createElement("span");
+  infoLabel.textContent = t("routine.estimatedTime");
+  const infoValue = document.createElement("strong");
+  infoValue.textContent = formatDurationLabel(getRoutineTotalDurationMs(routine));
+  infoRow.append(infoLabel, infoValue);
   infoRow.addEventListener("click", () => editRoutineTime(routine.id));
 
   const scheduleRow = document.createElement("label");
-  scheduleRow.className = "summary-row routine-schedule-row";
+  scheduleRow.className = "routine-setting-row routine-schedule-row";
   const scheduleToggleId = `srs-toggle-${routine.id}`;
   scheduleRow.setAttribute("for", scheduleToggleId);
   scheduleRow.title = t("srs.desc");
@@ -977,15 +956,11 @@ export function renderRoutineView() {
   });
 
   scheduleRow.append(scheduleLabel, scheduleToggle);
-
-  const detailBits = [header, infoRow, scheduleRow];
+  settingsCard.append(infoRow, scheduleRow);
 
   if (isSpacedRepetitionEnabled(routine)) {
-    const nextBlock = document.createElement("div");
-    nextBlock.className = "routine-next-block";
-
     const nextRow = document.createElement("div");
-    nextRow.className = "summary-row routine-next-row";
+    nextRow.className = "routine-setting-row routine-next-row";
     const status = getDueStatus(routine);
     if (status.kind === "due" || status.kind === "overdue") {
       nextRow.classList.add(`is-${status.kind}`);
@@ -994,35 +969,58 @@ export function renderRoutineView() {
     const nextLabel = document.createElement("span");
     nextLabel.textContent = t("srs.nextLabel");
 
-    const nextValue = document.createElement("strong");
-    nextValue.textContent = formatNextRepetitionValue(routine);
-
-    nextRow.append(nextLabel, nextValue);
-    nextBlock.appendChild(nextRow);
+    const nextValue = document.createElement("span");
+    nextValue.className = "routine-next-value";
+    const nextStrong = document.createElement("strong");
+    nextStrong.textContent = formatNextRepetitionValue(routine);
+    nextValue.appendChild(nextStrong);
 
     const intervalLabel = formatSrsIntervalLabel(routine);
     if (intervalLabel) {
-      const intervalEl = document.createElement("div");
-      intervalEl.className = "routine-srs-interval routine-srs-interval-detail";
+      const intervalEl = document.createElement("small");
       intervalEl.textContent = intervalLabel;
-      nextBlock.appendChild(intervalEl);
+      nextValue.appendChild(intervalEl);
     }
 
-    detailBits.push(nextBlock);
+    nextRow.append(nextLabel, nextValue);
+    settingsCard.appendChild(nextRow);
   }
 
-  detailBits.push(renderContributionGraph(routine));
-  wrapper.append(...detailBits);
+  const activitiesSection = document.createElement("section");
+  activitiesSection.className = "routine-activities";
+
+  const header = document.createElement("div");
+  header.className = "section-header";
+
+  const title = document.createElement("h2");
+  title.textContent = t("routine.activities");
+
+  const addActivityButton = document.createElement("button");
+  addActivityButton.type = "button";
+  addActivityButton.className = "section-header-link";
+  addActivityButton.setAttribute("aria-label", t("app.addActivity"));
+  addActivityButton.append(createIcon("plus", { size: 16 }), document.createTextNode(t("app.add")));
+  addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
+
+  header.append(title, addActivityButton);
 
   const activityList = document.createElement("div");
   activityList.className = "activity-list";
 
   if (routine.activities.length === 0) {
+    activityList.classList.add("is-empty");
     activityList.appendChild(
       createHomeEmptyState({
         title: t("routine.emptyActivities"),
         hint: t("routine.emptyActivitiesHint"),
         art: "activities",
+        actions: [
+          {
+            label: t("app.addActivity"),
+            primary: true,
+            onClick: () => openAddActivityModal(routine.id),
+          },
+        ],
       })
     );
   } else {
@@ -1081,14 +1079,19 @@ export function renderRoutineView() {
     setupActivityDragAndDrop(activityList, routine);
   }
 
-  const actionRow = document.createElement("div");
-  actionRow.className = "routine-actions";
+  activitiesSection.append(header, activityList);
+
+  const startBar = document.createElement("div");
+  startBar.className = "routine-start-bar";
 
   const startBtn = document.createElement("button");
   startBtn.type = "button";
-  startBtn.className = "primary-btn";
+  startBtn.className = "primary-btn routine-start-btn";
   const isActiveSession = state.timer.routineId === routine.id;
-  startBtn.textContent = isActiveSession ? t("timer.continue") : t("routine.start");
+  startBtn.append(
+    createIcon("play", { size: 16 }),
+    document.createTextNode(isActiveSession ? t("timer.continue") : t("routine.start"))
+  );
   startBtn.disabled = routine.activities.length === 0;
   startBtn.addEventListener("click", () => {
     if (isActiveSession) {
@@ -1097,15 +1100,9 @@ export function renderRoutineView() {
     }
     startRoutine(routine.id);
   });
+  startBar.appendChild(startBtn);
 
-  const addActivityButton = document.createElement("button");
-  addActivityButton.type = "button";
-  addActivityButton.className = "secondary-btn add-activity-btn";
-  addActivityButton.textContent = t("app.addActivity");
-  addActivityButton.addEventListener("click", () => openAddActivityModal(routine.id));
-
-  actionRow.append(startBtn, addActivityButton);
-  wrapper.append(activityList, actionRow);
+  wrapper.append(settingsCard, activitiesSection, renderContributionGraph(routine), startBar);
   return wrapper;
 }
 

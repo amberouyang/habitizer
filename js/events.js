@@ -28,6 +28,7 @@ import {
   dueRemindersToggle,
   undoToastAction,
   backButton,
+  menuButton,
   addButton,
   tabBar,
 } from "./dom.js";
@@ -51,7 +52,7 @@ import {
 } from "./routines.js";
 import { undoDelete } from "./delete.js";
 import { exportBackup, readBackupFile, applyBackup, mergeBackup } from "./backup.js";
-import { setView, render } from "./views.js";
+import { setView, render, openRoutineMenu } from "./views.js";
 import { minimizeTimer } from "./timer.js";
 import {
   STORAGE_KEY,
@@ -84,6 +85,13 @@ export function wireEvents() {
       const target = state.returnView === "history" ? "history" : "home";
       state.returnView = "home";
       setView(target);
+    }
+  });
+
+  menuButton?.setAttribute("aria-haspopup", "dialog");
+  menuButton?.addEventListener("click", () => {
+    if (state.currentView === "routine") {
+      openRoutineMenu(state.currentRoutineId);
     }
   });
 
