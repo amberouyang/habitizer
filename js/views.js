@@ -608,24 +608,6 @@ function renderRoutinesWidgetContent() {
     const actions = document.createElement("div");
     actions.className = "item-actions";
 
-    const isActiveSession = state.timer.routineId === routine.id;
-
-    // Continue lives on the top in-progress banner; cards only get a quiet Start.
-    if (!isActiveSession) {
-      const startBtn = document.createElement("button");
-      startBtn.type = "button";
-      startBtn.className = "small-btn home-start-btn";
-      startBtn.title = t("home.startAria", { name: routine.name });
-      startBtn.setAttribute("aria-label", t("home.startAria", { name: routine.name }));
-      setIcon(startBtn, "play", { size: 16 });
-      startBtn.disabled = routine.activities.length === 0;
-      startBtn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        startRoutine(routine.id);
-      });
-      actions.appendChild(startBtn);
-    }
-
     const duplicateBtn = document.createElement("button");
     duplicateBtn.type = "button";
     duplicateBtn.className = "small-btn";
@@ -657,6 +639,24 @@ function renderRoutinesWidgetContent() {
     });
 
     actions.append(duplicateBtn, renameBtn, deleteBtn);
+
+    // Continue lives on the top in-progress banner; cards only get a quiet Start.
+    const isActiveSession = state.timer.routineId === routine.id;
+    if (!isActiveSession) {
+      const startBtn = document.createElement("button");
+      startBtn.type = "button";
+      startBtn.className = "small-btn home-start-btn";
+      startBtn.title = t("home.startAria", { name: routine.name });
+      startBtn.setAttribute("aria-label", t("home.startAria", { name: routine.name }));
+      setIcon(startBtn, "play", { size: 16 });
+      startBtn.disabled = routine.activities.length === 0;
+      startBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        startRoutine(routine.id);
+      });
+      actions.appendChild(startBtn);
+    }
+
     main.append(openBtn);
     item.append(main, actions);
     list.appendChild(item);

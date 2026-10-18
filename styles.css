@@ -1508,7 +1508,7 @@ button {
 .small-btn.home-start-btn {
   width: 34px;
   height: 34px;
-  margin-right: 2px;
+  margin-left: 4px;
   border-radius: 999px;
   background: var(--primary);
   color: var(--on-primary);
