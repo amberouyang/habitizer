@@ -533,6 +533,181 @@ button {
   gap: 22px;
 }
 
+.home-today {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-today-header {
+  padding: 0 4px;
+}
+
+.home-today-date {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.home-today-greeting {
+  margin: 2px 0 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.home-today-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px var(--card-shadow);
+}
+
+.home-today-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.home-today-fraction {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.home-today-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.home-today-due {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+}
+
+.home-today-bar {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+}
+
+.home-today-segment {
+  flex: 1 1 0;
+  border-radius: 999px;
+  background: var(--panel-alt);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.home-today-segment.is-done {
+  box-shadow: none;
+}
+
+.home-today-next {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--routine-color, var(--primary)) 28%, var(--border));
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--routine-color, var(--primary)) 7%, var(--panel));
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s ease, background-color 0.15s ease;
+}
+
+.home-today-next:hover {
+  background: color-mix(in srgb, var(--routine-color, var(--primary)) 12%, var(--panel));
+}
+
+.home-today-next:active {
+  transform: scale(0.985);
+}
+
+.home-today-next:focus-visible {
+  outline: 2px solid var(--routine-color, var(--primary));
+  outline-offset: 2px;
+}
+
+.home-today-next-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.home-today-next-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.home-today-next-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-today-next-meta {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.home-today-next-play {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--routine-color, var(--primary));
+  color: var(--routine-on-color, var(--on-primary));
+}
+
+.home-today-next-play .ui-icon {
+  transform: translateX(1px);
+}
+
+.home-today-all-done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-today-next:active {
+    transform: none;
+  }
+}
+
 .home-widget {
   position: relative;
   padding: 0;

@@ -1,5 +1,5 @@
 import { STREAK_DISPLAY_MIN } from "./constants.js";
-import { t, getHomeWidgetLabel } from "./i18n.js";
+import { t, getHomeWidgetLabel, getLocale } from "./i18n.js";
 import { setIcon, createIcon } from "./icons.js";
 import { openActionSheet } from "./actionSheet.js";
 import { state } from "./state.js";
@@ -42,6 +42,7 @@ import {
   getActivityElapsedMs,
   applyRoutineColorStyle,
   getRoutineColorValue,
+  routineCompletedToday,
   getActivityEstimatedMinutes,
   getActivityEstimatedMs,
 } from "./models.js";
@@ -65,6 +66,7 @@ import {
   isSpacedRepetitionEnabled,
   getRoutinesForHomeDisplay,
   hasUrgentSpacedPractice,
+  getDueSortPriority,
 } from "./schedule.js";
 import {
   openColorModal,
@@ -199,9 +201,152 @@ export function setView(view, routineId = null) {
   render({ animateEnter: true });
 }
 
+function getTodayPlan() {
+  const items = state.routines
+    .filter((routine) => routine.activities.length > 0)
+    .map((routine) => ({
+      routine,
+      done: routineCompletedToday(routine),
+      dueKind: getDueStatus(routine).kind,
+    }))
+    .filter(({ done, dueKind }) => done || dueKind === "off" || dueKind === "due" || dueKind === "overdue");
+
+  const remaining = items.filter((item) => !item.done);
+  const next = [...remaining].sort(
+    (a, b) => getDueSortPriority(a.routine) - getDueSortPriority(b.routine)
+  )[0] || null;
+  const dueCount = remaining.filter(({ dueKind }) => dueKind === "due" || dueKind === "overdue").length;
+
+  return { items, doneCount: items.length - remaining.length, next, dueCount };
+}
+
+function getGreetingKey(hour = new Date().getHours()) {
+  if (hour >= 5 && hour < 12) return "home.greetingMorning";
+  if (hour >= 12 && hour < 17) return "home.greetingAfternoon";
+  return "home.greetingEvening";
+}
+
+function renderHomeToday() {
+  const section = document.createElement("section");
+  section.className = "home-today";
+  section.setAttribute("aria-label", t("format.today"));
+
+  const header = document.createElement("div");
+  header.className = "home-today-header";
+
+  const date = document.createElement("p");
+  date.className = "home-today-date";
+  date.textContent = new Date().toLocaleDateString(getLocale(), {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const greeting = document.createElement("h2");
+  greeting.className = "home-today-greeting";
+  greeting.textContent = t(getGreetingKey());
+
+  header.append(date, greeting);
+  section.appendChild(header);
+
+  const plan = getTodayPlan();
+  if (plan.items.length === 0) return section;
+
+  const card = document.createElement("div");
+  card.className = "home-today-card";
+
+  const summary = document.createElement("div");
+  summary.className = "home-today-summary";
+
+  const fraction = document.createElement("strong");
+  fraction.className = "home-today-fraction";
+  fraction.textContent = `${plan.doneCount}/${plan.items.length}`;
+
+  const fractionLabel = document.createElement("span");
+  fractionLabel.className = "home-today-label";
+  fractionLabel.textContent = t("home.doneToday");
+
+  summary.append(fraction, fractionLabel);
+
+  if (plan.dueCount > 0) {
+    const due = document.createElement("span");
+    due.className = "home-today-due";
+    due.textContent = t("home.todayDue", { count: plan.dueCount });
+    summary.appendChild(due);
+  }
+
+  const bar = document.createElement("div");
+  bar.className = "home-today-bar";
+  bar.setAttribute("role", "progressbar");
+  bar.setAttribute("aria-valuemin", "0");
+  bar.setAttribute("aria-valuemax", String(plan.items.length));
+  bar.setAttribute("aria-valuenow", String(plan.doneCount));
+  bar.setAttribute("aria-label", t("home.doneToday"));
+  [...plan.items]
+    .sort((a, b) => Number(b.done) - Number(a.done))
+    .forEach(({ routine, done }) => {
+      const segment = document.createElement("span");
+      segment.className = "home-today-segment";
+      segment.title = routine.name;
+      if (done) {
+        segment.classList.add("is-done");
+        segment.style.background = getRoutineColorValue(routine);
+      }
+      bar.appendChild(segment);
+    });
+
+  card.append(summary, bar);
+
+  if (plan.next) {
+    const { routine } = plan.next;
+    const nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.className = "home-today-next";
+    nextBtn.setAttribute("aria-label", t("home.startAria", { name: routine.name }));
+    applyRoutineColorStyle(nextBtn, routine);
+
+    const copy = document.createElement("span");
+    copy.className = "home-today-next-copy";
+
+    const label = document.createElement("span");
+    label.className = "home-today-next-label";
+    label.textContent = t("home.upNext");
+
+    const name = document.createElement("span");
+    name.className = "home-today-next-name";
+    name.textContent = routine.name;
+
+    const meta = document.createElement("span");
+    meta.className = "home-today-next-meta";
+    meta.textContent = formatDurationLabel(getRoutineTotalDurationMs(routine));
+
+    copy.append(label, name);
+
+    const play = document.createElement("span");
+    play.className = "home-today-next-play";
+    play.appendChild(createIcon("play", { size: 16 }));
+
+    nextBtn.append(copy, meta, play);
+    nextBtn.addEventListener("click", () => startRoutine(routine.id));
+    card.appendChild(nextBtn);
+  } else {
+    const allDone = document.createElement("p");
+    allDone.className = "home-today-all-done";
+    allDone.append(createIcon("check", { size: 16 }), document.createTextNode(t("home.allDone")));
+    card.appendChild(allDone);
+  }
+
+  section.appendChild(card);
+  return section;
+}
+
 export function renderHomeView() {
   const home = document.createElement("div");
   home.className = "home-view";
+
+  if (state.routines.length > 0) {
+    home.appendChild(renderHomeToday());
+  }
 
   const resumeBanner = renderTimerResumeBanner();
   if (resumeBanner) {
