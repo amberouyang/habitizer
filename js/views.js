@@ -17,7 +17,6 @@ import {
   formatDurationLabel,
   formatStreakLabel,
   formatStreakBadgeText,
-  formatPersonalBestLabel,
   formatLastCompletedLabel,
   getCompletionEstimateMessage,
   getRoutineStreak,
@@ -57,7 +56,7 @@ import {
 import {
   formatDueLabel,
   getDueStatus,
-  formatNextPracticeLabel,
+  formatDueDateLabel,
   formatNextRepetitionValue,
   formatSrsIntervalLabel,
   isSpacedRepetitionEnabled,
@@ -1110,6 +1109,30 @@ export function renderRoutineView() {
   return wrapper;
 }
 
+function createCompletionStat({ label, value, detail, tone }) {
+  const stat = document.createElement("div");
+  stat.className = "completion-stat";
+
+  const labelEl = document.createElement("div");
+  labelEl.className = "completion-stat-label";
+  labelEl.textContent = label;
+
+  const valueEl = document.createElement("div");
+  valueEl.className = "completion-stat-value";
+  valueEl.textContent = value;
+
+  stat.append(labelEl, valueEl);
+
+  if (detail) {
+    const detailEl = document.createElement("div");
+    detailEl.className = "completion-stat-detail";
+    if (tone) detailEl.classList.add(`is-${tone}`);
+    detailEl.textContent = detail;
+    stat.appendChild(detailEl);
+  }
+  return stat;
+}
+
 export function renderCompletionView() {
   const data = state.lastCompletion;
   if (!data) {
@@ -1117,97 +1140,110 @@ export function renderCompletionView() {
     return document.createElement("div");
   }
 
+  const completedRoutine = getRoutineById(data.routineId);
   const wrapper = document.createElement("div");
   wrapper.className = "completion-view";
+  if (completedRoutine) applyRoutineColorStyle(wrapper, completedRoutine);
 
-  const card = document.createElement("div");
-  card.className = "summary-card completion-card";
+  const hero = document.createElement("section");
+  hero.className = "completion-hero";
 
-  const headline = document.createElement("p");
+  const mark = document.createElement("div");
+  mark.className = "completion-mark";
+  mark.appendChild(createIcon("check", { size: 34 }));
+
+  const headline = document.createElement("h2");
   headline.className = "completion-headline";
   headline.textContent = data.routineName;
   headline.title = data.routineName;
 
-  const totalEl = document.createElement("div");
-  totalEl.className = "completion-total";
-  totalEl.textContent = formatDuration(data.totalMs);
+  hero.append(mark, headline);
 
-  card.append(headline, totalEl);
+  if (data.estimatedMs > 0) {
+    const estimateEl = document.createElement("p");
+    const isUnderOrOn = data.totalMs <= data.estimatedMs;
+    estimateEl.className = `completion-estimate ${isUnderOrOn ? "under" : "over"}`;
+    estimateEl.textContent = getCompletionEstimateMessage(data.totalMs, data.estimatedMs);
+    hero.appendChild(estimateEl);
+  }
+
+  const stats = document.createElement("section");
+  stats.className = "completion-stats";
+
+  stats.appendChild(createCompletionStat({
+    label: t("complete.time"),
+    value: formatDuration(data.totalMs),
+    detail: data.estimatedMs > 0
+      ? t("timer.ofEstimate", { time: formatDurationLabel(data.estimatedMs) })
+      : null,
+  }));
 
   if (data.streak > 0) {
-    const streakBlock = document.createElement("div");
-    streakBlock.className = "completion-streak-block";
-
-    const streakEl = document.createElement("div");
-    streakEl.className = "completion-streak";
-    streakEl.textContent = formatStreakLabel(data.streak);
-    streakBlock.appendChild(streakEl);
-
+    let streakDetail = null;
+    let streakTone = null;
     if (data.isNewPersonalBest) {
-      const badgeEl = document.createElement("div");
-      badgeEl.className = "completion-streak-badge";
-      badgeEl.textContent = t("complete.personalBest");
-      streakBlock.appendChild(badgeEl);
+      streakDetail = t("complete.newBest");
+      streakTone = "good";
     } else if (data.longestStreak > data.streak) {
-      const bestEl = document.createElement("div");
-      bestEl.className = "completion-streak-best";
-      bestEl.textContent = formatPersonalBestLabel(data.longestStreak);
-      streakBlock.appendChild(bestEl);
+      streakDetail = t("complete.best", { count: data.longestStreak });
     }
-
-    card.appendChild(streakBlock);
+    stats.appendChild(createCompletionStat({
+      label: t("complete.streak"),
+      value: data.streak === 1
+        ? t("complete.streakDay")
+        : t("complete.streakDays", { count: data.streak }),
+      detail: streakDetail,
+      tone: streakTone,
+    }));
   }
 
   if (data.nextDueDate) {
-    const nextEl = document.createElement("div");
-    nextEl.className = "completion-next-due";
-    nextEl.textContent = formatNextPracticeLabel(data.nextDueDate);
-    card.appendChild(nextEl);
-
-    const completedRoutine = getRoutineById(data.routineId);
-    const intervalLabel = formatSrsIntervalLabel(completedRoutine);
-    if (intervalLabel) {
-      const intervalEl = document.createElement("div");
-      intervalEl.className = "completion-srs-interval";
-      intervalEl.textContent = intervalLabel;
-      card.appendChild(intervalEl);
-    }
+    stats.appendChild(createCompletionStat({
+      label: t("complete.next"),
+      value: formatDueDateLabel(data.nextDueDate),
+      detail: formatSrsIntervalLabel(completedRoutine),
+    }));
   }
 
-  if (data.estimatedMs > 0) {
-    const estimateEl = document.createElement("div");
-    const isUnderOrOn = data.totalMs <= data.estimatedMs;
-    estimateEl.className = `completion-estimate ${isUnderOrOn ? "under" : "over"}`;
-    estimateEl.textContent = t("complete.estimateLine", {
-      estimate: formatDurationLabel(data.estimatedMs),
-      message: getCompletionEstimateMessage(data.totalMs, data.estimatedMs),
-    });
-    card.appendChild(estimateEl);
-  }
+  const breakdown = document.createElement("section");
+  breakdown.className = "completion-breakdown";
 
-  const breakdownTitle = document.createElement("div");
+  const breakdownTitle = document.createElement("h3");
   breakdownTitle.className = "completion-section-title";
   breakdownTitle.textContent = t("complete.breakdown");
 
   const activityList = document.createElement("div");
   activityList.className = "summary-list";
+  const longestMs = Math.max(1, ...data.activities.map((activity) => activity.timeSpentMs));
 
   data.activities.forEach((activity) => {
     const item = document.createElement("div");
     item.className = "summary-item";
 
+    const row = document.createElement("div");
+    row.className = "summary-item-row";
+
     const name = document.createElement("span");
+    name.className = "summary-item-name";
     name.textContent = activity.name;
     name.title = activity.name;
 
     const time = document.createElement("strong");
     time.textContent = formatDuration(activity.timeSpentMs);
 
-    item.append(name, time);
+    row.append(name, time);
+
+    const bar = document.createElement("div");
+    bar.className = "summary-item-bar";
+    const fill = document.createElement("span");
+    fill.style.width = `${Math.max(2, (activity.timeSpentMs / longestMs) * 100)}%`;
+    bar.appendChild(fill);
+
+    item.append(row, bar);
     activityList.appendChild(item);
   });
 
-  card.append(breakdownTitle, activityList);
+  breakdown.append(breakdownTitle, activityList);
 
   const doneBtn = document.createElement("button");
   doneBtn.type = "button";
@@ -1218,7 +1254,7 @@ export function renderCompletionView() {
     setView("home");
   });
 
-  wrapper.append(card, doneBtn);
+  wrapper.append(hero, stats, breakdown, doneBtn);
   return wrapper;
 }
 

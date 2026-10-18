@@ -158,6 +158,13 @@ const messages = {
 
     "complete.personalBest": "New personal best!",
     "complete.breakdown": "Activity breakdown",
+    "complete.time": "Time",
+    "complete.streak": "Streak",
+    "complete.streakDay": "1 day",
+    "complete.streakDays": "{count} days",
+    "complete.newBest": "New best",
+    "complete.best": "Best: {count} days",
+    "complete.next": "Next",
     "complete.estimateLine": "{estimate} estimate · {message}",
 
     "settings.title": "Settings",
@@ -414,6 +421,13 @@ const messages = {
 
     "complete.personalBest": "¡Nuevo récord personal!",
     "complete.breakdown": "Desglose de actividades",
+    "complete.time": "Tiempo",
+    "complete.streak": "Racha",
+    "complete.streakDay": "1 día",
+    "complete.streakDays": "{count} días",
+    "complete.newBest": "Nuevo récord",
+    "complete.best": "Mejor: {count} días",
+    "complete.next": "Próxima",
     "complete.estimateLine": "{estimate} estimado · {message}",
 
     "settings.title": "Ajustes",
@@ -670,6 +684,13 @@ const messages = {
 
     "complete.personalBest": "新的个人最佳！",
     "complete.breakdown": "活动明细",
+    "complete.time": "用时",
+    "complete.streak": "连续",
+    "complete.streakDay": "1 天",
+    "complete.streakDays": "{count} 天",
+    "complete.newBest": "新纪录",
+    "complete.best": "最长：{count} 天",
+    "complete.next": "下次",
     "complete.estimateLine": "预计 {estimate} · {message}",
 
     "settings.title": "设置",
