@@ -132,6 +132,7 @@ export function getWeeklyStats(routines, timestamp = Date.now()) {
   const weekKeys = getWeekDateKeys(timestamp);
   const weekSet = new Set(weekKeys);
   const dayCompletions = weekKeys.map(() => 0);
+  const dayRoutines = weekKeys.map(() => []);
   const activeDays = new Set();
   let completions = 0;
   let runs = 0;
@@ -143,7 +144,10 @@ export function getWeeklyStats(routines, timestamp = Date.now()) {
       completions += 1;
       activeDays.add(dateKey);
       const index = weekKeys.indexOf(dateKey);
-      if (index >= 0) dayCompletions[index] += 1;
+      if (index >= 0) {
+        dayCompletions[index] += 1;
+        dayRoutines[index].push(routine);
+      }
     });
 
     getRoutineRunHistory(routine).forEach((run) => {
@@ -162,6 +166,7 @@ export function getWeeklyStats(routines, timestamp = Date.now()) {
     runs,
     totalTimeMs,
     dayCompletions,
+    dayRoutines,
     todayKey: getLocalDateKey(timestamp),
   };
 }

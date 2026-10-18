@@ -38,6 +38,7 @@ import {
   getTotalElapsedMs,
   getActivityElapsedMs,
   applyRoutineColorStyle,
+  getRoutineColorValue,
   getActivityEstimatedMinutes,
   getActivityEstimatedMs,
 } from "./models.js";
@@ -645,7 +646,7 @@ function renderRoutinesWidgetContent() {
 
 function renderWeeklyStatsContent() {
   const stats = getWeeklyStats(state.routines);
-  const maxDay = Math.max(1, ...stats.dayCompletions);
+  const barScale = Math.max(1, state.routines.length, ...stats.dayCompletions);
   const hasActivity = stats.completions > 0 || stats.runs > 0;
 
   const section = document.createElement("div");
@@ -654,15 +655,22 @@ function renderWeeklyStatsContent() {
   section.setAttribute("aria-label", `This week ${stats.weekLabel}`);
 
   if (!hasActivity) {
-    const empty = createHomeEmptyState({
-      title: t("home.weeklyEmptyTitle"),
-      hint:
-        state.routines.length === 0
-          ? t("home.weeklyEmptyHintNoRoutines")
-          : t("home.weeklyEmptyHint"),
-      art: "weekly",
-    });
-    empty.classList.add("weekly-empty-state");
+    section.classList.add("is-empty");
+    const empty = document.createElement("div");
+    empty.className = "weekly-empty";
+
+    const title = document.createElement("p");
+    title.className = "weekly-empty-title";
+    title.textContent = t("home.weeklyEmptyTitle");
+
+    const hint = document.createElement("p");
+    hint.className = "weekly-empty-hint";
+    hint.textContent =
+      state.routines.length === 0
+        ? t("home.weeklyEmptyHintNoRoutines")
+        : t("home.weeklyEmptyHint");
+
+    empty.append(title, hint);
     section.appendChild(empty);
   } else {
     const metrics = document.createElement("div");
@@ -690,19 +698,17 @@ function renderWeeklyStatsContent() {
       const item = document.createElement("div");
       item.className = "weekly-stat";
 
-      const label = document.createElement("span");
-      label.className = "weekly-stat-label";
-      label.textContent = metric.label;
+      item.title = metric.detail;
 
       const value = document.createElement("span");
       value.className = "weekly-stat-value";
       value.textContent = metric.value;
 
-      const detail = document.createElement("span");
-      detail.className = "weekly-stat-detail";
-      detail.textContent = metric.detail;
+      const label = document.createElement("span");
+      label.className = "weekly-stat-label";
+      label.textContent = metric.label;
 
-      item.append(label, value, detail);
+      item.append(value, label);
       metrics.appendChild(item);
     });
 
@@ -711,9 +717,6 @@ function renderWeeklyStatsContent() {
 
   const chart = document.createElement("div");
   chart.className = "weekly-stats-chart";
-  if (!hasActivity) {
-    chart.classList.add("is-quiet");
-  }
   chart.setAttribute("role", "img");
   chart.setAttribute(
     "aria-label",
@@ -725,25 +728,37 @@ function renderWeeklyStatsContent() {
     const day = document.createElement("div");
     day.className = "weekly-stats-day";
     if (dateKey === stats.todayKey) day.classList.add("is-today");
+    if (dateKey > stats.todayKey) day.classList.add("is-future");
     if (count > 0) day.classList.add("has-completions");
-
-    const barWrap = document.createElement("div");
-    barWrap.className = "weekly-stats-bar-wrap";
-
-    const bar = document.createElement("div");
-    bar.className = "weekly-stats-bar";
-    bar.style.height = `${Math.max(count > 0 ? 18 : 6, Math.round((count / maxDay) * 100))}%`;
-    bar.title = count === 1
+    day.title = count === 1
       ? t("home.completionsTitle", { count })
       : t("home.completionsTitlePlural", { count });
 
-    barWrap.appendChild(bar);
+    const countEl = document.createElement("span");
+    countEl.className = "weekly-stats-count";
+    countEl.textContent = count > 0 ? String(count) : "";
+
+    const track = document.createElement("div");
+    track.className = "weekly-stats-track";
+
+    if (count > 0) {
+      const stack = document.createElement("div");
+      stack.className = "weekly-stats-stack";
+      stack.style.height = `${Math.round((count / barScale) * 100)}%`;
+      stats.dayRoutines[index].forEach((routine) => {
+        const segment = document.createElement("span");
+        segment.className = "weekly-stats-segment";
+        segment.style.background = getRoutineColorValue(routine);
+        stack.appendChild(segment);
+      });
+      track.appendChild(stack);
+    }
 
     const weekday = document.createElement("span");
     weekday.className = "weekly-stats-weekday";
     weekday.textContent = getWeekdayShortLabel(dateKey);
 
-    day.append(barWrap, weekday);
+    day.append(countEl, track, weekday);
     chart.appendChild(day);
   });
 
