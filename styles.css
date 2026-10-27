@@ -3702,7 +3702,8 @@ button.contribution-cell:focus-visible {
   }
 }
 
-@media (max-width: 480px) {
+/* Phones in portrait or landscape: full-height single column. */
+@media (max-width: 480px), (max-height: 599px) {
   html,
   body {
     height: 100%;
@@ -3722,5 +3723,236 @@ button.contribution-cell:focus-visible {
     max-height: none;
     border-radius: 0;
     border: none;
+  }
+}
+
+/* Landscape phones keep the phone column, centered and clear of the notch. */
+@media (min-width: 481px) and (max-height: 599px) {
+  .app-shell {
+    width: min(100%, 560px);
+    border-inline: 1px solid var(--shell-border);
+  }
+}
+
+/* Tablet / desktop: full-window app with a sidebar instead of a phone frame. */
+@media (min-width: 900px) and (min-height: 600px) {
+  :root,
+  [data-theme="dark"] {
+    --rail-width: calc(232px + env(safe-area-inset-left, 0px));
+    --chrome-bottom: 0px;
+    --content-max: 1040px;
+  }
+
+  html,
+  body {
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  body {
+    padding: 0;
+  }
+
+  .app-shell {
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .topbar {
+    left: var(--rail-width);
+    padding-left: 28px;
+    padding-right: calc(28px + env(safe-area-inset-right, 0px));
+  }
+
+  /* The sidebar stays visible on every screen, including routine detail. */
+  .tab-bar,
+  .tab-bar.hidden {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    visibility: visible;
+    pointer-events: auto;
+    top: 0;
+    right: auto;
+    width: var(--rail-width);
+    padding: 0 14px calc(20px + env(safe-area-inset-bottom, 0px)) calc(14px + env(safe-area-inset-left, 0px));
+    overflow-y: auto;
+    border-top: none;
+    border-right: 1px solid var(--tabbar-border);
+    box-shadow: none;
+  }
+
+  .tab-bar::before {
+    content: "Habitizer";
+    display: flex;
+    align-items: center;
+    height: var(--chrome-top);
+    padding: env(safe-area-inset-top, 0px) 12px 0;
+    margin-bottom: 10px;
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+
+  .tab-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: var(--radius-control);
+  }
+
+  .tab-btn:hover {
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+  }
+
+  .tab-btn.is-active {
+    background: color-mix(in srgb, var(--primary) 11%, transparent);
+  }
+
+  .tab-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tab-label {
+    font-size: 0.92rem;
+  }
+
+  .app-content,
+  .settings-view {
+    margin-left: var(--rail-width);
+    /* Percent padding resolves against the shell, which includes the sidebar. */
+    padding-inline: max(28px, calc((100% - var(--rail-width) - var(--content-max)) / 2));
+    padding-right: max(calc(28px + env(safe-area-inset-right, 0px)), calc((100% - var(--rail-width) - var(--content-max)) / 2));
+  }
+
+  .app-shell.tab-bar-hidden .app-content,
+  .app-shell.tab-bar-hidden .settings-view {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Home: summary on the left, routines list on the right. */
+  .home-view {
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+    column-gap: 28px;
+    row-gap: 0;
+    align-items: start;
+  }
+
+  .home-view > * {
+    grid-column: 1;
+    margin-bottom: 22px;
+  }
+
+  .home-view > .home-widget[data-widget-id="routines"],
+  .home-view > .home-empty-state {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+  }
+
+  /* Column placement is fixed on wide screens, so reordering widgets does nothing here. */
+  .home-widget .home-widget-handle {
+    display: none;
+  }
+
+  /* Routine detail: activities beside settings and the yearly chart. */
+  .routine-view {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    column-gap: 28px;
+    row-gap: 20px;
+    align-items: start;
+  }
+
+  .routine-view > .routine-activities {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .routine-view > .routine-settings-card,
+  .routine-view > .contribution-graph {
+    grid-column: 2;
+  }
+
+  .routine-view > .routine-start-bar {
+    grid-column: 1 / -1;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  .routine-start-btn {
+    max-width: 360px;
+    margin-inline: auto;
+  }
+
+  /* Single-column screens stay at a readable width. */
+  .history-view,
+  .live-timer,
+  .completion-view {
+    max-width: 640px;
+    margin-inline: auto;
+  }
+
+  .settings-view > * {
+    max-width: 680px;
+    margin-inline: auto;
+  }
+
+  .settings-group + .settings-group {
+    margin-top: 28px;
+  }
+
+  /* Dialogs and menus float in the middle instead of rising from the bottom. */
+  .sheet-overlay,
+  .action-sheet-overlay {
+    align-items: center;
+  }
+
+  .sheet-overlay .modal-card {
+    width: min(100%, 440px);
+  }
+
+  .action-sheet {
+    width: min(100%, 360px);
+  }
+
+  @media (max-width: 1099px) {
+    :root,
+    [data-theme="dark"] {
+      --rail-width: calc(184px + env(safe-area-inset-left, 0px));
+    }
+
+    .app-content,
+    .settings-view {
+      padding-left: 20px;
+      padding-right: calc(20px + env(safe-area-inset-right, 0px));
+    }
+
+    .home-view,
+    .routine-view {
+      column-gap: 20px;
+    }
+
+    .home-view {
+      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    }
+  }
+
+  .undo-toast {
+    left: calc(var(--rail-width) + 50% - var(--rail-width) / 2);
+    right: auto;
+    bottom: 24px;
+    width: min(440px, calc(100% - var(--rail-width) - 48px));
+    transform: translateX(-50%);
   }
 }
