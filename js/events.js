@@ -54,26 +54,13 @@ import { undoDelete } from "./delete.js";
 import { exportBackup, readBackupFile, applyBackup, mergeBackup } from "./backup.js";
 import { setView, render, openRoutineMenu } from "./views.js";
 import { minimizeTimer } from "./timer.js";
-import {
-  STORAGE_KEY,
-  SETTINGS_KEY,
-  DELETED_ROUTINES_KEY,
-  TIMER_SESSION_KEY,
-} from "./constants.js";
+import { resetLocalData } from "./persistence.js";
 import {
   notificationsSupported,
   enableDueReminders,
   disableDueReminders,
   checkAndNotifyDueRoutines,
 } from "./reminders.js";
-
-function resetLocalData() {
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(SETTINGS_KEY);
-  localStorage.removeItem(DELETED_ROUTINES_KEY);
-  localStorage.removeItem(TIMER_SESSION_KEY);
-  window.location.reload();
-}
 
 export function wireEvents() {
   backButton?.addEventListener("click", () => {

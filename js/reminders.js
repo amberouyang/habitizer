@@ -2,8 +2,10 @@ import { settings, state } from "./state.js";
 import { getLocalDateKey } from "./utils.js";
 import { getDueStatus } from "./schedule.js";
 import { t } from "./i18n.js";
+import { readRaw, writeRaw } from "./storage.js";
+import { DUE_NOTIFIED_KEY } from "./constants.js";
 
-const NOTIFIED_KEY = "habitizer-due-notified-v1";
+const NOTIFIED_KEY = DUE_NOTIFIED_KEY;
 
 export function notificationsSupported() {
   return typeof window !== "undefined" && "Notification" in window;
@@ -27,7 +29,7 @@ export async function requestNotificationPermission() {
 
 function loadNotifiedMap() {
   try {
-    const raw = localStorage.getItem(NOTIFIED_KEY);
+    const raw = readRaw(NOTIFIED_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
@@ -36,11 +38,7 @@ function loadNotifiedMap() {
 }
 
 function saveNotifiedMap(map) {
-  try {
-    localStorage.setItem(NOTIFIED_KEY, JSON.stringify(map));
-  } catch (error) {
-    console.warn("Could not save reminder state:", error);
-  }
+  writeRaw(NOTIFIED_KEY, JSON.stringify(map));
 }
 
 function getNotifiedIdsForToday() {

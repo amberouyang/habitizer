@@ -3,6 +3,9 @@ export const SETTINGS_KEY = "habitizer-settings-v1";
 export const DELETED_ROUTINES_KEY = "habitizer-deleted-routines-v1";
 export const TIMER_SESSION_KEY = "habitizer-timer-v1";
 export const DEMO_CLEAR_KEY = "habitizer-cleared-demo-routines-v1";
+export const DUE_NOTIFIED_KEY = "habitizer-due-notified-v1";
+/** Also read by the inline boot script in index.html. */
+export const BUILD_KEY = "habitizer-build";
 export const DELETED_ROUTINE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 /** Nudge to export again if no backup in this many days. */
 export const BACKUP_REMINDER_DAYS = 14;

@@ -1,3 +1,6 @@
+import { readRaw, writeRaw } from "./storage.js";
+import { BUILD_KEY } from "./constants.js";
+
 function appBuild() {
   return window.__HABITIZER_BUILD__ || "dev";
 }
@@ -33,20 +36,20 @@ export async function prepareAppCache() {
 
   try {
     const build = appBuild();
-    const seenBuild = localStorage.getItem("habitizer-build");
+    const seenBuild = readRaw(BUILD_KEY);
 
     // LAN IP testing: never use a service worker (stale modules break ES imports).
     if (isLanHttpHost()) {
       await clearServiceWorkerCaches();
       if (seenBuild !== build) {
-        localStorage.setItem("habitizer-build", build);
+        writeRaw(BUILD_KEY, build);
       }
       return;
     }
 
     if (seenBuild !== build) {
       await clearServiceWorkerCaches();
-      localStorage.setItem("habitizer-build", build);
+      writeRaw(BUILD_KEY, build);
     }
   } catch (error) {
     console.warn("Failed to refresh app cache:", error);

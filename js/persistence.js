@@ -14,6 +14,7 @@ import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js
 import { darkModeToggle, cumulativeToggle, completionSoundToggle, hapticsToggle, dueRemindersToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 import { createId } from "./id.js";
+import { readRaw, writeRaw, removeRaw } from "./storage.js";
 
 export function sanitizeHomeWidgets(raw) {
   const known = new Set(HOME_WIDGET_IDS);
@@ -172,15 +173,15 @@ export function saveTimerSession() {
     activityStartTimes: { ...state.timer.activityStartTimes },
   };
 
-  localStorage.setItem(TIMER_SESSION_KEY, JSON.stringify(payload));
+  writeRaw(TIMER_SESSION_KEY, JSON.stringify(payload));
 }
 
 export function clearTimerSession() {
-  localStorage.removeItem(TIMER_SESSION_KEY);
+  removeRaw(TIMER_SESSION_KEY);
 }
 
 export function loadTimerSession() {
-  const stored = localStorage.getItem(TIMER_SESSION_KEY);
+  const stored = readRaw(TIMER_SESSION_KEY);
   if (!stored) {
     state.timer = emptyTimerState();
     return null;
@@ -234,16 +235,16 @@ export function loadTimerSession() {
 }
 
 export function saveRoutines() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.routines));
+  writeRaw(STORAGE_KEY, JSON.stringify(state.routines));
 }
 
 export function loadRoutines() {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = readRaw(STORAGE_KEY);
   state.routines = stored ? JSON.parse(stored) : [];
 }
 
 export function loadDeletedRoutines() {
-  const stored = localStorage.getItem(DELETED_ROUTINES_KEY);
+  const stored = readRaw(DELETED_ROUTINES_KEY);
   const parsed = stored ? JSON.parse(stored) : [];
   deletedRoutines.length = 0;
   deletedRoutines.push(...parsed);
@@ -251,7 +252,7 @@ export function loadDeletedRoutines() {
 }
 
 export function saveDeletedRoutines() {
-  localStorage.setItem(DELETED_ROUTINES_KEY, JSON.stringify(deletedRoutines));
+  writeRaw(DELETED_ROUTINES_KEY, JSON.stringify(deletedRoutines));
 }
 
 export function pruneExpiredDeletedRoutines() {
@@ -278,7 +279,7 @@ export function archiveDeletedRoutine(routine, routineIndex) {
 }
 
 export function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  writeRaw(SETTINGS_KEY, JSON.stringify(settings));
 }
 
 export function applyTheme() {
@@ -299,7 +300,7 @@ export function applyTheme() {
 }
 
 export function loadSettings() {
-  const stored = localStorage.getItem(SETTINGS_KEY);
+  const stored = readRaw(SETTINGS_KEY);
   if (stored) {
     try {
       Object.assign(settings, JSON.parse(stored));
@@ -345,10 +346,10 @@ export function loadSettings() {
 
 /** Wipe routines/settings/timer data for this browser origin, then reload. */
 export function resetLocalData() {
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(SETTINGS_KEY);
-  localStorage.removeItem(DELETED_ROUTINES_KEY);
-  localStorage.removeItem(TIMER_SESSION_KEY);
+  removeRaw(STORAGE_KEY);
+  removeRaw(SETTINGS_KEY);
+  removeRaw(DELETED_ROUTINES_KEY);
+  removeRaw(TIMER_SESSION_KEY);
   window.location.reload();
 }
 
@@ -364,7 +365,7 @@ function isLegacyDemoRoutine(routine) {
  * Runs only once per browser origin.
  */
 export function clearLegacyDemoRoutines() {
-  if (localStorage.getItem(DEMO_CLEAR_KEY) === "1") {
+  if (readRaw(DEMO_CLEAR_KEY) === "1") {
     return false;
   }
 
@@ -390,13 +391,13 @@ export function clearLegacyDemoRoutines() {
     }
   }
 
-  localStorage.setItem(DEMO_CLEAR_KEY, "1");
+  writeRaw(DEMO_CLEAR_KEY, "1");
   return removedRoutines || removedDeleted;
 }
 
 /** First launch: start with no sample routines. */
 export function seedData() {
-  if (localStorage.getItem(STORAGE_KEY)) {
+  if (readRaw(STORAGE_KEY)) {
     return;
   }
 
