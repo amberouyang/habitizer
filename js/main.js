@@ -7,6 +7,8 @@ import { wireDueReminders } from "./reminders.js";
 import { appEl, backButton, menuButton, addButton } from "./dom.js";
 import { armBootSplashTimeout, hideBootSplash } from "./splash.js";
 import { setIcon, createIcon } from "./icons.js";
+import { migrateLegacyKeys } from "./storage.js";
+import { LEGACY_KEY_RENAMES } from "./constants.js";
 
 function showBootError(error) {
   console.error("Habitizer failed to start:", error);
@@ -49,6 +51,7 @@ export function init() {
     el.replaceChildren(createIcon(el.dataset.settingsIcon, { size: 16 }));
   });
   try {
+    migrateLegacyKeys(LEGACY_KEY_RENAMES);
     loadRoutines();
     loadDeletedRoutines();
     loadSettings();

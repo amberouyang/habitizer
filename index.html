@@ -22,7 +22,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet" />
     <script>
       try {
-        const stored = localStorage.getItem("habitizer-settings-v1");
+        // Runs before js/ migrations, so also check the pre-rename key.
+        const stored = localStorage.getItem("habitizer_settings")
+          || localStorage.getItem("habitizer-settings-v1");
         const dark = Boolean(stored && JSON.parse(stored).darkMode);
         if (dark) document.documentElement.dataset.theme = "dark";
         document.documentElement.style.colorScheme = dark ? "dark" : "light";
@@ -333,7 +335,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-10-27-storage1";
+      window.__HABITIZER_BUILD__ = "2026-10-27-storage2";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [
@@ -404,10 +406,10 @@
 
       async function boot() {
         try {
-          const seenBuild = localStorage.getItem("habitizer-build");
+          const seenBuild = localStorage.getItem("habitizer_build");
           if (seenBuild !== APP_BUILD) {
             await clearCaches();
-            localStorage.setItem("habitizer-build", APP_BUILD);
+            localStorage.setItem("habitizer_build", APP_BUILD);
           }
 
           // Drop legacy ?built= redirects without navigating (avoids Cursor URL flicker).

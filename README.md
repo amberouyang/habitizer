@@ -126,16 +126,22 @@ js/
   schedule.js         Spaced practice
   backup.js           Export, import, and backup reminder
   persistence.js      Saving and loading
+  storage.js          The only place that touches localStorage
   i18n.js             Translations
 ```
 
 ### Storage keys
 
+All keys start with `habitizer_` so they can't clash with other apps on the same domain.
+
 | Key | What it stores |
 |-----|----------------|
-| `habitizer-routines-v1` | Routines, steps, completions, run history, spaced practice |
-| `habitizer-settings-v1` | Preferences and last backup date |
-| `habitizer-deleted-routines-v1` | Recently deleted routines (30 days) |
-| `habitizer-timer-v1` | The routine currently in progress |
-| `habitizer-due-notified-v1` | Which reminders were already sent today |
-| `habitizer-build` | App version, used to refresh cached files |
+| `habitizer_routines` | Routines, steps, completions, run history, spaced practice |
+| `habitizer_settings` | Preferences and last backup date |
+| `habitizer_deleted_routines` | Recently deleted routines (30 days) |
+| `habitizer_timer_session` | The routine currently in progress |
+| `habitizer_due_notified` | Which reminders were already sent today |
+| `habitizer_demo_cleared` | One-time cleanup of old sample routines already ran |
+| `habitizer_build` | App version, used to refresh cached files |
+
+Older versions used names like `habitizer-routines-v1`. They are moved to the new names on startup (`LEGACY_KEY_RENAMES` in `js/constants.js`).

@@ -30,3 +30,23 @@ export function removeRaw(key) {
     console.warn(`Could not remove ${key}:`, error);
   }
 }
+
+/**
+ * Move values saved under old key names to their new names.
+ * The old key is only removed once the new key is confirmed to hold a value,
+ * so a failed write (e.g. storage full) leaves the original data untouched.
+ * If both exist, the new key wins: it is the one the app has been writing.
+ */
+export function migrateLegacyKeys(renames) {
+  Object.entries(renames).forEach(([oldKey, newKey]) => {
+    const oldValue = readRaw(oldKey);
+    if (oldValue === null) return;
+
+    if (readRaw(newKey) === null) {
+      writeRaw(newKey, oldValue);
+    }
+    if (readRaw(newKey) !== null) {
+      removeRaw(oldKey);
+    }
+  });
+}

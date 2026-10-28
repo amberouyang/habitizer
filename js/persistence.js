@@ -4,6 +4,7 @@ import {
   DELETED_ROUTINES_KEY,
   TIMER_SESSION_KEY,
   DEMO_CLEAR_KEY,
+  LEGACY_KEY_RENAMES,
   DELETED_ROUTINE_RETENTION_MS,
   TIMER_SESSION_MAX_AGE_MS,
   SAVED_COLORS_LIMIT,
@@ -350,6 +351,12 @@ export function resetLocalData() {
   removeRaw(SETTINGS_KEY);
   removeRaw(DELETED_ROUTINES_KEY);
   removeRaw(TIMER_SESSION_KEY);
+  // Also drop old-name copies, or migrateLegacyKeys() would bring them back.
+  Object.entries(LEGACY_KEY_RENAMES).forEach(([oldKey, newKey]) => {
+    if ([STORAGE_KEY, SETTINGS_KEY, DELETED_ROUTINES_KEY, TIMER_SESSION_KEY].includes(newKey)) {
+      removeRaw(oldKey);
+    }
+  });
   window.location.reload();
 }
 
