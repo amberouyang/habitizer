@@ -1,8 +1,28 @@
 # Habitizer
 
-Habitizer helps you build daily routines and actually stick with them. Make a routine like "Morning" or "Workout," break it into steps, and run it with a built-in timer. Habitizer keeps track of your streaks and history so you can see your progress over time.
+**Build daily routines, run them with a step-by-step timer, and watch your streaks grow.**
 
-It's made for your phone, and you can add it to your home screen so it works like a regular app. It also works in a computer browser.
+### [▶ Try it now](https://amberouyang.github.io/habitizer/)
+
+No sign-up needed. On the home screen, tap **Try sample routines** to explore with example data.
+
+![Habitizer on desktop: today's progress, this week's activity, and a list of routines](docs/screenshots/desktop-home.png)
+
+| Home | Timer | History |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/phone-home.png" width="240" alt="Home screen on a phone with today's progress and routines"> | <img src="docs/screenshots/phone-timer.png" width="240" alt="Timer running a routine step in dark mode"> | <img src="docs/screenshots/phone-history.png" width="240" alt="History of past runs grouped by day"> |
+
+Make a routine like "Morning" or "Workout," break it into steps, and run it with a built-in timer. Habitizer tracks your streaks and history so you can see your progress over time.
+
+It's made for your phone, and you can add it to your home screen so it works like a regular app. It also works in a computer browser, with a sidebar layout on bigger screens.
+
+## How it's built
+
+- **Plain HTML, CSS, and JavaScript.** No framework, no build step, no dependencies in the app.
+- **Works offline.** A service worker caches the app so it runs without a connection, and it installs to the home screen like a native app.
+- **Private by design.** No accounts or servers. Everything is stored in the browser.
+- **Safe saved data.** Saves are versioned and upgraded step by step, and corrupted data is backed up instead of crashing the app. Covered by [Vitest](https://vitest.dev) tests.
+- **Three languages.** English, Español, and 中文.
 
 ## What you can do
 
@@ -90,23 +110,19 @@ After you delete something, you get a few seconds to undo. Deleted routines also
 
 ## For developers
 
-Habitizer is plain HTML, CSS, and JavaScript with no build step and no dependencies.
+Habitizer is plain HTML, CSS, and JavaScript with no build step. The app itself has no dependencies; `npm install` only adds the test tools.
 
 ### Run it locally
 
 ```bash
 git clone https://github.com/amberouyang/habitizer.git
 cd habitizer
-python3 -m http.server 8000
+npm run dev
 ```
 
-Then open [http://localhost:8000](http://localhost:8000).
+Then open [http://localhost:8000](http://localhost:8000). (`npm run dev` runs `python3 serve.py --port 8000`, a small server with caching turned off.)
 
-To test on a phone on the same Wi-Fi, use the no-cache dev server and open `http://YOUR_COMPUTER_IP:8000` on the phone:
-
-```bash
-python3 serve.py --port 8000
-```
+To test on a phone on the same Wi-Fi, open `http://YOUR_COMPUTER_IP:8000` on the phone.
 
 Browser storage is separate for each address, so `localhost`, `127.0.0.1`, and your IP address each have their own data. Use Export and Import to move data between them.
 
@@ -119,6 +135,8 @@ manifest.webmanifest  Home screen install settings
 sw.js                 Offline caching (off on localhost and LAN)
 serve.py              Dev server with caching disabled
 icons/                App icons
+docs/screenshots/     Images used in this README
+tests/                Vitest tests and sample saved data
 js/
   main.js             Startup
   views.js            Home, History, routine, timer, and results screens
@@ -127,6 +145,8 @@ js/
   backup.js           Export, import, and backup reminder
   persistence.js      Saving and loading
   storage.js          The only place that touches localStorage
+  migrations.js       Saved data versions and upgrades
+  samples.js          Example routines for "Try sample routines"
   i18n.js             Translations
 ```
 
