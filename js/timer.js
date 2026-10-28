@@ -346,11 +346,6 @@ export function advanceActivityState(activityId) {
   scrollActivityIntoView(autoAdvancedId);
 }
 
-/** @deprecated use advanceActivityState — kept for older call sites */
-export function toggleActivityCompletion(activityId) {
-  advanceActivityState(activityId);
-}
-
 export function endRoutine() {
   closeConfirmModal();
 

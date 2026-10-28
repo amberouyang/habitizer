@@ -82,17 +82,6 @@ export function applyRoutineColorStyle(element, routine) {
   element.style.setProperty("--routine-on-color", getRoutineOnColor(color));
 }
 
-export function applyProgressFillColor(progressFill, routine) {
-  if (!progressFill || !routine) return;
-
-  const { isOver } = getRoutineProgress(routine);
-  if (isOver) {
-    progressFill.style.removeProperty("background");
-  } else {
-    progressFill.style.background = getRoutineColorValue(routine);
-  }
-}
-
 export function getRoutineMetaText(routine) {
   const count = routine.activities.length;
   return [

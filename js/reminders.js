@@ -12,11 +12,6 @@ export function notificationsSupported() {
   return typeof window !== "undefined" && "Notification" in window;
 }
 
-export function getNotificationPermission() {
-  if (!notificationsSupported()) return "unsupported";
-  return Notification.permission;
-}
-
 export async function requestNotificationPermission() {
   if (!notificationsSupported()) return "unsupported";
   if (Notification.permission === "granted") return "granted";

@@ -390,11 +390,6 @@ export function formatStreakBadgeText(streak) {
   return String(streak);
 }
 
-export function formatPersonalBestLabel(longestStreak) {
-  if (longestStreak <= 0) return null;
-  return t("format.streakBest", { count: longestStreak });
-}
-
 export function formatDeletedAtLabel(deletedAt) {
   return new Date(deletedAt).toLocaleDateString(getLocale(), {
     month: "short",

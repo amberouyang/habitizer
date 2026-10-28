@@ -41,8 +41,6 @@ export let colorModalRoutineId = null;
 export let calendarModalRoutineId = null;
 export let confirmCallback = null;
 export let confirmSecondaryCallback = null;
-export let settingsButton = null;
-
 export const pendingDelete = {
   type: null,
   routineId: null,

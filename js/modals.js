@@ -40,7 +40,6 @@ import {
   confirmAction,
   colorModal,
   colorModalSwatches,
-  colorModalClose,
   calendarModal,
   calendarModalTitle,
   calendarModalSubtitle,

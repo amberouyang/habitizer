@@ -178,11 +178,6 @@ export function formatNextRepetitionValue(routine) {
   return formatDueDateLabel(status.nextDueDate);
 }
 
-export function formatNextPracticeLabel(dateKey) {
-  if (!dateKey) return null;
-  return t("srs.nextPractice", { date: formatDueDateLabel(dateKey) });
-}
-
 /** e.g. "Every 7 days" for the current spaced-practice step. */
 export function formatSrsIntervalLabel(routine) {
   const days = getSrsIntervalDays(routine);

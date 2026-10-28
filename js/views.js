@@ -85,7 +85,6 @@ import {
   endRoutine,
   isTimerSessionActive,
   getActiveTimerRoutine,
-  minimizeTimer,
   resumeActiveTimer,
 } from "./timer.js";
 import { createEmptyArt } from "./emptyArt.js";
