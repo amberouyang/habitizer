@@ -1016,12 +1016,6 @@ button {
   font-weight: 700;
 }
 
-.home-add-button {
-  align-self: center;
-  margin-top: 12px;
-  min-width: 148px;
-}
-
 .routine-item {
   position: relative;
   display: flex;
@@ -1323,11 +1317,6 @@ button {
 
 .routine-last-completed {
   font-size: 0.76rem;
-  color: var(--muted);
-}
-
-.routine-srs-interval {
-  font-size: 0.72rem;
   color: var(--muted);
 }
 
@@ -1986,12 +1975,6 @@ label,
   letter-spacing: 0.07em;
 }
 
-.section-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .activity-list {
   display: flex;
   flex-direction: column;
@@ -2149,46 +2132,6 @@ label,
 .small-btn:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 1px;
-}
-
-.section-header-actions .small-btn {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  color: var(--text);
-}
-
-.small-btn.color-btn {
-  position: relative;
-}
-
-.small-btn.color-btn::after {
-  content: "";
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--routine-color, var(--primary));
-  border: 1px solid var(--panel);
-}
-
-.small-btn.calendar-btn {
-  position: relative;
-}
-
-.small-btn.calendar-btn.has-today::after {
-  content: "";
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 1px solid var(--panel);
 }
 
 .delete-btn {
