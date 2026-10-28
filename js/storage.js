@@ -39,7 +39,9 @@ export function saveVersioned(key, schema, data) {
 
 /**
  * Load a store and upgrade it to the schema's current version.
- * Returns `fallback()` when nothing is saved yet.
+ * Returns `fallback()` when nothing is saved yet, or when the saved data is
+ * corrupted (bad JSON, failed migration, wrong shape). Corrupted text is
+ * first copied to `<key>_corrupt_<timestamp>` so it can be recovered by hand.
  * Before upgrading older data, the original text is copied once to
  * `<key>_backup_v<oldVersion>` so a buggy migration can't lose it.
  */
@@ -47,22 +49,40 @@ export function loadVersioned(key, schema, fallback) {
   const raw = readRaw(key);
   if (raw === null) return fallback();
 
-  const { version, data } = unwrap(JSON.parse(raw));
+  try {
+    const { version, data } = unwrap(JSON.parse(raw));
 
-  if (version > schema.version) {
-    // Saved by a newer build (e.g. an old cached tab). Use it as-is rather than
-    // guessing how to downgrade it.
-    console.warn(`${key} is v${version}, newer than this build (v${schema.version}).`);
-    return data;
+    if (version > schema.version) {
+      // Saved by a newer build (e.g. an old cached tab). Use it as-is rather
+      // than guessing how to downgrade it.
+      console.warn(`${key} is v${version}, newer than this build (v${schema.version}).`);
+      if (!schema.isValid(data)) throw new Error("Unexpected data shape");
+      return data;
+    }
+
+    const upgraded = version < schema.version ? migrate(schema, data, version) : data;
+    if (!schema.isValid(upgraded)) throw new Error("Unexpected data shape");
+
+    if (version < schema.version) {
+      const backupKey = `${key}_backup_v${version}`;
+      if (readRaw(backupKey) === null) writeRaw(backupKey, raw);
+      saveVersioned(key, schema, upgraded);
+    }
+    return upgraded;
+  } catch (error) {
+    console.warn(`${key} is corrupted; starting with defaults.`, error);
+    quarantineCorrupt(key, raw);
+    return fallback();
   }
+}
 
-  if (version === schema.version) return data;
-
-  const upgraded = migrate(schema, data, version);
-  const backupKey = `${key}_backup_v${version}`;
-  if (readRaw(backupKey) === null) writeRaw(backupKey, raw);
-  saveVersioned(key, schema, upgraded);
-  return upgraded;
+/** Keep unreadable data under a separate key, then clear the original. */
+function quarantineCorrupt(key, raw) {
+  const backupKey = `${key}_corrupt_${Date.now()}`;
+  // Only clear the original if the copy really landed (storage may be full).
+  if (writeRaw(backupKey, raw) && readRaw(backupKey) === raw) {
+    removeRaw(key);
+  }
 }
 
 /**

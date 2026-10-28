@@ -32,15 +32,18 @@ function fillRoutineDefaults(routine) {
   };
 }
 
+// `isValid` checks the shape after migrating; anything else counts as corrupted.
 export const SCHEMAS = {
   routines: {
     version: 2,
+    isValid: Array.isArray,
     migrations: {
       1: (routines) => routines.filter(isPlainObject).map(fillRoutineDefaults),
     },
   },
   deletedRoutines: {
     version: 2,
+    isValid: Array.isArray,
     migrations: {
       1: (entries) => entries
         .filter((entry) => isPlainObject(entry) && isPlainObject(entry.routine))
@@ -49,13 +52,14 @@ export const SCHEMAS = {
   },
   settings: {
     version: 2,
+    isValid: isPlainObject,
     migrations: {
       // v2 only introduced the { version, data } wrapper; loadSettings fills defaults.
       1: (settings) => settings,
     },
   },
-  timerSession: { version: 1, migrations: {} },
-  dueNotified: { version: 1, migrations: {} },
+  timerSession: { version: 1, isValid: isPlainObject, migrations: {} },
+  dueNotified: { version: 1, isValid: isPlainObject, migrations: {} },
 };
 
 /** Split a parsed stored value into its version and data. */

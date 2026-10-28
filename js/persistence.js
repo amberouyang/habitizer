@@ -299,11 +299,7 @@ export function applyTheme() {
 }
 
 export function loadSettings() {
-  try {
-    Object.assign(settings, loadVersioned(SETTINGS_KEY, SCHEMAS.settings, () => ({})));
-  } catch (error) {
-    console.warn("Ignored corrupt settings:", error);
-  }
+  Object.assign(settings, loadVersioned(SETTINGS_KEY, SCHEMAS.settings, () => ({})));
   settings.darkMode = Boolean(settings.darkMode);
   settings.cumulativeMode = settings.cumulativeMode !== undefined
     ? Boolean(settings.cumulativeMode)
