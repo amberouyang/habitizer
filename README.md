@@ -1,5 +1,10 @@
 # Habitizer
 
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
+![CSS](https://img.shields.io/badge/CSS-663399?logo=css&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-5A0FC8?logo=pwa&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
 [![Tests](https://github.com/amberouyang/habitizer/actions/workflows/test.yml/badge.svg)](https://github.com/amberouyang/habitizer/actions/workflows/test.yml)
 
 **Build daily routines, run them with a step-by-step timer, and watch your streaks grow.**
