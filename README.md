@@ -145,3 +145,7 @@ All keys start with `habitizer_` so they can't clash with other apps on the same
 | `habitizer_build` | App version, used to refresh cached files |
 
 Older versions used names like `habitizer-routines-v1`. They are moved to the new names on startup (`LEGACY_KEY_RENAMES` in `js/constants.js`).
+
+### Saved data versions
+
+Routines, settings, deleted routines, the timer session, and reminder state are saved as `{ "version": N, "data": ... }`. On load, older data is upgraded one version at a time before the app uses it, and the original text is kept under `<key>_backup_v<N>`. To change a saved format, follow the steps at the top of `js/migrations.js`.

@@ -15,7 +15,8 @@ import { state, settings, deletedRoutines, setDeletedRoutines } from "./state.js
 import { darkModeToggle, cumulativeToggle, completionSoundToggle, hapticsToggle, dueRemindersToggle } from "./dom.js";
 import { sanitizeLanguage, applyDocumentLanguage } from "./i18n.js";
 import { createId } from "./id.js";
-import { readRaw, writeRaw, removeRaw } from "./storage.js";
+import { readRaw, writeRaw, removeRaw, loadVersioned, saveVersioned } from "./storage.js";
+import { SCHEMAS } from "./migrations.js";
 
 export function sanitizeHomeWidgets(raw) {
   const known = new Set(HOME_WIDGET_IDS);
@@ -174,7 +175,7 @@ export function saveTimerSession() {
     activityStartTimes: { ...state.timer.activityStartTimes },
   };
 
-  writeRaw(TIMER_SESSION_KEY, JSON.stringify(payload));
+  saveVersioned(TIMER_SESSION_KEY, SCHEMAS.timerSession, payload);
 }
 
 export function clearTimerSession() {
@@ -182,14 +183,13 @@ export function clearTimerSession() {
 }
 
 export function loadTimerSession() {
-  const stored = readRaw(TIMER_SESSION_KEY);
-  if (!stored) {
-    state.timer = emptyTimerState();
-    return null;
-  }
-
   try {
-    const parsed = JSON.parse(stored);
+    const parsed = loadVersioned(TIMER_SESSION_KEY, SCHEMAS.timerSession, () => null);
+    if (!parsed) {
+      state.timer = emptyTimerState();
+      return null;
+    }
+
     const savedAt = Number(parsed?.savedAt || 0);
     const routineId = parsed?.routineId;
     const routineExists = state.routines.some((routine) => routine.id === routineId);
@@ -236,24 +236,22 @@ export function loadTimerSession() {
 }
 
 export function saveRoutines() {
-  writeRaw(STORAGE_KEY, JSON.stringify(state.routines));
+  saveVersioned(STORAGE_KEY, SCHEMAS.routines, state.routines);
 }
 
 export function loadRoutines() {
-  const stored = readRaw(STORAGE_KEY);
-  state.routines = stored ? JSON.parse(stored) : [];
+  state.routines = loadVersioned(STORAGE_KEY, SCHEMAS.routines, () => []);
 }
 
 export function loadDeletedRoutines() {
-  const stored = readRaw(DELETED_ROUTINES_KEY);
-  const parsed = stored ? JSON.parse(stored) : [];
+  const parsed = loadVersioned(DELETED_ROUTINES_KEY, SCHEMAS.deletedRoutines, () => []);
   deletedRoutines.length = 0;
   deletedRoutines.push(...parsed);
   pruneExpiredDeletedRoutines();
 }
 
 export function saveDeletedRoutines() {
-  writeRaw(DELETED_ROUTINES_KEY, JSON.stringify(deletedRoutines));
+  saveVersioned(DELETED_ROUTINES_KEY, SCHEMAS.deletedRoutines, deletedRoutines);
 }
 
 export function pruneExpiredDeletedRoutines() {
@@ -280,7 +278,7 @@ export function archiveDeletedRoutine(routine, routineIndex) {
 }
 
 export function saveSettings() {
-  writeRaw(SETTINGS_KEY, JSON.stringify(settings));
+  saveVersioned(SETTINGS_KEY, SCHEMAS.settings, settings);
 }
 
 export function applyTheme() {
@@ -301,13 +299,10 @@ export function applyTheme() {
 }
 
 export function loadSettings() {
-  const stored = readRaw(SETTINGS_KEY);
-  if (stored) {
-    try {
-      Object.assign(settings, JSON.parse(stored));
-    } catch (error) {
-      console.warn("Ignored corrupt settings:", error);
-    }
+  try {
+    Object.assign(settings, loadVersioned(SETTINGS_KEY, SCHEMAS.settings, () => ({})));
+  } catch (error) {
+    console.warn("Ignored corrupt settings:", error);
   }
   settings.darkMode = Boolean(settings.darkMode);
   settings.cumulativeMode = settings.cumulativeMode !== undefined

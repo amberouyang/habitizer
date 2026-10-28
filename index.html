@@ -25,7 +25,12 @@
         // Runs before js/ migrations, so also check the pre-rename key.
         const stored = localStorage.getItem("habitizer_settings")
           || localStorage.getItem("habitizer-settings-v1");
-        const dark = Boolean(stored && JSON.parse(stored).darkMode);
+        const parsed = stored ? JSON.parse(stored) : null;
+        // Versioned saves look like { version, data } (see js/migrations.js).
+        const savedSettings = parsed && Number.isInteger(parsed.version) && "data" in parsed
+          ? parsed.data
+          : parsed;
+        const dark = Boolean(savedSettings && savedSettings.darkMode);
         if (dark) document.documentElement.dataset.theme = "dark";
         document.documentElement.style.colorScheme = dark ? "dark" : "light";
         const themeColor = document.querySelector('meta[name="theme-color"]');
@@ -335,7 +340,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-10-27-storage2";
+      window.__HABITIZER_BUILD__ = "2026-10-27-storage3";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [

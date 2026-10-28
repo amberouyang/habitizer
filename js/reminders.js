@@ -2,7 +2,8 @@ import { settings, state } from "./state.js";
 import { getLocalDateKey } from "./utils.js";
 import { getDueStatus } from "./schedule.js";
 import { t } from "./i18n.js";
-import { readRaw, writeRaw } from "./storage.js";
+import { loadVersioned, saveVersioned } from "./storage.js";
+import { SCHEMAS } from "./migrations.js";
 import { DUE_NOTIFIED_KEY } from "./constants.js";
 
 const NOTIFIED_KEY = DUE_NOTIFIED_KEY;
@@ -29,8 +30,7 @@ export async function requestNotificationPermission() {
 
 function loadNotifiedMap() {
   try {
-    const raw = readRaw(NOTIFIED_KEY);
-    const parsed = raw ? JSON.parse(raw) : {};
+    const parsed = loadVersioned(NOTIFIED_KEY, SCHEMAS.dueNotified, () => ({}));
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
     return {};
@@ -38,7 +38,7 @@ function loadNotifiedMap() {
 }
 
 function saveNotifiedMap(map) {
-  writeRaw(NOTIFIED_KEY, JSON.stringify(map));
+  saveVersioned(NOTIFIED_KEY, SCHEMAS.dueNotified, map);
 }
 
 function getNotifiedIdsForToday() {
