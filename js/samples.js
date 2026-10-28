@@ -74,12 +74,6 @@ function buildRoutine(sample, now) {
     };
   });
 
-  runHistory.forEach((run) => {
-    activities.forEach((activity) => {
-      activity.timeSpentMs += Math.round(run.totalMs / activities.length);
-    });
-  });
-
   return {
     id: createId(),
     name: t(sample.nameKey),
