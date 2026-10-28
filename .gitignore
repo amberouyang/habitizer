@@ -1,1 +1,5 @@
 node_modules/
+
+# Personal backup exports (contain real routine data)
+recovered-backup.json
+habitizer-backup-*.json
