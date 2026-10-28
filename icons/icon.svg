@@ -1,11 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Habitizer">
-  <rect width="512" height="512" rx="112" fill="#0e7490"/>
-  <path
-    fill="none"
-    stroke="#ffffff"
-    stroke-width="56"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    d="M168 140v232M168 292l72 72 140-196"
-  />
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#134e5e"/>
+      <stop offset="1" stop-color="#0b2e3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g transform="translate(118 118)">
+    <rect x="0" y="0" width="76" height="76" rx="20" fill="#2dd4bf" fill-opacity="0.25"/>
+    <rect x="100" y="0" width="76" height="76" rx="20" fill="#2dd4bf" fill-opacity="0.45"/>
+    <rect x="200" y="0" width="76" height="76" rx="20" fill="#2dd4bf" fill-opacity="0.25"/>
+    <rect x="0" y="100" width="76" height="76" rx="20" fill="#2dd4bf" fill-opacity="0.6"/>
+    <rect x="100" y="100" width="76" height="76" rx="20" fill="#2dd4bf" fill-opacity="0.8"/>
+    <rect x="200" y="100" width="76" height="76" rx="20" fill="#2dd4bf" fill-opacity="0.6"/>
+    <rect x="0" y="200" width="76" height="76" rx="20" fill="#2dd4bf"/>
+    <rect x="100" y="200" width="76" height="76" rx="20" fill="#5eead4"/>
+    <rect x="200" y="200" width="76" height="76" rx="20" fill="#fbbf24"/>
+    <path d="M220 239l14 14 24-28" fill="none" stroke="#0b2e3a" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>
