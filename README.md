@@ -10,9 +10,7 @@ No sign-up needed. On the home screen, tap **Try sample routines** to explore wi
 
 ![Habitizer on desktop: today's progress, this week's activity, and a list of routines](docs/screenshots/desktop-home.png)
 
-| Home | Timer | History |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/phone-home.png" width="240" alt="Home screen on a phone with today's progress and routines"> | <img src="docs/screenshots/phone-timer.png" width="240" alt="Timer running a routine step in dark mode"> | <img src="docs/screenshots/phone-history.png" width="240" alt="History of past runs grouped by day"> |
+![Habitizer on a phone: Home with today's progress, the timer running a step in dark mode, and History grouped by day](docs/screenshots/phone-screens.png)
 
 Make a routine like "Morning" or "Workout," break it into steps, and run it with a built-in timer. Habitizer tracks your streaks and history so you can see your progress over time.
 
