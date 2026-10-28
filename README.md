@@ -149,3 +149,14 @@ Older versions used names like `habitizer-routines-v1`. They are moved to the ne
 ### Saved data versions
 
 Routines, settings, deleted routines, the timer session, and reminder state are saved as `{ "version": N, "data": ... }`. On load, older data is upgraded one version at a time before the app uses it, and the original text is kept under `<key>_backup_v<N>`. To change a saved format, follow the steps at the top of `js/migrations.js`.
+
+If saved data can't be read, the app doesn't crash: it copies the bad text to `<key>_corrupt_<timestamp>` and starts that part fresh.
+
+### Tests
+
+```bash
+npm install
+npm test
+```
+
+The tests in `tests/` load sample data from older versions (`tests/fixtures/`) and check that it upgrades correctly and that corrupted data doesn't crash the app. When you add a new data version, add a fixture for the version it replaces.

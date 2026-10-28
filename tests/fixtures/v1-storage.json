@@ -1,0 +1,56 @@
+{
+  "habitizer-routines-v1": [
+    {
+      "id": "routine-morning",
+      "name": "Morning",
+      "color": "#3c4e96",
+      "estimatedMinutes": 15,
+      "activities": [
+        { "id": "act-stretch", "name": "Stretch", "estimatedMinutes": 5, "timeSpentMs": 10113 },
+        { "id": "act-water", "name": "Drink water", "estimatedMinutes": 0, "timeSpentMs": 141248 }
+      ],
+      "completionDates": ["2026-09-12", "2026-09-13"],
+      "runHistory": [
+        {
+          "id": "run-1",
+          "completedAt": 1789360210153,
+          "dateKey": "2026-09-13",
+          "totalMs": 7744,
+          "estimatedMs": 60000,
+          "activitiesCompleted": 2,
+          "activitiesTotal": 2
+        }
+      ],
+      "spacedRepetition": true,
+      "srsLevel": 2,
+      "nextDueDate": "2026-10-19",
+      "srsIntervalDays": 4
+    },
+    {
+      "id": "routine-old",
+      "name": "Evening",
+      "color": "sage",
+      "estimatedMinutes": 20,
+      "activities": [{ "id": "act-read", "name": "Read", "estimatedMinutes": 20, "timeSpentMs": 0 }]
+    },
+    null
+  ],
+  "habitizer-settings-v1": {
+    "darkMode": true,
+    "cumulativeMode": false,
+    "completionSound": true,
+    "language": "es",
+    "savedColors": ["#ff7094"],
+    "homeWidgets": ["routines", "weekly"]
+  },
+  "habitizer-deleted-routines-v1": [
+    {
+      "id": "deleted-1",
+      "deletedAt": 4102444800000,
+      "routineIndex": 1,
+      "routine": { "id": "routine-gone", "name": "Workout", "color": "rose", "activities": [] }
+    }
+  ],
+  "habitizer-cleared-demo-routines-v1": "1",
+  "habitizer-due-notified-v1": { "2026-10-04": ["routine-morning"] }
+}
