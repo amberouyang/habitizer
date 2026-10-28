@@ -1,5 +1,5 @@
 /* Habitizer service worker — caches the app shell for offline/install use. */
-const CACHE_VERSION = "habitizer-shell-v35";
+const CACHE_VERSION = "habitizer-shell-v36";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
@@ -19,6 +19,7 @@ const PRECACHE_URLS = [
   "./js/persistence.js",
   "./js/storage.js",
   "./js/migrations.js",
+  "./js/samples.js",
   "./js/views.js",
   "./js/events.js",
   "./js/modals.js",

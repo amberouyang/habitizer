@@ -90,7 +90,8 @@ import {
 } from "./timer.js";
 import { createEmptyArt } from "./emptyArt.js";
 import { setupActivityDragAndDrop, setupRoutineDragAndDrop, setupHomeWidgetDragAndDrop } from "./drag.js";
-import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed, setHomeWidgetVisibility } from "./persistence.js";
+import { reconcileHomeWidgets, setHomeWidgetCollapsed, isHomeWidgetCollapsed, setHomeWidgetVisibility, saveRoutines } from "./persistence.js";
+import { createSampleRoutines } from "./samples.js";
 
 const TAB_VIEWS = new Set(["home", "history", "settings"]);
 
@@ -690,6 +691,16 @@ function renderRoutinesWidgetContent() {
             label: t("app.addRoutine"),
             primary: true,
             onClick: addRoutine,
+          },
+          {
+            label: t("home.trySamples"),
+            onClick: () => {
+              // Only offered while the list is empty, so it never replaces real routines.
+              if (state.routines.length > 0) return;
+              state.routines = createSampleRoutines();
+              saveRoutines();
+              render();
+            },
           },
         ],
       })
