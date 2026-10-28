@@ -1,5 +1,7 @@
 # Habitizer
 
+[![Tests](https://github.com/amberouyang/habitizer/actions/workflows/test.yml/badge.svg)](https://github.com/amberouyang/habitizer/actions/workflows/test.yml)
+
 **Build daily routines, run them with a step-by-step timer, and watch your streaks grow.**
 
 ### [▶ Try it now](https://amberouyang.github.io/habitizer/)
@@ -178,5 +180,7 @@ If saved data can't be read, the app doesn't crash: it copies the bad text to `<
 npm install
 npm test
 ```
+
+GitHub Actions runs the same tests on every push and pull request (`.github/workflows/test.yml`), and the badge at the top of this README shows the latest result.
 
 The tests in `tests/` load sample data from older versions (`tests/fixtures/`) and check that it upgrades correctly and that corrupted data doesn't crash the app. When you add a new data version, add a fixture for the version it replaces.

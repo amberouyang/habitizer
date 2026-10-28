@@ -2,6 +2,9 @@
   "name": "habitizer",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "python3 serve.py --port 8000",
     "test": "vitest run",
