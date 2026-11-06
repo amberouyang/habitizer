@@ -3864,10 +3864,26 @@ button.contribution-cell:focus-visible {
     margin-bottom: 18px;
   }
 
+  .home-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    grid-column: 1;
+    grid-row: 1;
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    z-index: 1;
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+    margin-bottom: 0;
+    padding-bottom: 4px;
+  }
+
   .home-view > .home-widget[data-widget-id="routines"],
   .home-view > .home-empty-state {
     grid-column: 2;
-    grid-row: 1 / span 4;
+    grid-row: 1;
     margin-bottom: 0;
   }
 

@@ -342,17 +342,28 @@ function renderHomeToday() {
   return section;
 }
 
+function isWideHomeLayout() {
+  return typeof window !== "undefined"
+    && window.matchMedia("(min-width: 900px) and (min-height: 600px)").matches;
+}
+
 export function renderHomeView() {
   const home = document.createElement("div");
   home.className = "home-view";
+  const wide = isWideHomeLayout();
+
+  // On desktop, pin today + this week while the routines list scrolls.
+  const summary = wide ? document.createElement("div") : null;
+  if (summary) summary.className = "home-summary";
+  const summaryParent = summary || home;
 
   if (state.routines.length > 0) {
-    home.appendChild(renderHomeToday());
+    summaryParent.appendChild(renderHomeToday());
   }
 
   const resumeBanner = renderTimerResumeBanner();
   if (resumeBanner) {
-    home.appendChild(resumeBanner);
+    summaryParent.appendChild(resumeBanner);
   }
 
   const order = reconcileHomeWidgets();
@@ -360,13 +371,18 @@ export function renderHomeView() {
 
   order.forEach((widgetId) => {
     if (widgetId === "weekly") {
-      home.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent()));
+      summaryParent.appendChild(createHomeWidget("weekly", renderWeeklyStatsContent()));
       return;
     }
     if (widgetId === "routines") {
+      if (summary && !summary.parentNode) home.appendChild(summary);
       home.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent()));
     }
   });
+
+  if (summary && !summary.parentNode && summary.childNodes.length > 0) {
+    home.appendChild(summary);
+  }
 
   if (!routinesVisible) {
     home.appendChild(
@@ -393,7 +409,7 @@ export function renderHomeView() {
     );
   }
 
-  if (order.length > 1) {
+  if (!wide && order.length > 1) {
     setupHomeWidgetDragAndDrop(home);
   }
 
