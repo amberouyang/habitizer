@@ -40,3 +40,16 @@ describe("sample routines", () => {
     expect(new Set(routines.map((routine) => routine.id)).size).toBe(routines.length);
   });
 });
+
+import { getWeeklyRoutineTimeBreakdown } from "../js/utils.js";
+
+describe("weekly time breakdown", () => {
+  it("groups this week's run time by routine", () => {
+    const routines = createSampleRoutines(now);
+    const rows = getWeeklyRoutineTimeBreakdown(routines, now.getTime());
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows[0].timeMs).toBeGreaterThan(0);
+    const total = rows.reduce((sum, row) => sum + row.timeMs, 0);
+    expect(total).toBeGreaterThan(0);
+  });
+});

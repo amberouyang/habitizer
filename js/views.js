@@ -21,6 +21,7 @@ import {
   getCompletionEstimateMessage,
   getRoutineStreak,
   getWeeklyStats,
+  getWeeklyRoutineTimeBreakdown,
   getWeekdayShortLabel,
   getRoutineRunHistory,
   getRunDateKey,
@@ -409,11 +410,253 @@ export function renderHomeView() {
     );
   }
 
+  if (wide && state.routines.length > 0) {
+    home.appendChild(renderHomeInsights());
+  }
+
   if (!wide && order.length > 1) {
     setupHomeWidgetDragAndDrop(home);
   }
 
   return home;
+}
+
+function svgEl(name, attrs = {}) {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+  Object.entries(attrs).forEach(([key, value]) => {
+    if (value != null) node.setAttribute(key, String(value));
+  });
+  return node;
+}
+
+/** Single-value progress ring (today done / planned). */
+function createProgressRing({ value, max, color, label, detail }) {
+  const size = 132;
+  const stroke = 12;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const ratio = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0;
+
+  const wrap = document.createElement("div");
+  wrap.className = "insight-ring";
+
+  const svg = svgEl("svg", {
+    class: "insight-ring-svg",
+    viewBox: `0 0 ${size} ${size}`,
+    width: String(size),
+    height: String(size),
+    "aria-hidden": "true",
+  });
+  svg.append(
+    svgEl("circle", {
+      class: "insight-ring-track",
+      cx: size / 2,
+      cy: size / 2,
+      r: radius,
+      fill: "none",
+      "stroke-width": stroke,
+    }),
+    svgEl("circle", {
+      class: "insight-ring-value",
+      cx: size / 2,
+      cy: size / 2,
+      r: radius,
+      fill: "none",
+      stroke: color,
+      "stroke-width": stroke,
+      "stroke-linecap": "round",
+      "stroke-dasharray": `${circumference * ratio} ${circumference}`,
+      transform: `rotate(-90 ${size / 2} ${size / 2})`,
+    })
+  );
+
+  const center = document.createElement("div");
+  center.className = "insight-ring-center";
+  const main = document.createElement("strong");
+  main.textContent = label;
+  const sub = document.createElement("span");
+  sub.textContent = detail;
+  center.append(main, sub);
+
+  wrap.append(svg, center);
+  return wrap;
+}
+
+/** Multi-slice donut for this week's time by routine. */
+function createDonutChart(segments) {
+  const size = 132;
+  const stroke = 14;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const total = segments.reduce((sum, part) => sum + part.value, 0);
+
+  const wrap = document.createElement("div");
+  wrap.className = "insight-ring insight-donut";
+
+  const svg = svgEl("svg", {
+    class: "insight-ring-svg",
+    viewBox: `0 0 ${size} ${size}`,
+    width: String(size),
+    height: String(size),
+    "aria-hidden": "true",
+  });
+  svg.appendChild(svgEl("circle", {
+    class: "insight-ring-track",
+    cx: size / 2,
+    cy: size / 2,
+    r: radius,
+    fill: "none",
+    "stroke-width": stroke,
+  }));
+
+  if (total > 0) {
+    let offset = 0;
+    segments.forEach((part) => {
+      const length = (part.value / total) * circumference;
+      svg.appendChild(svgEl("circle", {
+        cx: size / 2,
+        cy: size / 2,
+        r: radius,
+        fill: "none",
+        stroke: part.color,
+        "stroke-width": stroke,
+        "stroke-dasharray": `${length} ${circumference - length}`,
+        "stroke-dashoffset": String(-offset),
+        transform: `rotate(-90 ${size / 2} ${size / 2})`,
+      }));
+      offset += length;
+    });
+  }
+
+  const center = document.createElement("div");
+  center.className = "insight-ring-center";
+  const main = document.createElement("strong");
+  main.textContent = total > 0 ? formatDurationLabel(total) : "—";
+  const sub = document.createElement("span");
+  sub.textContent = t("home.insightsWeekTime");
+  center.append(main, sub);
+
+  wrap.append(svg, center);
+  return wrap;
+}
+
+function renderHomeInsights() {
+  const plan = getTodayPlan();
+  const breakdown = getWeeklyRoutineTimeBreakdown(state.routines);
+  const streaks = state.routines
+    .map((routine) => ({ routine, streak: getRoutineStreak(routine) }))
+    .filter((row) => row.streak >= STREAK_DISPLAY_MIN)
+    .sort((a, b) => b.streak - a.streak || a.routine.name.localeCompare(b.routine.name))
+    .slice(0, 5);
+
+  const section = document.createElement("section");
+  section.className = "home-insights";
+  section.setAttribute("aria-label", t("home.insightsTitle"));
+
+  const title = document.createElement("h2");
+  title.className = "home-insights-title";
+  title.textContent = t("home.insightsTitle");
+  section.appendChild(title);
+
+  const grid = document.createElement("div");
+  grid.className = "home-insights-grid";
+
+  // Today ring
+  const todayCard = document.createElement("article");
+  todayCard.className = "insight-card";
+  const todayLabel = document.createElement("h3");
+  todayLabel.className = "insight-card-title";
+  todayLabel.textContent = t("home.insightsToday");
+  todayCard.append(
+    todayLabel,
+    createProgressRing({
+      value: plan.doneCount,
+      max: plan.items.length,
+      color: "var(--primary)",
+      label: `${plan.doneCount}/${plan.items.length}`,
+      detail: t("home.doneToday"),
+    })
+  );
+
+  // Week donut + legend
+  const weekCard = document.createElement("article");
+  weekCard.className = "insight-card insight-card--week";
+  const weekLabel = document.createElement("h3");
+  weekLabel.className = "insight-card-title";
+  weekLabel.textContent = t("home.insightsWeekTime");
+
+  const weekBody = document.createElement("div");
+  weekBody.className = "insight-week-body";
+  const donutSegments = breakdown.map((row) => ({
+    color: getRoutineColorValue(row.routine),
+    value: Math.max(row.timeMs, row.runs > 0 ? 1 : 0),
+    label: row.routine.name,
+    timeMs: row.timeMs,
+  }));
+  weekBody.appendChild(createDonutChart(donutSegments));
+
+  const legend = document.createElement("ul");
+  legend.className = "insight-legend";
+  if (breakdown.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "insight-legend-empty";
+    empty.textContent = t("home.insightsNoTime");
+    legend.appendChild(empty);
+  } else {
+    breakdown.slice(0, 5).forEach((row) => {
+      const item = document.createElement("li");
+      item.className = "insight-legend-item";
+      const swatch = document.createElement("span");
+      swatch.className = "insight-legend-swatch";
+      swatch.style.background = getRoutineColorValue(row.routine);
+      const name = document.createElement("span");
+      name.className = "insight-legend-name";
+      name.textContent = row.routine.name;
+      const meta = document.createElement("span");
+      meta.className = "insight-legend-meta";
+      meta.textContent = formatDurationLabel(row.timeMs);
+      item.append(swatch, name, meta);
+      legend.appendChild(item);
+    });
+  }
+  weekBody.appendChild(legend);
+  weekCard.append(weekLabel, weekBody);
+
+  // Streaks
+  const streakCard = document.createElement("article");
+  streakCard.className = "insight-card";
+  const streakLabel = document.createElement("h3");
+  streakLabel.className = "insight-card-title";
+  streakLabel.textContent = t("home.insightsStreaks");
+  streakCard.appendChild(streakLabel);
+
+  if (streaks.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "insight-empty";
+    empty.textContent = t("home.insightsNoStreaks");
+    streakCard.appendChild(empty);
+  } else {
+    const list = document.createElement("ul");
+    list.className = "insight-streak-list";
+    streaks.forEach(({ routine, streak }) => {
+      const item = document.createElement("li");
+      item.className = "insight-streak-item";
+      applyRoutineColorStyle(item, routine);
+      const name = document.createElement("span");
+      name.className = "insight-streak-name";
+      name.textContent = routine.name;
+      const badge = document.createElement("span");
+      badge.className = "insight-streak-badge";
+      badge.textContent = `🔥 ${formatStreakBadgeText(streak)}`;
+      item.append(name, badge);
+      list.appendChild(item);
+    });
+    streakCard.appendChild(list);
+  }
+
+  grid.append(todayCard, weekCard, streakCard);
+  section.appendChild(grid);
+  return section;
 }
 
 function createHomeEmptyState({ title, hint, actions = [], art = "routines" }) {

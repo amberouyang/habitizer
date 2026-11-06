@@ -193,6 +193,28 @@ export function getWeeklyStats(routines, timestamp = Date.now()) {
   };
 }
 
+/** Time spent per routine this week, longest first. Used by the desktop donut. */
+export function getWeeklyRoutineTimeBreakdown(routines, timestamp = Date.now()) {
+  const weekKeys = new Set(getWeekDateKeys(timestamp));
+  const rows = [];
+
+  (routines || []).forEach((routine) => {
+    let timeMs = 0;
+    let runs = 0;
+    getRoutineRunHistory(routine).forEach((run) => {
+      const dateKey = getRunDateKey(run);
+      if (!dateKey || !weekKeys.has(dateKey)) return;
+      runs += 1;
+      timeMs += Math.max(0, Number(run.totalMs) || 0);
+    });
+    if (timeMs > 0 || runs > 0) {
+      rows.push({ routine, timeMs, runs });
+    }
+  });
+
+  return rows.sort((a, b) => b.timeMs - a.timeMs || b.runs - a.runs);
+}
+
 export function formatRunCompletedAt(timestamp) {
   return new Date(timestamp).toLocaleString(getLocale(), {
     month: "short",
