@@ -108,8 +108,10 @@ function playViewEnter(el) {
 
 function updateChrome(view) {
   const showTabs = TAB_VIEWS.has(view) || view === "timer";
+  const shell = document.querySelector(".app-shell");
   tabBar?.classList.toggle("hidden", !showTabs);
-  document.querySelector(".app-shell")?.classList.toggle("tab-bar-hidden", !showTabs);
+  shell?.classList.toggle("tab-bar-hidden", !showTabs);
+  shell?.setAttribute("data-view", view);
 
   tabBar?.querySelectorAll(".tab-btn").forEach((btn) => {
     const isActive = btn.dataset.tab === view;

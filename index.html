@@ -107,7 +107,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="styles.css?v=cleanup1" />
+    <link rel="stylesheet" href="styles.css?v=desktop-ux1" />
   </head>
   <body>
     <div id="bootSplash" role="status" aria-live="polite" aria-label="Loading Habitizer">
@@ -117,7 +117,7 @@
         <p class="boot-splash-hint">Loading…</p>
       </div>
     </div>
-    <div class="app-shell">
+    <div class="app-shell" data-view="home">
       <header class="topbar">
         <button id="backButton" class="icon-btn hidden" data-i18n-aria="app.back" aria-label="Go back">←</button>
         <button id="menuButton" class="icon-btn hidden" data-i18n-aria="app.menu" aria-label="Menu">⋯</button>
@@ -277,6 +277,10 @@
           </svg>
           <span class="tab-label" data-i18n="nav.settings">Settings</span>
         </button>
+        <button type="button" id="sidebarAddButton" class="sidebar-add-btn" data-i18n-aria="app.addRoutine" aria-label="Add routine">
+          <span class="sidebar-add-icon" aria-hidden="true">+</span>
+          <span class="sidebar-add-label" data-i18n="app.addRoutine">Add routine</span>
+        </button>
       </nav>
 
       <div id="undoToast" class="undo-toast hidden" role="status" aria-live="polite">
@@ -340,7 +344,7 @@
 
     <script>
       // Must run as a classic script before any module loads so imports share one build stamp.
-      window.__HABITIZER_BUILD__ = "2026-10-27-icon1";
+      window.__HABITIZER_BUILD__ = "2026-11-05-desktop1";
       (function installModuleImportMap() {
         const build = window.__HABITIZER_BUILD__;
         const modules = [

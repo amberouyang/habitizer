@@ -30,6 +30,7 @@ import {
   backButton,
   menuButton,
   addButton,
+  sidebarAddButton,
   tabBar,
 } from "./dom.js";
 import {
@@ -88,6 +89,10 @@ export function wireEvents() {
     } else if (state.currentView === "routine") {
       openAddActivityModal(state.currentRoutineId);
     }
+  });
+
+  sidebarAddButton?.addEventListener("click", () => {
+    addRoutine();
   });
 
   tabBar?.addEventListener("click", (event) => {

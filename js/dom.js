@@ -1,6 +1,7 @@
 export const appEl = document.getElementById("app");
 export const pageTitleEl = document.getElementById("pageTitle");
 export const addButton = document.getElementById("addButton");
+export const sidebarAddButton = document.getElementById("sidebarAddButton");
 export const backButton = document.getElementById("backButton");
 export const menuButton = document.getElementById("menuButton");
 export const tabBar = document.getElementById("tabBar");

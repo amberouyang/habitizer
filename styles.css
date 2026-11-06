@@ -333,6 +333,11 @@ button {
   display: block;
 }
 
+/* Desktop-only; phone nav stays a compact bottom bar. */
+.sidebar-add-btn {
+  display: none;
+}
+
 .tab-label {
   font-size: 0.68rem;
   font-weight: 500;
@@ -3681,9 +3686,10 @@ button.contribution-cell:focus-visible {
 @media (min-width: 900px) and (min-height: 600px) {
   :root,
   [data-theme="dark"] {
-    --rail-width: calc(232px + env(safe-area-inset-left, 0px));
+    --rail-width: calc(240px + env(safe-area-inset-left, 0px));
     --chrome-bottom: 0px;
-    --content-max: 1040px;
+    --chrome-top: calc(60px + env(safe-area-inset-top, 0px));
+    --content-max: 1280px;
   }
 
   html,
@@ -3707,10 +3713,31 @@ button.contribution-cell:focus-visible {
     box-shadow: none;
   }
 
+  /* Home already has its own greeting; the phone-style top bar is redundant. */
+  .app-shell[data-view="home"] {
+    --chrome-top: 24px;
+  }
+
+  .app-shell[data-view="home"] .topbar {
+    display: none;
+  }
+
   .topbar {
     left: var(--rail-width);
-    padding-left: 28px;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 10px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 28px 10px;
     padding-right: calc(28px + env(safe-area-inset-right, 0px));
+  }
+
+  .topbar h1 {
+    text-align: left;
+    font-size: 1.02rem;
+  }
+
+  /* Create lives in the sidebar on desktop. */
+  .topbar > #addButton {
+    display: none;
   }
 
   /* The sidebar stays visible on every screen, including routine detail. */
@@ -3735,12 +3762,12 @@ button.contribution-cell:focus-visible {
     content: "Habitizer";
     display: flex;
     align-items: center;
-    height: var(--chrome-top);
+    height: calc(60px + env(safe-area-inset-top, 0px));
     padding: env(safe-area-inset-top, 0px) 12px 0;
-    margin-bottom: 10px;
-    font-size: 1.08rem;
+    margin-bottom: 8px;
+    font-size: 1.12rem;
     font-weight: 700;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
     color: var(--text);
   }
 
@@ -3748,9 +3775,9 @@ button.contribution-cell:focus-visible {
     flex-direction: row;
     justify-content: flex-start;
     gap: 12px;
-    min-height: 44px;
+    min-height: 40px;
     padding: 8px 12px;
-    border-radius: var(--radius-control);
+    border-radius: 10px;
   }
 
   .tab-btn:hover {
@@ -3762,20 +3789,60 @@ button.contribution-cell:focus-visible {
   }
 
   .tab-icon {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
   }
 
   .tab-label {
-    font-size: 0.92rem;
+    font-size: 0.9rem;
+  }
+
+  .sidebar-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 42px;
+    margin-top: auto;
+    padding: 0 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.12s ease;
+  }
+
+  .sidebar-add-btn:hover {
+    background: var(--primary-strong);
+  }
+
+  .sidebar-add-btn:active {
+    transform: scale(0.98);
+  }
+
+  .sidebar-add-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .sidebar-add-icon {
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1;
   }
 
   .app-content,
   .settings-view {
     margin-left: var(--rail-width);
     /* Percent padding resolves against the shell, which includes the sidebar. */
-    padding-inline: max(28px, calc((100% - var(--rail-width) - var(--content-max)) / 2));
-    padding-right: max(calc(28px + env(safe-area-inset-right, 0px)), calc((100% - var(--rail-width) - var(--content-max)) / 2));
+    padding-top: calc(18px + var(--chrome-top));
+    padding-inline: max(32px, calc((100% - var(--rail-width) - var(--content-max)) / 2));
+    padding-right: max(calc(32px + env(safe-area-inset-right, 0px)), calc((100% - var(--rail-width) - var(--content-max)) / 2));
   }
 
   .app-shell.tab-bar-hidden .app-content,
@@ -3787,20 +3854,34 @@ button.contribution-cell:focus-visible {
   .home-view {
     display: grid;
     grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
-    column-gap: 28px;
+    column-gap: 36px;
     row-gap: 0;
     align-items: start;
   }
 
   .home-view > * {
     grid-column: 1;
-    margin-bottom: 22px;
+    margin-bottom: 18px;
   }
 
   .home-view > .home-widget[data-widget-id="routines"],
   .home-view > .home-empty-state {
     grid-column: 2;
     grid-row: 1 / span 4;
+    margin-bottom: 0;
+  }
+
+  .home-today-greeting {
+    font-size: 1.85rem;
+  }
+
+  .home-widget[data-widget-id="routines"] .home-widget-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding-top: 2px;
+    padding-bottom: 10px;
+    background: linear-gradient(to bottom, var(--bg) 70%, transparent);
   }
 
   /* Column placement is fixed on wide screens, so reordering widgets does nothing here. */
@@ -3808,10 +3889,83 @@ button.contribution-cell:focus-visible {
     display: none;
   }
 
+  .home-widget[data-widget-id="routines"] .home-widget-hide {
+    display: none;
+  }
+
+  /* Routines read more like a desktop list than stacked phone cards. */
+  .routine-list {
+    gap: 6px;
+  }
+
+  .routine-item {
+    padding: 10px 12px 10px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  .routine-item:hover:not(.is-dragging) {
+    background: color-mix(in srgb, var(--text) 3%, var(--panel));
+    border-color: var(--hover-border);
+    box-shadow: 0 1px 3px var(--card-shadow);
+  }
+
+  .routine-main {
+    gap: 12px;
+  }
+
+  .routine-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px 20px;
+    flex-wrap: nowrap;
+  }
+
+  .routine-name-row {
+    flex: 1 1 220px;
+    min-width: 160px;
+    margin-bottom: 0;
+  }
+
+  .routine-name {
+    font-size: 0.95rem;
+    -webkit-line-clamp: 1;
+  }
+
+  .routine-meta,
+  .routine-last-completed {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .routine-meta {
+    min-width: 9.5rem;
+  }
+
+  .routine-last-completed {
+    min-width: 10.5rem;
+    text-align: right;
+  }
+
+  .item-actions {
+    gap: 4px;
+    opacity: 0.72;
+  }
+
+  .routine-item:hover .item-actions,
+  .routine-item:focus-within .item-actions {
+    opacity: 1;
+  }
+
+  .small-btn.home-start-btn {
+    width: 34px;
+    height: 34px;
+  }
+
   /* Routine detail: activities beside settings and the yearly chart. */
   .routine-view {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
     column-gap: 28px;
     row-gap: 20px;
     align-items: start;
@@ -3842,13 +3996,13 @@ button.contribution-cell:focus-visible {
   .history-view,
   .live-timer,
   .completion-view {
-    max-width: 640px;
-    margin-inline: auto;
+    max-width: 720px;
+    margin-inline: 0;
   }
 
   .settings-view > * {
-    max-width: 680px;
-    margin-inline: auto;
+    max-width: 720px;
+    margin-inline: 0;
   }
 
   .settings-group + .settings-group {
@@ -3872,7 +4026,7 @@ button.contribution-cell:focus-visible {
   @media (max-width: 1099px) {
     :root,
     [data-theme="dark"] {
-      --rail-width: calc(184px + env(safe-area-inset-left, 0px));
+      --rail-width: calc(200px + env(safe-area-inset-left, 0px));
     }
 
     .app-content,
@@ -3888,6 +4042,16 @@ button.contribution-cell:focus-visible {
 
     .home-view {
       grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    }
+
+    .routine-info {
+      flex-wrap: wrap;
+      row-gap: 4px;
+    }
+
+    .routine-last-completed {
+      text-align: left;
+      min-width: 0;
     }
   }
 
