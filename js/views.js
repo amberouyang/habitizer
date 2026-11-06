@@ -369,6 +369,10 @@ export function renderHomeView() {
 
   const order = reconcileHomeWidgets();
   const routinesVisible = order.includes("routines");
+  // Desktop: stack routines + insights in one column so nothing floats above a big gap.
+  const mainColumn = wide ? document.createElement("div") : null;
+  if (mainColumn) mainColumn.className = "home-main-column";
+  const mainParent = mainColumn || home;
 
   order.forEach((widgetId) => {
     if (widgetId === "weekly") {
@@ -377,7 +381,7 @@ export function renderHomeView() {
     }
     if (widgetId === "routines") {
       if (summary && !summary.parentNode) home.appendChild(summary);
-      home.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent()));
+      mainParent.appendChild(createHomeWidget("routines", renderRoutinesWidgetContent()));
     }
   });
 
@@ -386,7 +390,7 @@ export function renderHomeView() {
   }
 
   if (!routinesVisible) {
-    home.appendChild(
+    mainParent.appendChild(
       createHomeEmptyState({
         title: t("home.routinesHiddenTitle"),
         hint: t("home.routinesHiddenHint"),
@@ -411,7 +415,11 @@ export function renderHomeView() {
   }
 
   if (wide && state.routines.length > 0) {
-    home.appendChild(renderHomeInsights());
+    mainParent.appendChild(renderHomeInsights());
+  }
+
+  if (mainColumn && mainColumn.childNodes.length > 0) {
+    home.appendChild(mainColumn);
   }
 
   if (!wide && order.length > 1) {

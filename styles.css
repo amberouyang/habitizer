@@ -3880,17 +3880,19 @@ button.contribution-cell:focus-visible {
     padding-bottom: 4px;
   }
 
-  .home-view > .home-widget[data-widget-id="routines"],
-  .home-view > .home-empty-state {
+  .home-main-column {
     grid-column: 2;
     grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    min-width: 0;
     margin-bottom: 0;
   }
 
-  .home-view > .home-insights {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    margin-top: 8px;
+  .home-main-column > .home-widget[data-widget-id="routines"],
+  .home-main-column > .home-empty-state,
+  .home-main-column > .home-insights {
     margin-bottom: 0;
   }
 
