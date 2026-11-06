@@ -4203,17 +4203,19 @@ button.contribution-cell:focus-visible {
     margin-inline: auto;
   }
 
-  /* Single-column screens stay at a readable width. */
+  /* Single-column screens stay readable and centered in the wide pane. */
   .history-view,
   .live-timer,
   .completion-view {
-    max-width: 720px;
-    margin-inline: 0;
+    max-width: 560px;
+    margin-inline: auto;
+    width: 100%;
   }
 
   .settings-view > * {
-    max-width: 720px;
-    margin-inline: 0;
+    max-width: 640px;
+    margin-inline: auto;
+    width: 100%;
   }
 
   .settings-group + .settings-group {
