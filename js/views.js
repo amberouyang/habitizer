@@ -490,6 +490,36 @@ function createProgressRing({ value, max, color, label, detail }) {
   return wrap;
 }
 
+function openRoutineFromChart(routine) {
+  if (!routine?.id) return;
+  setView("routine", routine.id);
+}
+
+/** Open a routine's day detail; if several routines share the day, ask which one. */
+function openDayHistory(dateKey, routines) {
+  const unique = [];
+  const seen = new Set();
+  (routines || []).forEach((routine) => {
+    if (!routine?.id || seen.has(routine.id)) return;
+    seen.add(routine.id);
+    unique.push(routine);
+  });
+  if (unique.length === 0) return;
+
+  if (unique.length === 1) {
+    openCalendarModal(unique[0].id, { dateKey });
+    return;
+  }
+
+  openActionSheet({
+    title: t("home.openDayPickRoutine"),
+    actions: unique.map((routine) => ({
+      label: routine.name,
+      onSelect: () => openCalendarModal(routine.id, { dateKey }),
+    })),
+  });
+}
+
 /** Multi-slice donut for this week's time by routine. */
 function createDonutChart(segments) {
   const size = 132;
@@ -506,7 +536,8 @@ function createDonutChart(segments) {
     viewBox: `0 0 ${size} ${size}`,
     width: String(size),
     height: String(size),
-    "aria-hidden": "true",
+    role: total > 0 ? "img" : "presentation",
+    "aria-label": total > 0 ? t("home.insightsWeekTime") : null,
   });
   svg.appendChild(svgEl("circle", {
     class: "insight-ring-track",
@@ -521,7 +552,8 @@ function createDonutChart(segments) {
     let offset = 0;
     segments.forEach((part) => {
       const length = (part.value / total) * circumference;
-      svg.appendChild(svgEl("circle", {
+      const slice = svgEl("circle", {
+        class: "insight-donut-slice",
         cx: size / 2,
         cy: size / 2,
         r: radius,
@@ -531,7 +563,22 @@ function createDonutChart(segments) {
         "stroke-dasharray": `${length} ${circumference - length}`,
         "stroke-dashoffset": String(-offset),
         transform: `rotate(-90 ${size / 2} ${size / 2})`,
-      }));
+        tabindex: "0",
+        role: "button",
+        "aria-label": t("home.openRoutineFromChart", { name: part.label }),
+      });
+      slice.style.cursor = "pointer";
+      const open = () => openRoutineFromChart(part.routine);
+      slice.addEventListener("click", (event) => {
+        event.stopPropagation();
+        open();
+      });
+      slice.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        open();
+      });
+      svg.appendChild(slice);
       offset += length;
     });
   }
@@ -600,20 +647,30 @@ function renderHomeInsights() {
     value: Math.max(row.timeMs, row.runs > 0 ? 1 : 0),
     label: row.routine.name,
     timeMs: row.timeMs,
+    routine: row.routine,
   }));
   weekBody.appendChild(createDonutChart(donutSegments));
 
-  const legend = document.createElement("ul");
+  const legend = document.createElement("div");
   legend.className = "insight-legend";
+  legend.setAttribute("role", "list");
   if (breakdown.length === 0) {
-    const empty = document.createElement("li");
+    const empty = document.createElement("p");
     empty.className = "insight-legend-empty";
     empty.textContent = t("home.insightsNoTime");
     legend.appendChild(empty);
   } else {
     breakdown.slice(0, 5).forEach((row) => {
-      const item = document.createElement("li");
-      item.className = "insight-legend-item";
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "insight-legend-item is-clickable";
+      item.setAttribute("role", "listitem");
+      item.setAttribute(
+        "aria-label",
+        t("home.openRoutineFromChart", { name: row.routine.name })
+      );
+      item.addEventListener("click", () => openRoutineFromChart(row.routine));
+
       const swatch = document.createElement("span");
       swatch.className = "insight-legend-swatch";
       swatch.style.background = getRoutineColorValue(row.routine);
@@ -644,12 +701,21 @@ function renderHomeInsights() {
     empty.textContent = t("home.insightsNoStreaks");
     streakCard.appendChild(empty);
   } else {
-    const list = document.createElement("ul");
+    const list = document.createElement("div");
     list.className = "insight-streak-list";
+    list.setAttribute("role", "list");
     streaks.forEach(({ routine, streak }) => {
-      const item = document.createElement("li");
-      item.className = "insight-streak-item";
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "insight-streak-item is-clickable";
+      item.setAttribute("role", "listitem");
+      item.setAttribute(
+        "aria-label",
+        t("home.openRoutineFromChart", { name: routine.name })
+      );
       applyRoutineColorStyle(item, routine);
+      item.addEventListener("click", () => openRoutineFromChart(routine));
+
       const name = document.createElement("span");
       name.className = "insight-streak-name";
       name.textContent = routine.name;
@@ -1227,7 +1293,7 @@ function renderWeeklyStatsContent() {
 
   const chart = document.createElement("div");
   chart.className = "weekly-stats-chart";
-  chart.setAttribute("role", "img");
+  chart.setAttribute("role", "list");
   chart.setAttribute(
     "aria-label",
     `Daily completions: ${stats.dayCompletions.join(", ")}`
@@ -1235,14 +1301,28 @@ function renderWeeklyStatsContent() {
 
   stats.weekKeys.forEach((dateKey, index) => {
     const count = stats.dayCompletions[index];
-    const day = document.createElement("div");
+    const dayRoutines = stats.dayRoutines[index] || [];
+    const clickable = count > 0 && dateKey <= stats.todayKey;
+    const day = document.createElement(clickable ? "button" : "div");
+    if (clickable) day.type = "button";
     day.className = "weekly-stats-day";
+    day.setAttribute("role", "listitem");
     if (dateKey === stats.todayKey) day.classList.add("is-today");
     if (dateKey > stats.todayKey) day.classList.add("is-future");
     if (count > 0) day.classList.add("has-completions");
-    day.title = count === 1
+    if (clickable) day.classList.add("is-clickable");
+
+    const completionLabel = count === 1
       ? t("home.completionsTitle", { count })
       : t("home.completionsTitlePlural", { count });
+    day.title = completionLabel;
+    if (clickable) {
+      day.setAttribute(
+        "aria-label",
+        `${t("home.openDayHistory", { date: formatHistoryDayLabel(dateKey) })}. ${completionLabel}`
+      );
+      day.addEventListener("click", () => openDayHistory(dateKey, dayRoutines));
+    }
 
     const countEl = document.createElement("span");
     countEl.className = "weekly-stats-count";
@@ -1255,7 +1335,7 @@ function renderWeeklyStatsContent() {
       const stack = document.createElement("div");
       stack.className = "weekly-stats-stack";
       stack.style.height = `${Math.round((count / barScale) * 100)}%`;
-      stats.dayRoutines[index].forEach((routine) => {
+      dayRoutines.forEach((routine) => {
         const segment = document.createElement("span");
         segment.className = "weekly-stats-segment";
         segment.style.background = getRoutineColorValue(routine);

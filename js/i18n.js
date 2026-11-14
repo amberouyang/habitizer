@@ -112,6 +112,9 @@ const messages = {
     "home.insightsStreaks": "Streaks",
     "home.insightsNoTime": "No time logged yet",
     "home.insightsNoStreaks": "No active streaks yet",
+    "home.openDayHistory": "View history for {date}",
+    "home.openDayPickRoutine": "Choose a routine",
+    "home.openRoutineFromChart": "Open {name}",
 
     "routine.activities": "Activities",
     "routine.moreActions": "Routine options",
@@ -402,6 +405,9 @@ const messages = {
     "home.insightsStreaks": "Rachas",
     "home.insightsNoTime": "Aún no hay tiempo registrado",
     "home.insightsNoStreaks": "Aún no hay rachas activas",
+    "home.openDayHistory": "Ver historial de {date}",
+    "home.openDayPickRoutine": "Elige una rutina",
+    "home.openRoutineFromChart": "Abrir {name}",
 
     "routine.activities": "Actividades",
     "routine.moreActions": "Opciones de rutina",
@@ -692,6 +698,9 @@ const messages = {
     "home.insightsStreaks": "连续",
     "home.insightsNoTime": "本周还没有用时记录",
     "home.insightsNoStreaks": "还没有进行中的连续记录",
+    "home.openDayHistory": "查看 {date} 的记录",
+    "home.openDayPickRoutine": "选择例行",
+    "home.openRoutineFromChart": "打开 {name}",
 
     "routine.activities": "活动",
     "routine.moreActions": "例行选项",

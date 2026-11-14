@@ -973,6 +973,26 @@ button {
   align-items: center;
   gap: 4px;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.weekly-stats-day.is-clickable {
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.weekly-stats-day.is-clickable:hover .weekly-stats-track {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+.weekly-stats-day.is-clickable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .weekly-stats-count {
@@ -4008,6 +4028,15 @@ button.contribution-cell:focus-visible {
     margin: 0;
   }
 
+  .insight-donut-slice {
+    pointer-events: stroke;
+    cursor: pointer;
+  }
+
+  .insight-donut-slice:hover {
+    stroke-width: 16;
+  }
+
   .insight-legend {
     list-style: none;
     margin: 0;
@@ -4024,7 +4053,37 @@ button.contribution-cell:focus-visible {
     grid-template-columns: 10px minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     font-size: 0.82rem;
+    text-align: left;
+  }
+
+  .insight-legend-item.is-clickable {
+    cursor: pointer;
+  }
+
+  .insight-legend-item.is-clickable:hover {
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+  }
+
+  .insight-legend-item.is-clickable:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+
+  .insight-donut-slice:focus {
+    outline: none;
+  }
+
+  .insight-donut-slice:focus-visible {
+    filter: brightness(1.08);
   }
 
   .insight-legend-swatch {
@@ -4069,10 +4128,28 @@ button.contribution-cell:focus-visible {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    width: 100%;
+    margin: 0;
     padding: 10px 12px;
     border-radius: 10px;
     background: color-mix(in srgb, var(--routine-color, var(--primary)) 10%, var(--panel));
     border: 1px solid color-mix(in srgb, var(--routine-color, var(--primary)) 22%, var(--border));
+    color: inherit;
+    font: inherit;
+    text-align: left;
+  }
+
+  .insight-streak-item.is-clickable {
+    cursor: pointer;
+  }
+
+  .insight-streak-item.is-clickable:hover {
+    background: color-mix(in srgb, var(--routine-color, var(--primary)) 16%, var(--panel));
+  }
+
+  .insight-streak-item.is-clickable:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 
   .insight-streak-name {
