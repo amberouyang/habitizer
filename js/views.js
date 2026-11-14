@@ -746,6 +746,9 @@ export function renderHistoryView() {
     }
   });
 
+  const wide = isWideHomeLayout();
+  if (wide) view.classList.add("history-view--wide");
+
   groups.forEach((group) => {
     const section = document.createElement("section");
     section.className = "history-day";
@@ -769,6 +772,11 @@ export function renderHistoryView() {
     const list = document.createElement("div");
     list.className = "history-list";
     list.setAttribute("role", "list");
+
+    if (wide) {
+      list.appendChild(createHistoryColumnHeader());
+    }
+
     group.items.forEach((entry) => list.appendChild(createHistoryItem(entry)));
 
     section.append(header, list);
@@ -776,6 +784,37 @@ export function renderHistoryView() {
   });
 
   return view;
+}
+
+function createHistoryColumnHeader() {
+  const row = document.createElement("div");
+  row.className = "history-list-head";
+  row.setAttribute("aria-hidden", "true");
+
+  const swatch = document.createElement("span");
+  swatch.className = "history-item-swatch history-item-swatch--spacer";
+
+  const when = document.createElement("span");
+  when.className = "history-item-when";
+  when.textContent = t("history.colTime");
+
+  const name = document.createElement("span");
+  name.className = "history-item-name";
+  name.textContent = t("history.colRoutine");
+
+  const steps = document.createElement("span");
+  steps.className = "history-item-steps";
+  steps.textContent = t("history.colSteps");
+
+  const duration = document.createElement("span");
+  duration.className = "history-item-duration";
+  duration.textContent = t("history.colDuration");
+
+  const chevron = document.createElement("span");
+  chevron.className = "history-item-chevron history-item-chevron--spacer";
+
+  row.append(swatch, when, name, steps, duration, chevron);
+  return row;
 }
 
 function createHistoryItem({ routine, run, completedAt }) {
@@ -795,18 +834,23 @@ function createHistoryItem({ routine, run, completedAt }) {
   swatch.className = "history-item-swatch";
   swatch.setAttribute("aria-hidden", "true");
 
-  const copy = document.createElement("span");
-  copy.className = "history-item-copy";
+  const when = document.createElement("span");
+  when.className = "history-item-when";
+  when.textContent = formatRunTimeOfDay(completedAt);
 
   const name = document.createElement("span");
   name.className = "history-item-name";
   name.textContent = routine.name;
 
-  const when = document.createElement("span");
-  when.className = "history-item-when";
-  when.textContent = formatRunTimeOfDay(completedAt);
-
-  copy.append(name, when);
+  const steps = document.createElement("span");
+  steps.className = "history-item-steps";
+  const done = Number(run.activitiesCompleted);
+  const total = Number(run.activitiesTotal);
+  if (Number.isFinite(done) && Number.isFinite(total) && total > 0) {
+    steps.textContent = `${done}/${total}`;
+  } else {
+    steps.textContent = "—";
+  }
 
   const duration = document.createElement("span");
   duration.className = "history-item-duration";
@@ -815,7 +859,7 @@ function createHistoryItem({ routine, run, completedAt }) {
   const chevron = createIcon("chevronRight", { size: 16 });
   chevron.classList.add("history-item-chevron");
 
-  item.append(swatch, copy, duration, chevron);
+  item.append(swatch, when, name, steps, duration, chevron);
   item.addEventListener("click", () => {
     if (!dateKey) return;
     openCalendarModal(routine.id, {

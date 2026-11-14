@@ -43,6 +43,10 @@ const messages = {
     "history.viewDayDetails": "View day details for {name}",
     "history.oneRun": "1 run",
     "history.runs": "{count} runs",
+    "history.colTime": "Time",
+    "history.colRoutine": "Routine",
+    "history.colSteps": "Steps",
+    "history.colDuration": "Duration",
 
     "home.greetingMorning": "Good morning",
     "home.greetingAfternoon": "Good afternoon",
@@ -329,6 +333,10 @@ const messages = {
     "history.viewDayDetails": "Ver detalles del día de {name}",
     "history.oneRun": "1 sesión",
     "history.runs": "{count} sesiones",
+    "history.colTime": "Hora",
+    "history.colRoutine": "Rutina",
+    "history.colSteps": "Pasos",
+    "history.colDuration": "Duración",
 
     "home.greetingMorning": "Buenos días",
     "home.greetingAfternoon": "Buenas tardes",
@@ -615,6 +623,10 @@ const messages = {
     "history.viewDayDetails": "查看 {name} 的当天详情",
     "history.oneRun": "1 次",
     "history.runs": "{count} 次",
+    "history.colTime": "时间",
+    "history.colRoutine": "例行",
+    "history.colSteps": "步骤",
+    "history.colDuration": "时长",
 
     "home.greetingMorning": "早上好",
     "home.greetingAfternoon": "下午好",

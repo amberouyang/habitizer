@@ -421,10 +421,19 @@ button {
   overflow: hidden;
 }
 
+.history-list-head {
+  display: none;
+}
+
 .history-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "swatch name duration chevron"
+    "swatch when duration chevron";
+  column-gap: 12px;
+  row-gap: 2px;
   align-items: center;
-  gap: 12px;
   width: 100%;
   padding: 11px 12px 11px 14px;
   border: 0;
@@ -450,7 +459,7 @@ button {
 }
 
 .history-item-swatch {
-  flex-shrink: 0;
+  grid-area: swatch;
   width: 10px;
   height: 10px;
   border-radius: 999px;
@@ -458,22 +467,13 @@ button {
   box-shadow: 0 0 0 1px var(--hover-border);
 }
 
-.history-item-copy {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.history-item-chevron {
-  flex-shrink: 0;
-  margin-left: -4px;
-  color: var(--muted);
-  opacity: 0.6;
+.history-item-swatch--spacer {
+  visibility: hidden;
 }
 
 .history-item-name {
+  grid-area: name;
+  min-width: 0;
   font-size: 0.95rem;
   font-weight: 600;
   overflow: hidden;
@@ -482,16 +482,39 @@ button {
 }
 
 .history-item-when {
+  grid-area: when;
   font-size: 0.78rem;
   color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-item-steps {
+  display: none;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .history-item-duration {
-  flex-shrink: 0;
+  grid-area: duration;
   font-size: 0.88rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--text);
+  white-space: nowrap;
+}
+
+.history-item-chevron {
+  grid-area: chevron;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.history-item-chevron--spacer {
+  width: 16px;
+  height: 16px;
 }
 
 .undo-toast {
@@ -4204,12 +4227,88 @@ button.contribution-cell:focus-visible {
   }
 
   /* Single-column screens stay readable and centered in the wide pane. */
-  .history-view,
   .live-timer,
   .completion-view {
     max-width: 560px;
     margin-inline: auto;
     width: 100%;
+  }
+
+  .history-view {
+    max-width: 560px;
+    margin-inline: auto;
+    width: 100%;
+  }
+
+  /* History: two day columns and table-like rows. */
+  .history-view.history-view--wide {
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 24px;
+    row-gap: 20px;
+  }
+
+  .history-view.history-view--wide > .history-empty {
+    grid-column: 1 / -1;
+  }
+
+  .history-view--wide .history-list-head {
+    display: grid;
+    grid-template-columns: 10px 4.75rem minmax(0, 1fr) 3.5rem 4.75rem 16px;
+    align-items: center;
+    column-gap: 12px;
+    padding: 8px 12px 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--panel-alt) 70%, var(--panel));
+    font-size: 0.68rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .history-view--wide .history-list-head .history-item-name,
+  .history-view--wide .history-list-head .history-item-when,
+  .history-view--wide .history-list-head .history-item-steps,
+  .history-view--wide .history-list-head .history-item-duration {
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  .history-view--wide .history-item {
+    display: grid;
+    grid-template-columns: 10px 4.75rem minmax(0, 1fr) 3.5rem 4.75rem 16px;
+    grid-template-areas: "swatch when name steps duration chevron";
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 0;
+    padding: 10px 12px 10px 14px;
+  }
+
+  .history-view--wide .history-item-when {
+    grid-area: when;
+    font-size: 0.82rem;
+  }
+
+  .history-view--wide .history-item-name {
+    grid-area: name;
+  }
+
+  .history-view--wide .history-item-steps {
+    display: block;
+    grid-area: steps;
+  }
+
+  .history-view--wide .history-item-duration {
+    grid-area: duration;
+    text-align: right;
+  }
+
+  .history-view--wide .history-list-head .history-item-duration {
+    text-align: right;
   }
 
   .settings-view > * {
@@ -4265,6 +4364,11 @@ button.contribution-cell:focus-visible {
     .routine-last-completed {
       text-align: left;
       min-width: 0;
+    }
+
+    .history-view.history-view--wide {
+      grid-template-columns: 1fr;
+      max-width: 720px;
     }
   }
 
